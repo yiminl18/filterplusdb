@@ -106,6 +106,19 @@ public class TableMgr {
 			createTable(TCAT, tcatSchema, tx);
 			createTable(FCAT, fcatSchema, tx);
 		}
+
+		displayTableStats();
+	}
+
+	/*
+	 * Display TableStats in tiMap
+	 */
+	public void displayTableStats(){
+		//Map<String, TableInfo> tiMap;
+		for (Map.Entry<String,TableInfo> entry : tiMap.entrySet()){
+			System.out.println(entry.getValue());
+			System.out.println(entry.getKey().toString());
+		}
 	}
 
 	/**

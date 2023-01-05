@@ -38,6 +38,7 @@ import org.vanilladb.core.storage.record.RecordFile;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
+
 public class ServerInit {
 	private static Logger logger = Logger.getLogger(ServerInit.class.getName());
 
