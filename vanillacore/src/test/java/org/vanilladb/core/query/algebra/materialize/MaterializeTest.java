@@ -67,7 +67,7 @@ public class MaterializeTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(MaterializeTest.class);
+		//ServerInit.init(MaterializeTest.class);
 		ServerInit.loadTestbed();
 
 		if (logger.isLoggable(Level.INFO))

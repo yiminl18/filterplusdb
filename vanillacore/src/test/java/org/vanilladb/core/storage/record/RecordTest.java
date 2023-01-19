@@ -59,7 +59,7 @@ public class RecordTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(RecordTest.class);
+		//ServerInit.init(RecordTest.class);
 		RecoveryMgr.enableLogging(false);
 
 		schema = new Schema();

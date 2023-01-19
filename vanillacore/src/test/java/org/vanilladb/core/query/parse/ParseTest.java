@@ -38,7 +38,7 @@ public class ParseTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(ParseTest.class);
+		//ServerInit.init(ParseTest.class);
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("BEGIN PARSE TEST");

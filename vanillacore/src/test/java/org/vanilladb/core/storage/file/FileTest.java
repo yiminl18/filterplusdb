@@ -56,7 +56,7 @@ public class FileTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(FileTest.class);
+		//ServerInit.init(FileTest.class);
 
 		fm = VanillaDb.fileMgr();
 		p1 = new Page();

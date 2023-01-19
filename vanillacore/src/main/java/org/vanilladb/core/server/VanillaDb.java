@@ -135,9 +135,9 @@ public class VanillaDb {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("recovering existing database...");
 			// add a checkpoint record to limit rollback
-			RecoveryMgr.initializeSystem(initTx);
-			if (logger.isLoggable(Level.INFO))
-				logger.info("the database has been recovered to a consistent state.");
+			// RecoveryMgr.initializeSystem(initTx);
+			// if (logger.isLoggable(Level.INFO))
+			// 	logger.info("the database has been recovered to a consistent state.");
 		}
 
 		// initialize the statistics manager to build the histogram

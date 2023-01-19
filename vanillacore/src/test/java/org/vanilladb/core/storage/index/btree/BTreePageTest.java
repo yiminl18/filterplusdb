@@ -57,7 +57,7 @@ public class BTreePageTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BTreePageTest.class);
+		//ServerInit.init(BTreePageTest.class);
 		RecoveryMgr.enableLogging(false);
 		
 		if (logger.isLoggable(Level.INFO))

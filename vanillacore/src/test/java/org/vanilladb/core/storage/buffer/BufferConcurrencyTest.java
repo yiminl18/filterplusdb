@@ -35,7 +35,7 @@ public class BufferConcurrencyTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BufferConcurrencyTest.class);
+		//ServerInit.init(BufferConcurrencyTest.class);
 		
 		if (logger.isLoggable(Level.INFO))
 			logger.info("BEGIN BUFFER CONCURRENCY TEST");

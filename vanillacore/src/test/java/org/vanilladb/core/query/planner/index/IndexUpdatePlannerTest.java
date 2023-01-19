@@ -55,7 +55,7 @@ public class IndexUpdatePlannerTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(IndexUpdatePlannerTest.class);
+		//ServerInit.init(IndexUpdatePlannerTest.class);
 		
 		// create and populate the indexed temp table
 		CatalogMgr md = VanillaDb.catalogMgr();

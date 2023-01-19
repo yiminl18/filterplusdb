@@ -45,7 +45,7 @@ public class VerifierTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(VerifierTest.class);
+		//ServerInit.init(VerifierTest.class);
 		ServerInit.loadTestbed();
 
 		if (logger.isLoggable(Level.INFO))

@@ -63,7 +63,7 @@ public class RecoveryBasicTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(RecoveryBasicTest.class);
+		//ServerInit.init(RecoveryBasicTest.class);
 		
 		blk = new BlockId(fileName, 12);
 		md = VanillaDb.catalogMgr();

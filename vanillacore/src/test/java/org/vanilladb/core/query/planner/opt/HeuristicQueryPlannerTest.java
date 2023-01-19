@@ -52,7 +52,7 @@ public class HeuristicQueryPlannerTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(HeuristicQueryPlannerTest.class);
+		//ServerInit.init(HeuristicQueryPlannerTest.class);
 		ServerInit.loadTestbed();
 		
 		if (logger.isLoggable(Level.INFO))

@@ -41,7 +41,7 @@ private static Logger logger = Logger.getLogger(BufferConcurrencyTest.class.getN
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(PhantomTest.class);
+		//ServerInit.init(PhantomTest.class);
 		loadTestbed();
 		
 		if (logger.isLoggable(Level.INFO))

@@ -51,7 +51,7 @@ public class LastLSNTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(LastLSNTest.class);
+		//(LastLSNTest.class);
 		
 		if (logger.isLoggable(Level.INFO))
 			logger.info("BEGIN LAST LSN TEST");

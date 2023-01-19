@@ -66,7 +66,7 @@ public class BTreeIndexTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BTreeIndexTest.class);
+		//ServerInit.init(BTreeIndexTest.class);
 		RecoveryMgr.enableLogging(false);
 		catMgr = VanillaDb.catalogMgr();
 

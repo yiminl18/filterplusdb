@@ -53,7 +53,7 @@ public class TxTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(TxTest.class);
+		//ServerInit.init(TxTest.class);
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("BEGIN TX TEST");

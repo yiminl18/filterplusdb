@@ -52,9 +52,10 @@ public class ServerInit {
 	private static final Type LOADED_FLAG_TYPE = Type.INTEGER;
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
 	
-	public static String resetDb(Class<?> testClass) {
-		String testClassName = testClass.getName();
-		String dbName = DB_MAIN_DIR + "/" + testClassName;
+	public static String resetDb(String dbname) {
+		//String testClassName = testClass.getName();
+		//String testClassName = "testplus";
+		String dbName = DB_MAIN_DIR + "/" + dbname;
 		
 		// Creates the main directory if it was not created before
 		File dbPath = new File(FileMgr.DB_FILES_DIR, DB_MAIN_DIR);
@@ -67,6 +68,14 @@ public class ServerInit {
 		return dbName;
 	}
 
+	public static String getDb(Class<?> testClass){
+		String testClassName = testClass.getName();
+		String dbName = DB_MAIN_DIR + "/" + testClassName;
+		return dbName;
+	}
+
+
+
 	/**
 	 * Initiates {@link VanillaDb}.
 	 * 
@@ -76,9 +85,7 @@ public class ServerInit {
 	 * calling this method to ensure the proper class loading.
 	 * </p>
 	 */
-	public static void init(Class<?> testClass) {
-		String dbName = resetDb(testClass);
-		
+	public static void init(String dbName) {
 		// Initializes a fresh database
 		VanillaDb.init(dbName);
 	}
@@ -86,6 +93,8 @@ public class ServerInit {
 	/**
 	 * Set up a database for testing.
 	 */
+
+
 	public static void loadTestbed() {
 		if (!checkIfTestbedLoaded()) {
 			if (logger.isLoggable(Level.INFO))

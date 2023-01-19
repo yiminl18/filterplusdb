@@ -51,7 +51,7 @@ public class CatalogTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(CatalogTest.class);
+		//ServerInit.init(CatalogTest.class);
 
 		catMgr = VanillaDb.catalogMgr();
 

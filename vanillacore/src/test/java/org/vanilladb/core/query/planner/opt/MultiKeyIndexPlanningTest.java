@@ -58,7 +58,7 @@ private static Logger logger = Logger.getLogger(MultiKeyIndexPlanningTest.class.
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(MultiKeyIndexPlanningTest.class);
+		//ServerInit.init(MultiKeyIndexPlanningTest.class);
 		
 		generateTestingData();
 

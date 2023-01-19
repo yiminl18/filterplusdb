@@ -48,7 +48,7 @@ public class BasicQueryPlannerTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BasicQueryPlannerTest.class);
+		//ServerInit.init(BasicQueryPlannerTest.class);
 		ServerInit.loadTestbed();
 
 		if (logger.isLoggable(Level.INFO))

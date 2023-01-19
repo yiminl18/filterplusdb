@@ -38,7 +38,7 @@ public class BTreeIndexConcurrentTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BTreeIndexConcurrentTest.class);
+		//ServerInit.init(BTreeIndexConcurrentTest.class);
 		createIndex();
 		
 		if (logger.isLoggable(Level.INFO))

@@ -43,7 +43,7 @@ public class LockTableTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(LockTableTest.class);
+		//ServerInit.init(LockTableTest.class);
 		
 		// Prepare testing data
 		blocks = new BlockId[max];

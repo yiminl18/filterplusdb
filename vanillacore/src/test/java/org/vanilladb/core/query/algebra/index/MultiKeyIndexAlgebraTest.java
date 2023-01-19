@@ -66,7 +66,7 @@ public class MultiKeyIndexAlgebraTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(MultiKeyIndexAlgebraTest.class);
+		//ServerInit.init(MultiKeyIndexAlgebraTest.class);
 		
 		generateTestingData();
 

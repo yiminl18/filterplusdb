@@ -43,7 +43,7 @@ public class BufferTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BufferTest.class);
+		//ServerInit.init(BufferTest.class);
 		
 		if (logger.isLoggable(Level.INFO))
 			logger.info("BEGIN BUFFER TEST");

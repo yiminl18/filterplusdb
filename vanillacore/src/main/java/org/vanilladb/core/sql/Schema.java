@@ -58,6 +58,10 @@ public class Schema implements Serializable {
 			myFieldSet.add(fldName);
 	}
 
+	public Map<String, Type> getSchema(){
+		return this.fields;
+	}
+
 	/**
 	 * Adds a field in another schema having the specified name to this schema.
 	 * 

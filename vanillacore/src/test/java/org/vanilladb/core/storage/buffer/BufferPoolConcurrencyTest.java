@@ -40,7 +40,8 @@ public class BufferPoolConcurrencyTest {
 
 	@BeforeClass
 	public static void init() {
-		String dbName = ServerInit.resetDb(BufferPoolConcurrencyTest.class);
+		//String dbName = ServerInit.resetDb(BufferPoolConcurrencyTest.class);
+		String dbName = "NULL";
 		VanillaDb.initFileMgr(dbName);
 		
 		if (logger.isLoggable(Level.INFO))

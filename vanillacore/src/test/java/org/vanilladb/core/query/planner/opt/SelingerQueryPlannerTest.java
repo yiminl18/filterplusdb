@@ -54,7 +54,7 @@ public class SelingerQueryPlannerTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(SelingerQueryPlannerTest.class);
+		//ServerInit.init(SelingerQueryPlannerTest.class);
 		ServerInit.loadTestbed();
 
 		if (logger.isLoggable(Level.INFO))

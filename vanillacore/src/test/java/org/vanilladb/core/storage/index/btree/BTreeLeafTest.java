@@ -60,7 +60,7 @@ public class BTreeLeafTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BTreeLeafTest.class);
+		//ServerInit.init(BTreeLeafTest.class);
 		RecoveryMgr.enableLogging(false);
 		
 		if (logger.isLoggable(Level.INFO))

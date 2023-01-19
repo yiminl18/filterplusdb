@@ -57,7 +57,7 @@ public class ConcurrencyTest {
 			"1000"
 		);
 		
-		ServerInit.init(ConcurrencyTest.class);
+		//ServerInit.init(ConcurrencyTest.class);
 		ServerInit.loadTestbed();
 
 		blocks = new BlockId[max];

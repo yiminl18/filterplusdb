@@ -60,7 +60,7 @@ public class HashIndexTest {
 
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(HashIndexTest.class);
+		//ServerInit.init(HashIndexTest.class);
 		RecoveryMgr.enableLogging(false);
 		md = VanillaDb.catalogMgr();
 

@@ -27,7 +27,7 @@ public class BTreeIndexRecoveryTest {
 	
 	@BeforeClass
 	public static void init() {
-		ServerInit.init(BTreeIndexRecoveryTest.class);
+		//ServerInit.init(BTreeIndexRecoveryTest.class);
 		createIndex();
 		
 		if (logger.isLoggable(Level.INFO))
