@@ -17,7 +17,7 @@ package org.vanilladb.core.storage.metadata.statistics;
 
 import static org.vanilladb.core.storage.metadata.TableMgr.TCAT;
 import static org.vanilladb.core.storage.metadata.TableMgr.TCAT_TBLNAME;
-
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -29,6 +29,12 @@ import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.record.RecordFile;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.util.CoreProperties;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException; 
+  
 
 /**
  * The statistics manager, which is responsible for keeping statistical
@@ -44,6 +50,7 @@ public class StatMgr {
 	private static final int NUM_BUCKETS;
 	private static final int NUM_PERCENTILES;
 	private static final int REFRESH_STAT_OFF = 0;
+	private static final String PATH;
 
 	private boolean isRefreshStatOn;
 	private Map<String, TableStatInfo> tableStats;
@@ -56,6 +63,8 @@ public class StatMgr {
 				StatMgr.class.getName() + ".NUM_BUCKETS", 20);
 		NUM_PERCENTILES = CoreProperties.getLoader().getPropertyAsInteger(
 				StatMgr.class.getName() + ".NUM_PERCENTILES", 5);
+		PATH = CoreProperties.getLoader().getPropertyAsString(
+			StatMgr.class.getName() + ".STATPATH", "/Users/yiminglin/Documents/Codebase/datahub/filterplus/stats/");
 	}
 
 	/**
@@ -103,6 +112,49 @@ public class StatMgr {
 		return tsi;
 	}
 
+	/*
+	 * Save stats to local disk
+	 */
+	public void save(String tableName){
+		//tableStats: Map<String, TableStatInfo>
+		String path = PATH + tableName + ".txt";
+		try{
+			FileWriter out = new FileWriter(path);
+			BufferedWriter bw=new BufferedWriter(out);
+			TableStatInfo singleTableStats = tableStats.get(tableName);
+			bw.write(tableName);
+			bw.newLine();
+			bw.write(String.valueOf(singleTableStats.blocksAccessed()));
+			bw.newLine();
+			//write histogram: Map<String, Collection<Bucket>> dists
+			Map<String, Collection<Bucket>> hist = singleTableStats.histogram().getHist();
+			bw.write(String.valueOf(hist.size()));
+			bw.newLine();
+			for(Map.Entry<String,Collection<Bucket>> entry1 : hist.entrySet()){
+				bw.write(entry1.getKey());
+				bw.newLine();
+				//write Collection<Bucket>
+				bw.write(String.valueOf(entry1.getValue().size()));
+				bw.newLine();
+				for(Bucket bt : entry1.getValue()){
+					bw.write(String.valueOf(bt.valueRange()));
+					bw.newLine();
+					bw.write(String.valueOf(bt.frequency()));
+					bw.newLine();
+					bw.write(String.valueOf(bt.distinctValues()));
+					bw.newLine();
+					bw.write(String.valueOf(bt.frequency()));
+					bw.newLine();
+				}
+				
+			}
+			bw.flush();
+			bw.close();
+		}catch (IOException e) {
+		e.printStackTrace();
+		}
+	}
+
 	public synchronized void countRecordUpdates(String tblName, int count) {
 		if (!isRefreshStatOn)
 			return;
@@ -119,9 +171,9 @@ public class StatMgr {
 
 	protected synchronized void refreshStatistics(String tblName, Transaction tx) {
 		updateCounts.put(tblName, 0);
-
 		TableInfo ti = VanillaDb.catalogMgr().getTableInfo(tblName, tx);
 		TableStatInfo si = calcTableStats(ti, tx);
+		//System.out.println("In refreshStatistics: " + tblName);
 		tableStats.put(tblName, si);
 	}
 
@@ -129,10 +181,11 @@ public class StatMgr {
 		updateCounts = new HashMap<String, Integer>();
 		tableStats = new HashMap<String, TableStatInfo>();
 		TableInfo tcatmd = VanillaDb.catalogMgr().getTableInfo(TCAT, tx);
-		RecordFile tcatfile = tcatmd.open(tx, true);
+		RecordFile tcatfile = tcatmd.open(tx, false);
 		tcatfile.beforeFirst();
 		while (tcatfile.next()) {
 			String tblName = (String) tcatfile.getVal(TCAT_TBLNAME).asJavaVal();
+			System.out.println(tblName);
 			refreshStatistics(tblName, tx);
 		}
 		tcatfile.close();
@@ -140,13 +193,6 @@ public class StatMgr {
 
 	private synchronized TableStatInfo calcTableStats(TableInfo ti,
 			Transaction tx) {
-
-		// XXX: Why were these code used in experiments?
-//		long numblocks = 0;
-//		Schema schema = ti.schema();
-//		SampledHistogramBuilder hb = new SampledHistogramBuilder(schema);
-//		Histogram h = hb.newMaxDiffHistogram(NUM_BUCKETS, NUM_PERCENTILES);
-//		return new TableStatInfo(numblocks, h);
 
 		long numblocks = 0;
 		Schema schema = ti.schema();

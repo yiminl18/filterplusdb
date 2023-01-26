@@ -17,16 +17,18 @@ package org.vanilladb.core.server;
 
 import static org.vanilladb.core.sql.Type.INTEGER;
 import static org.vanilladb.core.sql.Type.VARCHAR;
-
+import java.util.*;
 import java.io.File;
 import java.sql.Connection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.vanilladb.core.storage.index.IndexType;
+import org.vanilladb.core.query.parse.InsertData;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.sql.Type;
+import org.vanilladb.core.query.planner.index.*;
 import org.vanilladb.core.sql.VarcharConstant;
 import org.vanilladb.core.storage.file.BlockId;
 import org.vanilladb.core.storage.file.FileMgr;
@@ -34,16 +36,16 @@ import org.vanilladb.core.storage.file.Page;
 import org.vanilladb.core.storage.metadata.CatalogMgr;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.metadata.statistics.StatMgr;
-import org.vanilladb.core.storage.record.RecordFile;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
 
 public class ServerInit {
+	private static boolean is_index = true;//a flag to build index on key of each table or not 
 	private static Logger logger = Logger.getLogger(ServerInit.class.getName());
 
-	public static int courseMax = 300, studentMax = 900, deptMax = 40,
-			sectMax = 1200, enrollMax = 2000;
+	public static int courseMax = 5000, studentMax = 40000, deptMax = 40,
+			sectMax = 12000, enrollMax = 100000;
 	public static final String DB_MAIN_DIR = "vanilladb_testdbs";
 	
 	// Flags
@@ -90,12 +92,25 @@ public class ServerInit {
 		VanillaDb.init(dbName);
 	}
 
+	public static int nextGaussian(Random r, int mean, int deviation, int min, int max){
+        double next = r.nextGaussian()*deviation+mean;
+        if(next > max){
+            next = max;
+        }
+        if(next < min){
+            next = min;
+        }
+        return (int)next;
+    }
+
 	/**
 	 * Set up a database for testing.
 	 */
 
 
 	public static void loadTestbed() {
+		
+		Random r = new Random();
 		if (!checkIfTestbedLoaded()) {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("loading data");
@@ -103,6 +118,12 @@ public class ServerInit {
 			StatMgr stat = VanillaDb.statMgr();
 			Transaction tx = VanillaDb.txMgr().newTransaction(
 					Connection.TRANSACTION_SERIALIZABLE, false);
+			String fieldName = "";
+			String tbName = "";
+			String idxName = "";
+			List<String> indexedFlds = new LinkedList<String>();
+			List<String> fields = new ArrayList<>();
+			List<Constant> vals = new ArrayList<>();
 
 			// create and populate the course table
 			Schema sch = new Schema();
@@ -110,75 +131,98 @@ public class ServerInit {
 			sch.addField("title", VARCHAR(20));
 			sch.addField("deptid", INTEGER);
 			md.createTable("course", sch, tx);
+
+			//create index
+			if(is_index){
+				indexedFlds = new LinkedList<String>();
+				fieldName = "cid";
+				tbName = "course";
+				indexedFlds.add(fieldName);
+				idxName = "idx_" + fieldName;
+				md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+			}
+			
 			TableInfo ti = md.getTableInfo("course", tx);
 
-			RecordFile rf = ti.open(tx, true);
-			rf.beforeFirst();
-			while (rf.next())
-				rf.delete();
-			rf.close();
+			// RecordFile rf = ti.open(tx, true);
+			// rf.beforeFirst();
+			// while (rf.next())
+			// 	rf.delete();
+			// rf.close();
 
-			rf = ti.open(tx, true);
+			// rf = ti.open(tx, true);
 			for (int id = 0; id < courseMax; id++) {
-				rf.insert();
+				//rf.insert();
 				IntegerConstant cid = new IntegerConstant(id);
-				rf.setVal("cid", cid);
-				rf.setVal("title", new VarcharConstant("course" + id));
-				rf.setVal("deptid", new IntegerConstant(id % deptMax));
+				//rf.setVal("cid", cid);
+				VarcharConstant title = new VarcharConstant("course" + id);
+				//rf.setVal("title", title);
+				int deptId = nextGaussian(r,deptMax/2,10,0,deptMax-1);
+				//rf.setVal("deptid", new IntegerConstant(id % deptMax)); //uniform distribution
+				IntegerConstant deptid = new IntegerConstant(deptId);
+				//rf.setVal("deptid", deptid); //guassian distribution
+				if(is_index){
+					fields = new ArrayList<>();
+					fields.add("cid");
+					fields.add("title");
+					fields.add("deptid");
+					vals = new ArrayList<>();
+					vals.add(cid);
+					vals.add(title);
+					vals.add(deptid);
+					InsertData data = new InsertData(tbName, fields,vals);
+					new IndexUpdatePlanner().executeInsert(data, tx);
+				}
 			}
-			rf.close();
+			//rf.close();
 			// refresh the statistical information after populating this table
 			stat.getTableStatInfo(ti, tx);
 
-			// create and populate the student table
-			sch = new Schema();
-			sch.addField("sid", INTEGER);
-			sch.addField("sname", VARCHAR(10));
-			sch.addField("majorid", INTEGER);
-			sch.addField("gradyear", INTEGER);
-			md.createTable("student", sch, tx);
-			ti = md.getTableInfo("student", tx);
-
-			rf = ti.open(tx, true);
-			rf.beforeFirst();
-			while (rf.next())
-				rf.delete();
-			rf.close();
-
-			rf = ti.open(tx, true);
-			for (int id = 0; id < studentMax; id++) {
-				rf.insert();
-				IntegerConstant sid = new IntegerConstant(id);
-				rf.setVal("sid", sid);
-				rf.setVal("sname", new VarcharConstant("student" + id));
-				rf.setVal("majorid", new IntegerConstant(id % deptMax));
-				rf.setVal("gradyear", new IntegerConstant((id % 50) + 1960));
-			}
-			rf.close();
-			// refresh the statistical information after populating this table
-			stat.getTableStatInfo(ti, tx);
+			
 
 			// create and populate the dept table
 			sch = new Schema();
 			sch.addField("did", INTEGER);
 			sch.addField("dname", VARCHAR(8));
 			md.createTable("dept", sch, tx);
+
+			//create index in primary key
+			if(is_index){
+				indexedFlds = new LinkedList<String>();
+				fieldName = "did";
+				tbName = "dept";
+				indexedFlds.add(fieldName);
+				idxName = "idx_" + fieldName;
+				md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+			}
+			
+
 			ti = md.getTableInfo("dept", tx);
 
-			rf = ti.open(tx, true);
-			rf.beforeFirst();
-			while (rf.next())
-				rf.delete();
-			rf.close();
+			// rf = ti.open(tx, true);
+			// rf.beforeFirst();
+			// while (rf.next())
+			// 	rf.delete();
+			// rf.close();
 
-			rf = ti.open(tx, true);
+			// rf = ti.open(tx, true);
 			for (int id = 0; id < deptMax; id++) {
-				rf.insert();
+				//rf.insert();
 				IntegerConstant did = new IntegerConstant(id);
-				rf.setVal("did", did);
-				rf.setVal("dname", new VarcharConstant("dept" + id));
+				//rf.setVal("did", did);
+				//rf.setVal("dname", new VarcharConstant("dept" + id));
+				if(is_index){
+					fields = new ArrayList<>();
+					fields.add("did");
+					fields.add("dname");
+					vals = new ArrayList<>();
+					vals.add(did);
+					vals.add(new VarcharConstant("dept" + id));
+					InsertData data = new InsertData(tbName, fields,vals);
+					new IndexUpdatePlanner().executeInsert(data, tx);
+				}
 			}
-			rf.close();
+			//rf.close();
 			// refresh the statistical information after populating this table
 			stat.getTableStatInfo(ti, tx);
 
@@ -189,25 +233,55 @@ public class ServerInit {
 			sch.addField("courseid", INTEGER);
 			sch.addField("yearoffered", INTEGER);
 			md.createTable("section", sch, tx);
+			//create index in primary key
+			if(is_index){
+				indexedFlds = new LinkedList<String>();
+				fieldName = "sectid";
+				tbName = "section";
+				indexedFlds.add(fieldName);
+				idxName = "idx_" + fieldName;
+				md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+			}
+			
+			
 			ti = md.getTableInfo("section", tx);
 
-			rf = ti.open(tx, true);
-			rf.beforeFirst();
-			while (rf.next())
-				rf.delete();
-			rf.close();
+			// rf = ti.open(tx, true);
+			// rf.beforeFirst();
+			// while (rf.next())
+			// 	rf.delete();
+			// rf.close();
 
-			rf = ti.open(tx, true);
+			//rf = ti.open(tx, true);
 			for (int id = 0; id < sectMax; id++) {
-				rf.insert();
+				//rf.insert();
 				IntegerConstant sectid = new IntegerConstant(id);
-				rf.setVal("sectid", sectid);
+				//rf.setVal("sectid", sectid);
 				int profnum = id % 20;
-				rf.setVal("prof", new VarcharConstant("prof" + profnum));
-				rf.setVal("courseid", new IntegerConstant(id % courseMax));
-				rf.setVal("yearoffered", new IntegerConstant((id % 50) + 1960));
+				VarcharConstant profid = new VarcharConstant("prof" + profnum);
+				//rf.setVal("prof", profid);
+				IntegerConstant courseid = new IntegerConstant(id % courseMax);
+				//rf.setVal("courseid", courseid);
+				IntegerConstant yearoffered = new IntegerConstant((id % 50) + 1960);
+				//rf.setVal("yearoffered", yearoffered);
+
+				if(is_index){
+					fields = new ArrayList<>();
+					fields.add("sectid");
+					fields.add("prof");
+					fields.add("courseid");
+					fields.add("yearoffered");
+					vals = new ArrayList<>();
+					vals.add(sectid);
+					vals.add(profid);
+					vals.add(courseid);
+					vals.add(yearoffered);
+					InsertData data = new InsertData(tbName, fields,vals);
+					new IndexUpdatePlanner().executeInsert(data, tx);
+				}
+				
 			}
-			rf.close();
+			//rf.close();
 			// refresh the statistical information after populating this table
 			stat.getTableStatInfo(ti, tx);
 
@@ -218,38 +292,129 @@ public class ServerInit {
 			sch.addField("studentid", INTEGER);
 			sch.addField("sectionid", INTEGER);
 			md.createTable("enroll", sch, tx);
+
+			//create index in primary key
+			if(is_index){
+				indexedFlds = new LinkedList<String>();
+				fieldName = "eid";
+				tbName = "enroll";
+				indexedFlds.add(fieldName);
+				idxName = "idx_" + fieldName;
+				md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+			}
+			
 			ti = md.getTableInfo("enroll", tx);
 
-			rf = ti.open(tx, true);
-			rf.beforeFirst();
-			while (rf.next())
-				rf.delete();
-			rf.close();
+			// rf = ti.open(tx, true);
+			// rf.beforeFirst();
+			// while (rf.next())
+			// 	rf.delete();
+			// rf.close();
 
-			rf = ti.open(tx, true);
+			// rf = ti.open(tx, true);
 			String[] grades = new String[] { "A", "B", "C", "D", "F" };
 			for (int id = 0; id < enrollMax; id++) {
-				rf.insert();
+				//rf.insert();
 				IntegerConstant eid = new IntegerConstant(id);
-				rf.setVal("eid", eid);
-				rf.setVal("grade", new VarcharConstant(grades[id % 5]));
-				rf.setVal("studentid", new IntegerConstant(id % studentMax));
-				rf.setVal("sectionid", new IntegerConstant(id % sectMax));
+				//rf.setVal("eid", eid);
+				int gradeId = nextGaussian(r, 4, 2, 0, 4);
+				VarcharConstant grade = new VarcharConstant(grades[gradeId]);
+				////rf.setVal("grade", new VarcharConstant(grades[id % 5]));//uniform
+				//rf.setVal("grade", grade);//gaussian
+				IntegerConstant studentid = new IntegerConstant(id % studentMax);
+				//rf.setVal("studentid", studentid);
+				IntegerConstant sectionid = new IntegerConstant(id % sectMax);
+				//rf.setVal("sectionid", sectionid);
+
+				if(is_index){
+					fields = new ArrayList<>();
+					fields.add("eid");
+					fields.add("grade");
+					fields.add("studentid");
+					fields.add("sectionid");
+					vals = new ArrayList<>();
+					vals.add(eid);
+					vals.add(grade);
+					vals.add(studentid);
+					vals.add(sectionid);
+					InsertData data = new InsertData(tbName, fields,vals);
+					new IndexUpdatePlanner().executeInsert(data, tx);
+				}
+				
 			}
-			rf.close();
+			//rf.close();
 			// refresh the statistical information after populating this table
 			stat.getTableStatInfo(ti, tx);
 
+			// create and populate the student table
+			sch = new Schema();
+			sch.addField("sid", INTEGER);
+			sch.addField("sname", VARCHAR(10));
+			sch.addField("majorid", INTEGER);
+			sch.addField("gradyear", INTEGER);
+			md.createTable("student", sch, tx);
+
+			//create index in primary key
+			if(is_index){
+				indexedFlds = new LinkedList<String>();
+				fieldName = "sid";
+				tbName = "student";
+				indexedFlds.add(fieldName);
+				idxName = "idx_" + fieldName;
+				md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+			}
+			
+			ti = md.getTableInfo("student", tx);
+
+			// rf = ti.open(tx, true);
+			// rf.beforeFirst();
+			// while (rf.next())
+			// 	rf.delete();
+			// rf.close();
+
+			// rf = ti.open(tx, true);
+			for (int id = 0; id < studentMax; id++) {
+				//rf.insert();
+				IntegerConstant sid = new IntegerConstant(id);
+				//rf.setVal("sid", sid);
+				VarcharConstant sname = new VarcharConstant("student" + id);
+				//rf.setVal("sname", sname);
+				int majorId = nextGaussian(r,deptMax/2,10,0,deptMax-1);
+				//rf.setVal("majorid", new IntegerConstant(id % deptMax));//uniform
+				IntegerConstant majorid = new IntegerConstant(majorId);
+				//rf.setVal("majorid", majorid);//gaussian
+				IntegerConstant gradyear = new IntegerConstant((id % 50) + 1960);
+				//rf.setVal("gradyear", gradyear);
+
+				if(is_index){
+					fields = new ArrayList<>();
+					fields.add("sid");
+					fields.add("sname");
+					fields.add("majorid");
+					fields.add("gradyear");
+					vals = new ArrayList<>();
+					vals.add(sid);
+					vals.add(sname);
+					vals.add(majorid);
+					vals.add(gradyear);
+					InsertData data = new InsertData(tbName, fields,vals);
+					new IndexUpdatePlanner().executeInsert(data, tx);
+				}
+			}
+			//rf.close();
+			// refresh the statistical information after populating this table
+			stat.getTableStatInfo(ti, tx);
+			
 			tx.commit();
 
-			// add a checkpoint record to limit rollback
+			//add a checkpoint record to limit rollback
 			tx = VanillaDb.txMgr().newTransaction(
 					Connection.TRANSACTION_SERIALIZABLE, false);
 			RecoveryMgr.initializeSystem(tx);
 			tx.commit();
 			
-			// Set the flag indicating that the data is loaded
-			setFlagAsLoaded();
+			// // Set the flag indicating that the data is loaded
+			// setFlagAsLoaded();
 		}
 	}
 

@@ -23,6 +23,61 @@ String query = "explain select sname, gradyear, did from student, dept where maj
 - materialize: blocking-operator, such as sort-merge join
 - multibuffer: non-blocking-operator, such as hash join 
 
--- to do 
+-- The way to print aggreagte value!
 
-- figure out how to insert data one time and continously run queries 
+s.getVal("countofgradyear”)
+sumofsid
+avgofsname
+dstcountofscore
+minof+attributename
+
+
+-index codes:
+
+1. the following code only creates the index entry in metadata and stored in idxcat file, do not populate the index records data 
+indexedFlds.add(fieldName);
+String idxName = "idx_" + fieldName;
+md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+
+2. the following code populate index records data when insert records into tables 
+
+if(is_index){
+					fields = new ArrayList<>();
+					fields.add("sid");
+					fields.add("sname");
+					fields.add("majorid");
+					fields.add("gradyear");
+					vals = new ArrayList<>();
+					vals.add(sid);
+					vals.add(sname);
+					vals.add(majorid);
+					vals.add(gradyear);
+					InsertData data = new InsertData(tbName, fields,vals);
+					new IndexUpdatePlanner().executeInsert(data, tx);
+				}
+3. See loadTestbed in ServerInit to insert data and index 
+First create table, then index, and finally insert records both to table and index using IndexUpdatePlanner
+
+Bug history:
+
+Reason of bug: 
+
+while (getLevelFlag(currentPage) > 0) {
+            // read child block
+            childBlk = new BlockId(currentPage.currentBlk().fileName(), childBlkNum);
+            ccMgr.crabDownDirBlockForRead(childBlk);
+            BTreePage child = new BTreePage(childBlk, NUM_FLAGS, schema, tx);
+
+            // release parent block
+            ccMgr.crabBackDirBlockForRead(parentBlk);
+            currentPage.close();
+
+            // move current block to child block
+            currentPage = child;
+            childBlkNum = findChildBlockNumber(searchKey);
+            parentBlk = currentPage.currentBlk();
+        }
+
+Dead loop in Btree operation
+Solved solution: change the student number to be 40000 -- solved, bug inside codebase 
+

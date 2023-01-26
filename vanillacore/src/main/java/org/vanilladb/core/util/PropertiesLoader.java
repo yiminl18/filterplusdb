@@ -29,6 +29,7 @@ public abstract class PropertiesLoader {
 		// read properties file
 		boolean config = false;
 		String path = getConfigFilePath();
+		System.out.println(path);
 		if (path != null) {
 			FileInputStream fis = null;
 			try {

@@ -34,9 +34,10 @@ public class CoreProperties extends PropertiesLoader {
 	protected String getConfigFilePath() {
 		String path = System.getProperty("org.vanilladb.core.config.file");
 		if (path == null || path.isEmpty()) {
-			path = "properties/org/vanilladb/core/vanilladb.properties";
+			//path = "properties/org/vanilladb/core/vanilladb.properties";
+			path = "resources/org/vanilladb/core/vanilladb.properties";
 		}
-		return path;
+		return "/Users/yiminglin/Documents/Codebase/filter_optimization/vanillacore/src/main/resources/org/vanilladb/core/vanilladb.properties";
 	}
 
 }

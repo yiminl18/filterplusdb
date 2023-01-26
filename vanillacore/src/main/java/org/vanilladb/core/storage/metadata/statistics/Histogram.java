@@ -49,6 +49,19 @@ public class Histogram {
 		this.dists = dists;
 	}
 
+	public Map<String, Collection<Bucket>> getHist(){
+		return dists;
+	}
+
+	public void print(){
+		for (Map.Entry<String,Collection<Bucket>> entry : dists.entrySet()) {
+			System.out.println(entry.getKey());
+			for(Bucket b : entry.getValue()){
+				System.out.print(b.toString());
+			}
+		}
+	}
+
 	public Histogram(Histogram hist) {
 		dists = new HashMap<String, Collection<Bucket>>();
 		for (String fld : hist.dists.keySet()) {

@@ -135,19 +135,23 @@ public class VanillaDb {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("recovering existing database...");
 			// add a checkpoint record to limit rollback
-			// RecoveryMgr.initializeSystem(initTx);
+			//RecoveryMgr.initializeSystem(initTx);
 			// if (logger.isLoggable(Level.INFO))
 			// 	logger.info("the database has been recovered to a consistent state.");
 		}
 
 		// initialize the statistics manager to build the histogram
+		//ihe: close for now
 		initStatMgr(initTx);
+		System.out.println("Finish statistics building!");
 
 		// create a checkpoint
 		txMgr.createCheckpoint(initTx);
 
 		// commit the initializing transaction
 		initTx.commit();
+
+		System.out.println("Start initializing checkpointing task");
 
 		// initializing checkpointing task
 		boolean doCheckpointing = CoreProperties.getLoader()

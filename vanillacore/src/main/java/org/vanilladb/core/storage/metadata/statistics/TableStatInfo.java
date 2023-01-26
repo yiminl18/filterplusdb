@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.vanilladb.core.storage.metadata.statistics;
 
+
+
 /**
  * Holds statistical information about a table.
  */

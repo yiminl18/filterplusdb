@@ -1,8 +1,7 @@
 package org.vanilladb.core.util;
 import java.io.*;
 import java.sql.Connection;
-import java.util.*;
-
+import java.util.*;  
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.query.algebra.*;
@@ -10,19 +9,14 @@ import org.vanilladb.core.query.planner.*;
 import static org.vanilladb.core.sql.Type.INTEGER;
 import static org.vanilladb.core.sql.Type.VARCHAR;
 import static org.vanilladb.core.sql.Type.DOUBLE;
+import static org.vanilladb.core.sql.Type.BIGINT;
+
 
 import java.io.File;
 import java.sql.Connection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.sql.IntegerConstant;
-import org.vanilladb.core.sql.Schema;
-import org.vanilladb.core.sql.Type;
-import org.vanilladb.core.sql.DoubleConstant;
-import org.vanilladb.core.sql.IntegerConstant;
-import org.vanilladb.core.sql.VarcharConstant;
 import org.vanilladb.core.storage.file.BlockId;
 import org.vanilladb.core.storage.file.FileMgr;
 import org.vanilladb.core.storage.file.Page;
@@ -83,7 +77,7 @@ public class CSVReader {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line = "";
-            String delimiter = ",";
+            String delimiter = "\\|";
             String[] values;
             String[] schema;
 
@@ -108,31 +102,33 @@ public class CSVReader {
 		Parser parser = new Parser(qry);
 		CreateTableData ctd = (CreateTableData) parser.updateCommand();
 		Map<String, Type> schema = ctd.newSchema().getSchema();
-        System.out.println(ctd.tableName());
-        for (Map.Entry<String,Type> entry : schema.entrySet()){
-            System.out.println("Key = " + entry.getKey() +
-                             ", Value = " + entry.getValue());
-        }
+        // System.out.println(ctd.tableName());
+        // for (Map.Entry<String,Type> entry : schema.entrySet()){
+        //     System.out.println("Key = " + entry.getKey() +
+        //                      ", Value = " + entry.getValue());
+        // }
         return schema;
     }
 
-    public void loadTable(String createTableSQL, String tableName){
+    public String clean(String str){
+        if(!str.equals("")){
+            return str.strip().toLowerCase();
+        }
+        return str.toLowerCase();
+    }
+
+    public void loadTable(String createTableSQL, String tableName, String csvFilePath){
         Map<String, Type> schema = parseTable(createTableSQL);
 
         CatalogMgr md = VanillaDb.catalogMgr();
-        StatMgr stat = VanillaDb.statMgr();
         Transaction tx = VanillaDb.txMgr().newTransaction(
                 Connection.TRANSACTION_SERIALIZABLE, false);
 
         // create and populate the table
         Schema sch = new Schema();
-        List<String> fields = new ArrayList<>();
-        List<Type> types = new ArrayList<>();
         for (Map.Entry<String,Type> entry : schema.entrySet()){
             String field = entry.getKey();
             Type value = entry.getValue();
-            fields.add(field);
-            types.add(value);
             sch.addField(field, value);
         }
         md.createTable(tableName, sch, tx);
@@ -144,34 +140,61 @@ public class CSVReader {
             rf.delete();
         rf.close();
 
-        rf = ti.open(tx, true);
+        rf = ti.open(tx, false);
 
         //populate table 
         //read data from csv
-        String path = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/testdata/";
-        String csvFile = path + tableName.toLowerCase() + ".csv";
+        String csvFile = csvFilePath + tableName.toLowerCase() + ".csv";
         try {
             File file = new File(csvFile);
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line = "";
-            String delimiter = ",";
+            String delimiter = "\\|";
             String[] values;
-            line = br.readLine();//skip header 
+            line = br.readLine();
+            String[] header = line.split(delimiter);
+            //System.out.println(line);
+            //System.out.println(header);
+            int idx = 0;
             while((line = br.readLine()) != null) {
+                //System.out.println(line);
+                idx += 1;
+                if(idx%100 == 0){
+                    System.out.println(idx);
+                }
                 values = line.split(delimiter);
                 rf.insert();
                 for(int i=0;i<values.length;i++){
-                    Type type = types.get(i);
-                    String field = fields.get(i);
+                    String field = header[i];
+                    if(!schema.containsKey(field)){
+                        System.out.println("SCHEMA NOT MATCHED!");
+                    }
+                    Type type = schema.get(field);
+                    String rawValue = clean(values[i]);
+                    //System.out.println(field + " " + rawValue);
                     if(type == INTEGER){
-                        int value = Integer.valueOf(values[i]);
-                        rf.setVal(field, new IntegerConstant(value));
+                        if(rawValue == ""){
+                            rf.setVal(field, new IntegerConstant(0));
+                        }else{
+                            int value = Integer.valueOf(rawValue);
+                            rf.setVal(field, new IntegerConstant(value));
+                        }
                     }else if(type == DOUBLE){
-                        double value = Double.valueOf(values[i]);
-                        rf.setVal(field, new DoubleConstant(value));
+                        if(rawValue == ""){
+                            rf.setVal(field, new DoubleConstant(0));
+                        }else{
+                            double value = Double.valueOf(rawValue);
+                            rf.setVal(field, new DoubleConstant(value));
+                        }
                     }else if(type == VARCHAR){
-                        rf.setVal(field, new VarcharConstant(values[i]));
+                        rf.setVal(field, new VarcharConstant(rawValue));
+                    }else if(type == BIGINT){
+                        if(rawValue == ""){
+                            rf.setVal(field, new BigIntConstant(Long.valueOf(0)));
+                        }else{
+                            rf.setVal(field, new BigIntConstant(Long.valueOf(rawValue)));
+                        }
                     }
                 }
             }
@@ -182,7 +205,8 @@ public class CSVReader {
         
         rf.close();
         // refresh the statistical information after populating this table
-        stat.getTableStatInfo(ti, tx);
+        // this info only stored in memory, so no need to compute here 
+        //stat.getTableStatInfo(ti, tx);
         tx.commit();
 
         tx = VanillaDb.txMgr().newTransaction(
