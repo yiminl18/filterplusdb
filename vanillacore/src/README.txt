@@ -81,3 +81,14 @@ while (getLevelFlag(currentPage) > 0) {
 Dead loop in Btree operation
 Solved solution: change the student number to be 40000 -- solved, bug inside codebase 
 
+
+-- optimization
+TablePlanner is key part of optimization which decides which join to use, in function makeJoinPlan
+1. currently hash join is not used, and multi-buffer product plan is used. Hash join cannot support theta join, so add filters for multi-buffer join and index join for now 
+
+-- check filter modification
+
+1. SelectScan
+2. product scan/MultiBufferProductScan
+3. indexjoinscan 
+

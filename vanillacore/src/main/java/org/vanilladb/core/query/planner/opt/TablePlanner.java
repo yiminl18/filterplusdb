@@ -140,6 +140,10 @@ class TablePlanner {
 		return new MultiBufferProductPlan(trunk, p, tx);
 	}
 
+	// public Plan makeHashPlan(Predicate joinPred, Plan trunk){
+	// 	String leftJoinName = joinPred.
+	// }
+
 	/**
 	 * Identify and construct an index select plan based on the predicate and
 	 * indexes by examining the constants opposite to an indexed field in all

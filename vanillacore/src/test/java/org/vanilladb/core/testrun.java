@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.*;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.planner.*;
 import org.vanilladb.core.server.ServerInit;
@@ -17,7 +18,7 @@ import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.storage.file.BlockId;
 import org.vanilladb.core.storage.file.Page;
 import org.vanilladb.core.storage.index.IndexType;
-
+import org.vanilladb.core.filter.filterPlan;
 
 public class testrun {
 
@@ -133,9 +134,13 @@ public class testrun {
 		setFlagAsLoaded();
     }
 
-    public static void test1(){
-        String str = "Q1";
-        System.out.print(str.charAt(0));
+    public static void test(){
+        HashMap<Constant, Boolean> m = new HashMap<>();
+        m.put(new IntegerConstant(1),true);
+        m.put(new IntegerConstant(2), false);
+        if(m.containsKey(new IntegerConstant(1))){
+            System.out.print("yes");
+        }
     }
 
     public static void testInsert(){
@@ -292,7 +297,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("countofgradyear"));//countofgradyear, avgofyearoffered
+            System.out.println(s.getVal("maxofstudentid"));//countofgradyear, avgofyearoffered
         }
         s.close();
         tx.commit();
@@ -304,6 +309,7 @@ public class testrun {
 				Connection.TRANSACTION_SERIALIZABLE, true);
         Planner planner = VanillaDb.newPlanner();
         Plan plan = planner.createQueryPlan(query, tx);
+        
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
@@ -316,16 +322,21 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
+        filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
         //System.out.println("start running query...");
-        //runStudentQueries(studentQueries.get(2));
-        explainQuery(studentQueries.get(2));
+        long start = System.currentTimeMillis();
+        runStudentQueries(studentQueries.get(3));
+        //explainQuery(studentQueries.get(3));
+        long end = System.currentTimeMillis();
+        System.out.println("running time: " + (end-start));
+        System.out.println(filterPlan.numberOfDroppedTuple);
         //resetDb(dbname);
         
         //test1();
         //testReadCSV();
-        //test1();
+        //test();
         //testCreateTable();
         //testInsert();
         //deleteIndex("idx_sid", "student", "sid");

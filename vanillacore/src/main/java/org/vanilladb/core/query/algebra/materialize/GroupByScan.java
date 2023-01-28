@@ -17,8 +17,11 @@ package org.vanilladb.core.query.algebra.materialize;
 
 import java.util.Collection;
 
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
+import org.vanilladb.core.sql.DoubleConstant;
+import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.aggfn.AggregationFn;
 
 /**
@@ -76,16 +79,46 @@ public class GroupByScan implements Scan {
 		if (!moreGroups)
 			return false;
 		if (aggFns != null)
-			for (AggregationFn fn : aggFns)
+			for (AggregationFn fn : aggFns){
+				String agg = fn.fieldName().substring(0,3);
+				if(agg.equals("max")){//filter should be attr >= fn.value()
+					String attr = fn.fieldName().substring(5);
+					filterPlan.addFilter(attr, "max", fn.value(), new DoubleConstant(0), true, false, true, false);
+				}
+				else if(agg.equals("min")){//filter should be attr<=fn.value()
+					String attr = fn.fieldName().substring(5);
+					filterPlan.addFilter(attr, "min", new DoubleConstant(0), fn.value(), false, true, false, true);
+				}
+				//System.out.println("testing1: " + fn.fieldName() + " " + fn.value() + " " + fn.argumentFieldName());
 				fn.processFirst(ss);
+			}
+				
 		groupVal = new GroupValue(ss, groupFlds);
 		while (moreGroups = ss.next()) {
 			GroupValue gv = new GroupValue(ss, groupFlds);
-			if (!groupVal.equals(gv))
+			
+			if (!groupVal.equals(gv)){
 				break;
+			}
+
 			if (aggFns != null)
-				for (AggregationFn fn : aggFns)
+				for (AggregationFn fn : aggFns){
+					//System.out.println("testing1: " + fn.fieldName() + " " + fn.value() + " " + fn.argumentFieldName());
+					//this is the right place to create, the value is fn.value()
+					//fn.value() is the computed aggregation value so far, e.g., if agg = max, fn.value() is the maxmum value so far, we can directly use it 
+					//fn.fieldName(), maxof, minof, countof, avgof, sumof, use the first 3 letters to decide type 
+					String agg = fn.fieldName().substring(0,3);
+					if(agg.equals("max")){//filter should be attr >= fn.value()
+						String attr = fn.fieldName().substring(5);
+						filterPlan.updateFilter("max", attr, fn.value(), new IntegerConstant(0), null);
+					}
+					else if(agg.equals("min")){//filter should be attr<=fn.value()
+						String attr = fn.fieldName().substring(5);
+						filterPlan.updateFilter("min", attr, new IntegerConstant(0), fn.value(), null);
+					}
+					
 					fn.processNext(ss);
+				}
 		}
 		return true;
 	}
@@ -114,8 +147,11 @@ public class GroupByScan implements Scan {
 			return groupVal.getVal(fldname);
 		if (aggFns != null)
 			for (AggregationFn fn : aggFns)
-				if (fn.fieldName().equals(fldname))
+				if (fn.fieldName().equals(fldname)){
+					System.out.println("testing: " + fn.fieldName() + " " + fn.value());
 					return fn.value();
+				}
+					
 		throw new RuntimeException("field " + fldname + " not found.");
 	}
 
@@ -131,8 +167,10 @@ public class GroupByScan implements Scan {
 			return true;
 		if (aggFns != null)
 			for (AggregationFn fn : aggFns)
-				if (fn.fieldName().equals(fldname))
+				if (fn.fieldName().equals(fldname)){
 					return true;
+				}
+
 		return false;
 	}
 }

@@ -20,6 +20,7 @@ import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.filter.filterPlan;
 
 /**
  * The Scan class for the muti-buffer version of the <em>product</em> operator.
@@ -75,9 +76,16 @@ public class MultiBufferProductScan implements Scan {
 	public boolean next() {
 		if (prodScan == null)
 			return false;
-		while (!prodScan.next())
-			if (!useNextChunk())
+		while (!prodScan.next()){
+			if (!useNextChunk()){
 				return false;
+			}
+			if(!filterPlan.checkFilter(prodScan)){//ihe: if current tuple failed filter check
+				filterPlan.numberOfDroppedTuple ++;
+				continue;
+			}
+		}
+			
 		return true;
 	}
 

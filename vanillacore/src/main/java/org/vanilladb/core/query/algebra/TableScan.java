@@ -41,6 +41,7 @@ public class TableScan implements UpdateScan {
 	 */
 	public TableScan(TableInfo ti, Transaction tx) {
 		rf = ti.open(tx, true);
+		//System.out.println("testing1: " + rf.);
 		schema = ti.schema();
 	}
 
@@ -51,6 +52,7 @@ public class TableScan implements UpdateScan {
 		rf.beforeFirst();
 	}
 
+	//file by file instead of record by record 
 	@Override
 	public boolean next() {
 		return rf.next();

@@ -15,8 +15,8 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
 
-import org.vanilladb.core.sql.Constant;
 
+import org.vanilladb.core.sql.Constant;
 /**
  * The scan class corresponding to the <em>product</em> relational algebra
  * operator.
@@ -64,6 +64,7 @@ public class ProductScan implements Scan {
 	public boolean next() {
 		if (isLhsEmpty)
 			return false;
+		// the old method
 		if (s2.next())
 			return true;
 		else if (!(isLhsEmpty = !s1.next())) {
@@ -72,6 +73,29 @@ public class ProductScan implements Scan {
 		} else {
 			return false;
 		}
+		// the new code 
+		// while(!s2.next()){
+		// 	if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
+		// 		continue;
+		// 	}
+		// 	//current tuple pass filter test 
+		// 	return true;
+		// }
+		// if(!s2.next()){
+		// 	if(!(isLhsEmpty = !s1.next())){//Lhs is not empty
+		// 		s2.beforeFirst();
+		// 		while(!s2.next()){
+		// 			if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
+		// 				continue;
+		// 			}
+		// 			return true;
+		// 		}
+		// 		return false;
+		// 	}
+		// 	else{
+		// 		return false;
+		// 	}
+		// }
 	}
 
 	/**

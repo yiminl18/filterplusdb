@@ -117,10 +117,13 @@ public class Predicate {
 		Schema newsch = new Schema();
 		newsch.addAll(sch1);
 		newsch.addAll(sch2);
-		for (Term t : terms)
+		for (Term t : terms){
+			//System.out.println("checking term: " + t.toString());
 			if (!t.isApplicableTo(sch1) && !t.isApplicableTo(sch2)
 					&& t.isApplicableTo(newsch))
 				result.terms.add(t);
+		}
+			
 		return result.terms.size() == 0 ? null : result;
 	}
 

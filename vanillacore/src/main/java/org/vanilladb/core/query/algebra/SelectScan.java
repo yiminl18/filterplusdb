@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
 
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.predicate.Predicate;
 import org.vanilladb.core.storage.record.RecordId;
@@ -56,9 +57,16 @@ public class SelectScan implements UpdateScan {
 	 */
 	@Override
 	public boolean next() {
-		while (s.next())
-			if (pred.isSatisfied(s))
+		while (s.next()){
+			//this is one point to check filter 
+			//System.out.println("testing1: " +  s.getVal("gradyear") + " " + s.getVal("sid"));
+			if (pred.isSatisfied(s) && filterPlan.checkFilter(s)){
 				return true;
+			}
+			// if(!filterPlan.checkFilter(s)){
+			// 	filterPlan.numberOfDroppedTuple ++;
+			// }
+		}
 		return false;
 	}
 
