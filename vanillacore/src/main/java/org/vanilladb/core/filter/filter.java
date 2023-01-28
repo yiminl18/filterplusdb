@@ -34,5 +34,9 @@ public class filter{
         this.filterType = filterType;
         this.memberships = memberships;
     }
+
+    public void print(){
+        System.out.println(filterType + " " + attr + " " + low + " " + high);
+    }
 }
 

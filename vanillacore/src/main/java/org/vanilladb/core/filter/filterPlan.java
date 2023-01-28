@@ -128,6 +128,13 @@ public class filterPlan{
     }
 
     public static void printFilter(){
-        
+        //HashMap<String, List<filter>> filters = new HashMap<>();
+        for(Map.Entry<String, List<filter>> entry : filters.entrySet()){
+            System.out.println(entry.getKey());
+            List<filter> filter = entry.getValue();
+            for(int i=0;i<filter.size();i++){
+                filter.get(i).print();
+            }
+        }
     }
 }
