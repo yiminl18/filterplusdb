@@ -54,6 +54,7 @@ public class MultiBufferProductPlan implements Plan {
 		schema.addAll(lhs.schema());
 		schema.addAll(rhs.schema());
 		hist = ProductPlan.productHistogram(lhs.histogram(), rhs.histogram());
+		System.out.println("checking multibuffer scan: " +  lhs.schema().toString() + " " + rhs.schema().toString());
 	}
 
 	/**

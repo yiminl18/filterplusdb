@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
 
-
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.sql.Constant;
 /**
  * The scan class corresponding to the <em>product</em> relational algebra
@@ -65,37 +65,45 @@ public class ProductScan implements Scan {
 		if (isLhsEmpty)
 			return false;
 		// the old method
-		if (s2.next())
+		if (s2.next()){
+			// if(s2.hasField("studentid")){
+			// 	//System.out.println("testing 1 s2 studentid: " + s2.getVal("studentid"));
+			// }
 			return true;
-		else if (!(isLhsEmpty = !s1.next())) {
+		}
+		else if (!(isLhsEmpty = !s1.next())) {//rhs is empty but but Lhs is not empty
+			// if(s1.hasField("sid")){
+			// 	System.out.println("testing 1 s1 sid: " + s1.getVal("sid"));
+			// }
 			s2.beforeFirst();
 			return s2.next();
 		} else {
 			return false;
 		}
-		// the new code 
+		// the new code s
 		// while(!s2.next()){
 		// 	if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
+		// 		System.out.println("s2 failed in 1!");
 		// 		continue;
 		// 	}
 		// 	//current tuple pass filter test 
 		// 	return true;
 		// }
-		// if(!s2.next()){
-		// 	if(!(isLhsEmpty = !s1.next())){//Lhs is not empty
-		// 		s2.beforeFirst();
-		// 		while(!s2.next()){
-		// 			if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
-		// 				continue;
-		// 			}
-		// 			return true;
+		// if(!(isLhsEmpty = !s1.next())){//Lhs is not empty
+		// 	s2.beforeFirst();
+		// 	while(!s2.next()){
+		// 		if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
+		// 			System.out.println("s2 failed in 2!");
+		// 			continue;
 		// 		}
-		// 		return false;
+		// 		return true;
 		// 	}
-		// 	else{
-		// 		return false;
-		// 	}
+		// 	return false;
 		// }
+		// else{
+		// 	return false;
+		// }
+		
 	}
 
 	/**

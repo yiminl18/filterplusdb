@@ -6,7 +6,7 @@ import org.vanilladb.core.query.algebra.*;
 public class filterPlan{
     public static boolean enable = false;//to use new filters or not 
     public static HashMap<String, List<filter>> filters = new HashMap<>();//store attr to a set of filters that are applicable on it 
-    public static HashMap<String, Boolean> attrs = new HashMap<>();
+    //public static HashMap<String, Boolean> attrs = new HashMap<>();
 
     public static int numberOfDroppedTuple = 0;
 
@@ -48,17 +48,23 @@ public class filterPlan{
         if(!enable){
             return true;
         }
-        if(!attrs.containsKey(attr)){
+        if(!filters.containsKey(attr)){
             return true;
         }
         Constant value = ts.getVal(attr);
         for(int i=0;i<filters.get(attr).size();i++){
             filter f = filters.get(attr).get(i);
             if(f.filterType.equals("max")){
-                if(value.compareTo(f.high) < 0){
+                if(f.low == null){
+                    return true;
+                }
+                if(value.compareTo(f.low) < 0){
                     return false;
                 }
             }else if(f.filterType.equals("min")){
+                if(f.high == null){
+                    return true;
+                }
                 if(value.compareTo(f.high) > 0){
                     return false;
                 }
@@ -75,17 +81,24 @@ public class filterPlan{
         if(!enable){
             return true;
         }
-        for(String attr: attrs.keySet()){
+        for(String attr: filters.keySet()){
             if(t.hasField(attr)){
                 Constant value = t.getVal(attr);
                 //check all filters that are applicable to attr
                 for(int i=0;i<filters.get(attr).size();i++){
                     filter f = filters.get(attr).get(i);
                     if(f.filterType.equals("max")){
-                        if(value.compareTo(f.high) < 0){
+                        //System.out.println("---- in filter Plan: " + attr + " " + f.low + " " + value);
+                        if(f.low == null){
+                            return true;
+                        }
+                        if(value.compareTo(f.low) < 0){
                             return false;
                         }
                     }else if(f.filterType.equals("min")){
+                        if(f.high == null){
+                            return true;
+                        }
                         if(value.compareTo(f.high) > 0){
                             return false;
                         }

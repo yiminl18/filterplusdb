@@ -322,16 +322,17 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        filterPlan.enable();
+        //filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
         //System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        runStudentQueries(studentQueries.get(3));
-        //explainQuery(studentQueries.get(3));
+        //runStudentQueries(studentQueries.get(3));
+        explainQuery(studentQueries.get(1));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println(filterPlan.numberOfDroppedTuple);
+        filterPlan.printFilter();
         //resetDb(dbname);
         
         //test1();

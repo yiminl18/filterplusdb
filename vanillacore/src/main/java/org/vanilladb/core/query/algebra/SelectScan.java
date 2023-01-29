@@ -59,13 +59,27 @@ public class SelectScan implements UpdateScan {
 	public boolean next() {
 		while (s.next()){
 			//this is one point to check filter 
-			//System.out.println("testing1: " +  s.getVal("gradyear") + " " + s.getVal("sid"));
+			//s is the combined tuple of join result, contain tuples from left and right side 
+			// if(s.hasField("studentid") && s.hasField("sid")){
+			// 	System.out.println("yes");
+			// }
+			// if(s.hasField("studentid")){
+			// 	System.out.println("testing in select scan --  studentid " + s.getVal("studentid"));
+			// }
+			// if(s.hasField("sid")){
+			// 	System.out.println("testing in select scan -- sid " + s.getVal("sid"));
+			// }
+			// if(filterPlan.filters.containsKey("studentid")){
+			// 	System.out.println("studentid is in filter!" + filterPlan.checkFilter(s));
+			// 	filterPlan.filters.get("studentid").get(0).print();
+			// }
 			if (pred.isSatisfied(s) && filterPlan.checkFilter(s)){
 				return true;
 			}
-			// if(!filterPlan.checkFilter(s)){
-			// 	filterPlan.numberOfDroppedTuple ++;
-			// }
+			if(!filterPlan.checkFilter(s)){
+				filterPlan.numberOfDroppedTuple ++;
+				//System.out.println("filter number: " + filterPlan.numberOfDroppedTuple);
+			}
 		}
 		return false;
 	}

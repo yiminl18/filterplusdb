@@ -20,7 +20,7 @@ import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.tx.Transaction;
-import org.vanilladb.core.filter.filterPlan;
+
 
 /**
  * The Scan class for the muti-buffer version of the <em>product</em> operator.
@@ -77,13 +77,14 @@ public class MultiBufferProductScan implements Scan {
 		if (prodScan == null)
 			return false;
 		while (!prodScan.next()){
+			//System.out.println("printing prodScan in multi-buffer scan: " + prodScan.toString());
 			if (!useNextChunk()){
 				return false;
 			}
-			if(!filterPlan.checkFilter(prodScan)){//ihe: if current tuple failed filter check
-				filterPlan.numberOfDroppedTuple ++;
-				continue;
-			}
+			// if(!filterPlan.checkFilter(prodScan)){//ihe: if current tuple failed filter check
+			// 	filterPlan.numberOfDroppedTuple ++;
+			// 	continue;
+			// }
 		}
 			
 		return true;
@@ -129,8 +130,8 @@ public class MultiBufferProductScan implements Scan {
 		long end = nextBlkNum + rhsChunkSize - 1;
 		if (end >= rhsFileSize)
 			end = rhsFileSize - 1;
-		rhsScan = new ChunkScan(rhsTi, nextBlkNum, end, tx);
-		prodScan = new ProductScan(lhsScan, rhsScan);
+		rhsScan = new ChunkScan(rhsTi, nextBlkNum, end, tx);//the rhsScan is the optimization goal, in the ChunkScan 
+		prodScan = new ProductScan(lhsScan, rhsScan);//left table join with one chunk in the right table, so multi-scan in left table 
 		prodScan.beforeFirst();
 		nextBlkNum = end + 1;
 		return true;
