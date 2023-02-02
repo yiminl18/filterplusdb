@@ -148,7 +148,7 @@ public class GroupByScan implements Scan {
 		if (aggFns != null)
 			for (AggregationFn fn : aggFns)
 				if (fn.fieldName().equals(fldname)){
-					System.out.println("testing: " + fn.fieldName() + " " + fn.value());
+					//System.out.println("testing: " + fn.fieldName() + " " + fn.value());
 					return fn.value();
 				}
 					

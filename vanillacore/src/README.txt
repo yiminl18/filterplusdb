@@ -58,28 +58,6 @@ if(is_index){
 3. See loadTestbed in ServerInit to insert data and index 
 First create table, then index, and finally insert records both to table and index using IndexUpdatePlanner
 
-Bug history:
-
-Reason of bug: 
-
-while (getLevelFlag(currentPage) > 0) {
-            // read child block
-            childBlk = new BlockId(currentPage.currentBlk().fileName(), childBlkNum);
-            ccMgr.crabDownDirBlockForRead(childBlk);
-            BTreePage child = new BTreePage(childBlk, NUM_FLAGS, schema, tx);
-
-            // release parent block
-            ccMgr.crabBackDirBlockForRead(parentBlk);
-            currentPage.close();
-
-            // move current block to child block
-            currentPage = child;
-            childBlkNum = findChildBlockNumber(searchKey);
-            parentBlk = currentPage.currentBlk();
-        }
-
-Dead loop in Btree operation
-Solved solution: change the student number to be 40000 -- solved, bug inside codebase 
 
 
 -- optimization
@@ -91,4 +69,40 @@ TablePlanner is key part of optimization which decides which join to use, in fun
 1. SelectScan
 2. product scan/MultiBufferProductScan
 3. indexjoinscan 
+
+-- TableScan
+returns a RecordFile instead of a record 
+
+-- IndexSelect 
+IndexSelectScan(Index idx, SearchRange searchRange, TableScan ts)
+the searchRange is computed by the select predicate as expected
+- the action in next(): set the tuple id returned by a tule from index, so that the tuple can be retrieved from the tablescan  
+	ts.moveToRecordId(rid) moves the tuple id to tablescan to be retrived 
+- output is a Scan - Plan 
+
+-- SelectScan
+SelectPlan is put everywhere in the tree as a filter
+the input is Plan, which is a Scan method, and next() returns each tuple 
+- A SelectScan that is put after a IndexSelect contains the selection predicate to filter each tuple 
+	Q: how to get each tuple from the output of IndexSelect? -- use Scan as connector
+	- The data flow between IndexSelect and SelectScan is pipeline, SelectScan calls get next(), this next() will call next() in IndexSelect 
+
+-- IndexJoin 
+The scenario that an IndexJoin will be preferred is R.a join S.b, a is the index of R and |R| > |S|
+- input: left-hand plan -- Plan p1; right-hand plan --  TablePlan tp2 (IndexPlan)
+- output: Scan, and next() returns each tuple 
+this tuple is not the join result, but product result 
+- data flow between IndexJoin and SelectScan: pipeline, each next() in SelectScan will call next() in IndexJoin 
+
+-MultiBufferProduct -- actually a nested loop join 
+- input: Plan lhs, rhs
+in the right hand side, TempTable tt = copyRecordsFrom(rhs)
+- process:
+1. materializes its RHS query
+2. divide right side relation into each chunk
+3. do left table join with each of right chunk 
+In MultiBufferProductScan:
+1. prodScan = new ProductScan(lhsScan, rhsScan), rhsScan is each chunk, lhsScan is left table, prodScan returns the product of left table and this chunk 
+- output: return Scan, and next() returns each combined tuple which is the output of product 
+- data flow: it is pipeline data flow between MultiBufferProductScan and SelectScan on top of it: a product tuple will be immidiately sent to SelectScan to evaluate 
 

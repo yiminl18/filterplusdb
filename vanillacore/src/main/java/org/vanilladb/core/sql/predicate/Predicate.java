@@ -40,11 +40,28 @@ import org.vanilladb.core.sql.predicate.Term.Operator;
  */
 public class Predicate {
 	private Collection<Term> terms = new ArrayList<Term>();
+	private boolean isJoin;
 
 	/**
 	 * Creates an empty predicate, corresponding to "true".
 	 */
 	public Predicate() {
+	}
+
+	public int length(){
+		return terms.size();
+	}
+
+	public boolean isjoin(){
+		return isJoin;
+	}
+
+	public void setJoinbit(){
+		isJoin = true;
+	}
+
+	public void unsetJoinbit(){
+		isJoin = false;
 	}
 
 	/**
@@ -55,6 +72,8 @@ public class Predicate {
 	 */
 	public Predicate(Term t) {
 		terms.add(t);
+		isJoin = t.isjoin();
+		//System.out.print("print in predicate: " + t.toString() + " " + t.isjoin());
 	}
 
 	/**
@@ -66,6 +85,9 @@ public class Predicate {
 	 */
 	public void conjunctWith(Term t) {
 		terms.add(t);
+		if(!t.isjoin()){
+			this.isJoin = false;
+		}
 	}
 
 	/**
@@ -95,6 +117,7 @@ public class Predicate {
 		for (Term t : terms)
 			if (t.isApplicableTo(sch))
 				result.terms.add(t);
+		result.unsetJoinbit();
 		if (result.terms.size() == 0)
 			return null;
 		else
@@ -123,6 +146,7 @@ public class Predicate {
 					&& t.isApplicableTo(newsch))
 				result.terms.add(t);
 		}
+		result.setJoinbit();
 			
 		return result.terms.size() == 0 ? null : result;
 	}

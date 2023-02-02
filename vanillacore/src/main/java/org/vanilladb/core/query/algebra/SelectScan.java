@@ -39,6 +39,7 @@ public class SelectScan implements UpdateScan {
 	public SelectScan(Scan s, Predicate pred) {
 		this.s = s;
 		this.pred = pred;
+		//System.out.println("===" + pred.toString() + " " + pred.length() + " " + pred.isjoin());
 	}
 
 	// Scan methods
@@ -58,28 +59,18 @@ public class SelectScan implements UpdateScan {
 	@Override
 	public boolean next() {
 		while (s.next()){
-			//this is one point to check filter 
-			//s is the combined tuple of join result, contain tuples from left and right side 
-			// if(s.hasField("studentid") && s.hasField("sid")){
-			// 	System.out.println("yes");
-			// }
-			// if(s.hasField("studentid")){
-			// 	System.out.println("testing in select scan --  studentid " + s.getVal("studentid"));
-			// }
-			// if(s.hasField("sid")){
-			// 	System.out.println("testing in select scan -- sid " + s.getVal("sid"));
-			// }
-			// if(filterPlan.filters.containsKey("studentid")){
-			// 	System.out.println("studentid is in filter!" + filterPlan.checkFilter(s));
-			// 	filterPlan.filters.get("studentid").get(0).print();
-			// }
-			if (pred.isSatisfied(s) && filterPlan.checkFilter(s)){
-				return true;
+			if(!pred.isSatisfied(s)){//if tuple failed predicate, move to the next one
+				continue;
 			}
-			if(!filterPlan.checkFilter(s)){
+			//System.out.println("printing in SelectScan");
+			if(!pred.isjoin() && !filterPlan.checkFilter(s)){//if this is a selection predicate and tuple failed filter check, move to next one
 				filterPlan.numberOfDroppedTuple ++;
-				//System.out.println("filter number: " + filterPlan.numberOfDroppedTuple);
+				//System.out.print(pred.toString() + " ");
+				//filterPlan.filters.get("gradyear").get(0).print();
+				continue;
 			}
+			return true;
+			
 		}
 		return false;
 	}

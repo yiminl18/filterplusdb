@@ -77,7 +77,7 @@ public class filterPlan{
         return true;
     }
 
-    public static boolean checkFilter(Scan t){//t is a tuple
+    public static boolean checkFilter(Scan t){//t is a tuple, true means passing the check
         if(!enable){
             return true;
         }
@@ -114,7 +114,7 @@ public class filterPlan{
     }
 
     /*
-     * We do not update membership filter for now, onlt update the range filter
+     * We do not update membership filter for now, only update the range filter
      */
 
     public static boolean updateFilter(String filterType, String attr, Constant low, Constant high, HashMap<Constant, Boolean> memberships){

@@ -41,7 +41,6 @@ public class TableScan implements UpdateScan {
 	 */
 	public TableScan(TableInfo ti, Transaction tx) {
 		rf = ti.open(tx, true);
-		//System.out.println("testing1: " + rf.);
 		schema = ti.schema();
 	}
 

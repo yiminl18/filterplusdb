@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
 
-import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.sql.Constant;
 /**
  * The scan class corresponding to the <em>product</em> relational algebra

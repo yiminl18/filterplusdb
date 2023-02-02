@@ -289,7 +289,7 @@ public class testrun {
     }
 
     public static void runStudentQueries(String query){
-        System.out.print(query);
+        //System.out.print(query);
         Transaction tx = VanillaDb.txMgr().newTransaction(
 				Connection.TRANSACTION_SERIALIZABLE, true);
         Planner planner = VanillaDb.newPlanner();
@@ -297,7 +297,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("maxofstudentid"));//countofgradyear, avgofyearoffered
+            System.out.println(s.getVal("maxofgradyear"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -322,16 +322,17 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        //filterPlan.enable();
+        filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
-        //System.out.println("start running query...");
+        System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        //runStudentQueries(studentQueries.get(3));
-        explainQuery(studentQueries.get(1));
+        //runStudentQueries(studentQueries.get(2));
+        explainQuery(studentQueries.get(2));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
-        System.out.println(filterPlan.numberOfDroppedTuple);
+        System.out.println("number of dropped tupels: " + filterPlan.numberOfDroppedTuple);
+        System.out.println("Filters:");
         filterPlan.printFilter();
         //resetDb(dbname);
         

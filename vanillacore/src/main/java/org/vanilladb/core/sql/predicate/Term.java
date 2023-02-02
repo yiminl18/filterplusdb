@@ -116,11 +116,22 @@ public class Term {
 
 	private Operator op;
 	private Expression lhs, rhs;
+	private boolean isJoin;
 
 	public Term(Expression lhs, Operator op, Expression rhs) {
 		this.lhs = lhs;
 		this.op = op;
 		this.rhs = rhs;
+		if(lhs.isFieldName() && rhs.isFieldName()){
+			isJoin = true;
+		}
+		else{
+			isJoin = false;
+		}
+	}
+
+	public boolean isjoin(){
+		return this.isJoin;
 	}
 
 	/**
