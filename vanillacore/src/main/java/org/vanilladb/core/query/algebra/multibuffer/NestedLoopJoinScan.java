@@ -15,40 +15,30 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra.multibuffer;
 
-import org.vanilladb.core.query.algebra.ProductScan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.storage.metadata.TableInfo;
-import org.vanilladb.core.storage.tx.Transaction;
 
 
 /**
  * The Scan class for the muti-buffer version of the <em>product</em> operator.
  */
 public class NestedLoopJoinScan implements Scan {
-	private Scan lhsScan, rhsScan = null, prodScan;
-	private TableInfo rhsTi;
-	private Transaction tx;
-	private int rhsChunkSize;
-	private long nextBlkNum, rhsFileSize;
+	private Scan lhsScan, rhsScan;
+	private boolean isLhsEmpty;
 
 	/**
 	 * Creates the scan class for the product of the LHS scan and a table.
 	 * 
 	 * @param lhsScan
 	 *            the LHS scan
-	 * @param rhsTi
-	 *            the metadata for the RHS table
+	 * @param lhsScan
+	 *            the RHS scan
 	 * @param tx
 	 *            the current transaction
 	 */
-	public NestedLoopJoinScan(Scan lhsScan, TableInfo rhsTi, Transaction tx) {
+	public NestedLoopJoinScan(Scan lhsScan, Scan rhsScan) {
 		this.lhsScan = lhsScan;
-		this.rhsTi = rhsTi;
-		this.tx = tx;
-
-		rhsFileSize = rhsTi.open(tx, true).fileSize();
-		rhsChunkSize = BufferNeeds.bestFactor(rhsFileSize, tx);
+		this.rhsScan = rhsScan;
 	}
 
 	/**
@@ -60,34 +50,35 @@ public class NestedLoopJoinScan implements Scan {
 	 */
 	@Override
 	public void beforeFirst() {
-		nextBlkNum = 0;
-		useNextChunk();
+		lhsScan.beforeFirst();
+		rhsScan.beforeFirst();
 	}
 
 	/**
-	 * Moves to the next record in the current scan. If there are no more
-	 * records in the current chunk, then move to the next LHS record and the
-	 * beginning of that chunk. If there are no more LHS records, then move to
-	 * the next chunk and begin again.
-	 * 
+	 *	For each lhs record, iterate all rhs record. When rhs is complete, move the 
+	 * the next lhs record. When lhs is complete, join is done.
 	 * @see Scan#next()
 	 */
 	@Override
 	public boolean next() {
-		if (prodScan == null)
+		if (isLhsEmpty)
 			return false;
-		while (!prodScan.next()){
-			//System.out.println("printing prodScan in multi-buffer scan: " + prodScan.toString());
-			if (!useNextChunk()){
-				return false;
-			}
-			// if(!filterPlan.checkFilter(prodScan)){//ihe: if current tuple failed filter check
-			// 	filterPlan.numberOfDroppedTuple ++;
-			// 	continue;
+		// the old method
+		if (rhsScan.next()){
+			// if(s2.hasField("studentid")){
+			// 	//System.out.println("testing 1 s2 studentid: " + s2.getVal("studentid"));
 			// }
+			return true;
 		}
-			
-		return true;
+		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
+			// if(s1.hasField("sid")){
+			// 	System.out.println("testing 1 s1 sid: " + s1.getVal("sid"));
+			// }
+			rhsScan.beforeFirst();
+			return rhsScan.next();
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -97,8 +88,8 @@ public class NestedLoopJoinScan implements Scan {
 	 */
 	@Override
 	public void close() {
-		if (prodScan != null)
-			prodScan.close();
+		lhsScan.close();
+		rhsScan.close();
 	}
 
 	/**
@@ -109,7 +100,10 @@ public class NestedLoopJoinScan implements Scan {
 	 */
 	@Override
 	public Constant getVal(String fldname) {
-		return prodScan.getVal(fldname);
+		if (lhsScan.hasField(fldname))
+			return lhsScan.getVal(fldname);
+		else
+			return rhsScan.getVal(fldname);
 	}
 
 	/**
@@ -119,21 +113,8 @@ public class NestedLoopJoinScan implements Scan {
 	 */
 	@Override
 	public boolean hasField(String fldName) {
-		return prodScan.hasField(fldName);
+		return lhsScan.hasField(fldName) || rhsScan.hasField(fldName);
 	}
 
-	private boolean useNextChunk() {
-		if (rhsScan != null)
-			rhsScan.close();
-		if (nextBlkNum >= rhsFileSize)
-			return false;
-		long end = nextBlkNum + rhsChunkSize - 1;
-		if (end >= rhsFileSize)
-			end = rhsFileSize - 1;
-		rhsScan = new ChunkScan(rhsTi, nextBlkNum, end, tx);//the rhsScan is the optimization goal, in the ChunkScan 
-		prodScan = new ProductScan(lhsScan, rhsScan);//left table join with one chunk in the right table, so multi-scan in left table 
-		prodScan.beforeFirst();
-		nextBlkNum = end + 1;
-		return true;
-	}
+	
 }

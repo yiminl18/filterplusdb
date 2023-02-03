@@ -51,7 +51,7 @@ public abstract class AbstractJoinPlan extends ReduceRecordsPlan {
 	 *         distribution of the join
 	 */
 	public static Histogram joinHistogram(Histogram hist1, Histogram hist2,
-			String fldName1, String fldName2) {
+			String fldName1, String fldName2) {//join Histogram is the right one to use 
 		Histogram prodHist = ProductPlan.productHistogram(hist1, hist2);
 		Set<String> group = new HashSet<String>();
 		group.add(fldName1);
