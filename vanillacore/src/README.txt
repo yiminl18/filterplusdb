@@ -63,12 +63,7 @@ First create table, then index, and finally insert records both to table and ind
 -- optimization
 TablePlanner is key part of optimization which decides which join to use, in function makeJoinPlan
 1. currently hash join is not used, and multi-buffer product plan is used. Hash join cannot support theta join, so add filters for multi-buffer join and index join for now 
-
--- check filter modification
-
-1. SelectScan
-2. product scan/MultiBufferProductScan
-3. indexjoinscan 
+ 
 
 -- TableScan
 returns a RecordFile instead of a record 
@@ -93,6 +88,7 @@ The scenario that an IndexJoin will be preferred is R.a join S.b, a is the index
 - output: Scan, and next() returns each tuple 
 this tuple is not the join result, but product result 
 - data flow between IndexJoin and SelectScan: pipeline, each next() in SelectScan will call next() in IndexJoin 
+- IndexJoin is able to add theta join filter point in next() or resetIndex function 
 
 -MultiBufferProduct -- actually a nested loop join 
 - input: Plan lhs, rhs
@@ -105,4 +101,10 @@ In MultiBufferProductScan:
 1. prodScan = new ProductScan(lhsScan, rhsScan), rhsScan is each chunk, lhsScan is left table, prodScan returns the product of left table and this chunk 
 - output: return Scan, and next() returns each combined tuple which is the output of product 
 - data flow: it is pipeline data flow between MultiBufferProductScan and SelectScan on top of it: a product tuple will be immidiately sent to SelectScan to evaluate 
+
+-- Data flow between recordfile and record 
+Each record.next() call recordfile.next(), and their connection is getVal()
+1. getVal() in tableScan: gets value in the page by giving the pageid and offset 
+2. In FieldNameExpression, evaluate(Record rec), return rec.getVal(fldName)
+3. isSatisfied in scan.next() call evaluate in FieldNameExpression
 

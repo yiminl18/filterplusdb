@@ -30,7 +30,7 @@ import org.vanilladb.core.storage.tx.Transaction;
  * The {@link Plan} class for the muti-buffer version of the <em>product</em>
  * operator.
  */
-public class MultiBufferProductPlan implements Plan {
+public class NestedLoopJoinPlan implements Plan {
 	private Plan lhs, rhs;
 	private Transaction tx;
 	private Schema schema;
@@ -46,7 +46,7 @@ public class MultiBufferProductPlan implements Plan {
 	 * @param tx
 	 *            the calling transaction
 	 */
-	public MultiBufferProductPlan(Plan lhs, Plan rhs, Transaction tx) {
+	public NestedLoopJoinPlan(Plan lhs, Plan rhs, Transaction tx) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 		this.tx = tx;
@@ -54,7 +54,7 @@ public class MultiBufferProductPlan implements Plan {
 		schema.addAll(lhs.schema());
 		schema.addAll(rhs.schema());
 		hist = ProductPlan.productHistogram(lhs.histogram(), rhs.histogram());
-		System.out.println("Printing in multibuffer scan: " +  lhs.schema().toString() + " " + rhs.schema().toString());
+		System.out.println("Printing in NestedLoopJoin scan: " +  lhs.schema().toString() + " " + rhs.schema().toString());
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class MultiBufferProductPlan implements Plan {
 		TempTable tt = copyRecordsFrom(rhs);
 		TableInfo ti = tt.getTableInfo();
 		Scan leftscan = lhs.open();
-		return new MultiBufferProductScan(leftscan, ti, tx);
+		return new NestedLoopJoinScan(leftscan, ti, tx);
 	}
 
 	/**

@@ -54,6 +54,7 @@ public class TableScan implements UpdateScan {
 	//file by file instead of record by record 
 	@Override
 	public boolean next() {
+		//System.out.println("printing in TableScan: " + rf.toString());
 		return rf.next();
 	}
 

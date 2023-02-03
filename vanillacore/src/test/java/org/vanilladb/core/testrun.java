@@ -297,7 +297,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("maxofgradyear"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal("dname"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -327,8 +327,8 @@ public class testrun {
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        //runStudentQueries(studentQueries.get(2));
-        explainQuery(studentQueries.get(2));
+        //runStudentQueries(studentQueries.get(8));
+        explainQuery(studentQueries.get(4));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("number of dropped tupels: " + filterPlan.numberOfDroppedTuple);

@@ -37,6 +37,7 @@ public class IndexJoinScan implements Scan {
 	private Index idx;
 	private Map<String, String> joinFields; // <LHS field -> RHS field>
 	private boolean isLhsEmpty;
+	private boolean ifNext;// use to record if current lhs record has any matched tuple in the right side 
 
 	/**
 	 * Creates an index join scan for the specified LHS scan and RHS index.
@@ -82,15 +83,19 @@ public class IndexJoinScan implements Scan {
 	 */
 	@Override
 	public boolean next() {
-		if (isLhsEmpty)
+		if (isLhsEmpty)//if lhs is complete, the algorithm close
 			return false;
-		if (idx.next()) {
+		if (idx.next()) {//if index finds matched tuples for current lhs record, return true 
 			ts.moveToRecordId(idx.getDataRecordId());
+			ifNext = true;
 			return true;
-		} else if (!(isLhsEmpty = !s.next())) {
-			resetIndex();
-			return next();
-		} else
+		} else if (!(isLhsEmpty = !s.next())) {//lhs is not empty, move to next lhs record 
+			// if(!ifNext){
+			// 	//add theta-join check point here 
+			// }
+			resetIndex();//reset index to search for next lhs record 
+			return next();//recursive calls 
+		} else//if lhs is complete, the algorithm close
 			return false;
 	}
 
@@ -143,6 +148,7 @@ public class IndexJoinScan implements Scan {
 		SearchRange searchRange = new SearchRange(idx.getIndexInfo().fieldNames(),
 				idx.getKeyType(), ranges);
 		idx.beforeFirst(searchRange);
+		ifNext = false;
 	}
 
 }

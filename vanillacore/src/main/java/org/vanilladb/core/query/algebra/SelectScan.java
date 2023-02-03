@@ -62,7 +62,17 @@ public class SelectScan implements UpdateScan {
 			if(!pred.isSatisfied(s)){//if tuple failed predicate, move to the next one
 				continue;
 			}
-			//System.out.println("printing in SelectScan");
+			// if(!pred.isjoin() && s.hasField("sectid")){
+			// 	System.out.println("printing in SelectScan");
+			// 	if(filterPlan.filters.containsKey("sectid")){
+			// 		filterPlan.filters.get("sectid").get(0).print();
+			// 	}
+				
+			// 	System.out.println(s.getVal("sectid"));
+				
+			// 	System.out.println(filterPlan.checkFilter(s));
+			// }
+			
 			if(!pred.isjoin() && !filterPlan.checkFilter(s)){//if this is a selection predicate and tuple failed filter check, move to next one
 				filterPlan.numberOfDroppedTuple ++;
 				//System.out.print(pred.toString() + " ");
