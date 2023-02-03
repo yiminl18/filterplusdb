@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.vanilladb.core.query.planner.opt;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,12 +27,14 @@ import org.vanilladb.core.query.algebra.SelectPlan;
 import org.vanilladb.core.query.algebra.TablePlan;
 import org.vanilladb.core.query.algebra.index.IndexJoinPlan;
 import org.vanilladb.core.query.algebra.multibuffer.MultiBufferProductPlan;
+import org.vanilladb.core.query.algebra.multibuffer.NestedLoopJoinPlan;
 import org.vanilladb.core.query.planner.index.IndexSelector;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.sql.predicate.Predicate;
 import org.vanilladb.core.storage.metadata.index.IndexInfo;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.sql.predicate.Term;
 
 /**
  * This class contains methods for planning a single table.
@@ -117,10 +120,44 @@ class TablePlanner {
 		Predicate joinPred = pred.joinPredicate(sch, trunkSch);
 		if (joinPred == null)
 			return null;
+		if(joinPred.length() > 1){
+			System.out.println("Printing in TablePlanner: There exist more than one join connecting a pair of tables");
+		}
 		Plan p = makeIndexJoinPlan(trunk, trunkSch);
-		if (p == null)
-			p = makeProductJoinPlan(trunk, trunkSch);
+		
+		if (p == null){
+			List<String> joinFields = findJoinFields(joinPred, sch, trunkSch);
+			if(joinFields.size() > 0){
+				String leftJoinField = joinFields.get(0);
+				String rightJoinField = joinFields.get(1);
+				System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
+				Plan p2 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
+				p = p2;
+			}else{
+				Plan p1 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+				System.out.println("Printing in TablePlanner: A product join is used since join fields cannot be found!");
+				p = p1;
+			}
+		}
+			
 		return p;
+	}
+
+	public List<String> findJoinFields(Predicate joinPred, Schema leftSchema, Schema rightSchema){
+		List<String> joinFields = new ArrayList<>();
+		Term t = joinPred.getTerms().iterator().next();
+		String leftJoinField = t.getlhsField();
+		String rightJoinField = t.getrhsField();
+		if(!leftJoinField.equals("NULL") && !rightJoinField.equals("NULL")){
+			if(leftSchema.hasField(leftJoinField) && rightSchema.hasField(rightJoinField)){
+				joinFields.add(leftJoinField);
+				joinFields.add(rightJoinField);
+			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
+				joinFields.add(rightJoinField);
+				joinFields.add(leftJoinField);
+			}
+		}
+		return joinFields;
 	}
 
 	/**
@@ -137,7 +174,13 @@ class TablePlanner {
 	 */
 	public Plan makeProductPlan(Plan trunk) {
 		Plan p = makeSelectPlan();
+		System.out.print("Printing in TablePlanner: Product Plan is called!");
 		return new MultiBufferProductPlan(trunk, p, tx);
+	}
+
+	public Plan makeNestedLoopJoinPlan(Plan trunk, String leftJoinField, String rightJoinField){
+		Plan p = makeSelectPlan();
+		return new NestedLoopJoinPlan(trunk, p, leftJoinField, rightJoinField);
 	}
 
 	// public Plan makeHashPlan(Predicate joinPred, Plan trunk){
@@ -227,7 +270,7 @@ class TablePlanner {
 		return addJoinPredicate(p, currSch);
 	}
 
-	private Plan addSelectPredicate(Plan p) {
+	private Plan addSelectPredicate(Plan p) {//push down select predicate under the join 
 		Predicate selectPred = pred.selectPredicate(sch);
 		if (selectPred != null)
 			return new SelectPlan(p, selectPred);
@@ -235,7 +278,7 @@ class TablePlanner {
 			return p;
 	}
 
-	private Plan addJoinPredicate(Plan p, Schema currSch) {
+	private Plan addJoinPredicate(Plan p, Schema currSch) {//add join condition on top of product plan for evaluation 
 		Predicate joinPred = pred.joinPredicate(currSch, sch);
 		if (joinPred != null)
 			return new SelectPlan(p, joinPred);

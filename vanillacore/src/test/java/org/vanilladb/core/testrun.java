@@ -328,7 +328,7 @@ public class testrun {
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         //runStudentQueries(studentQueries.get(8));
-        explainQuery(studentQueries.get(4));
+        explainQuery(studentQueries.get(3));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("number of dropped tupels: " + filterPlan.numberOfDroppedTuple);

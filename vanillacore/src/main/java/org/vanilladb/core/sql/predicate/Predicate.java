@@ -56,6 +56,10 @@ public class Predicate {
 		return isJoin;
 	}
 
+	public Collection<Term> getTerms(){
+		return terms;
+	}
+
 	public void setJoinbit(){
 		isJoin = true;
 	}

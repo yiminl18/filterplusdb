@@ -118,6 +118,20 @@ public class Term {
 	private Expression lhs, rhs;
 	private boolean isJoin;
 
+	public String getlhsField(){
+		if(lhs.isFieldName()){
+			return lhs.toString();
+		}
+		return "NULL";
+	}
+
+	public String getrhsField(){
+		if(rhs.isFieldName()){
+			return rhs.toString();
+		}
+		return "NULL";
+	}
+
 	public Term(Expression lhs, Operator op, Expression rhs) {
 		this.lhs = lhs;
 		this.op = op;
