@@ -64,14 +64,19 @@ public class HashJoinPlan extends AbstractJoinPlan {
 		// Put [V,W] into the to-do lists.
 		todoV.add(copyRecordsFrom(lhs));
 		todoW.add(copyRecordsFrom(rhs));
-
+		/*
+		 * this is grace hash join algorithm: for left join table and right join table, partition both of them
+		 * such that all records in left (right) table are partitioned in different bucket, which has the same
+		 * hashed value in the corrresponding join attribute 
+		 */
+		
 		int iteration = 0;
 		while (!todoV.isEmpty()) {
 			TempTable ttV = todoV.remove(0);
 			TempTable ttW = todoW.remove(0);
 			long size = ttW.getTableInfo().open(tx, true).fileSize();
 			int avail = tx.bufferMgr().available();
-			if (avail >= size) {
+			if (avail >= size) {//if the size of table is able to be loaded in current available buffer pools
 				okV.add(ttV);
 				okW.add(ttW);
 			} else {
@@ -158,13 +163,17 @@ public class HashJoinPlan extends AbstractJoinPlan {
 		return tt;
 	}
 
+	/*
+	 * For every record in TempTable tt, assign it to the corresponding bucket. Each bucket is 
+	 * another temtable which shares same hashed value on the join attribute 
+	 */
 	private List<TempTable> partition(TempTable tt, String fldname, int k,
 			int iteration) {
 		List<TempTable> tables = new ArrayList<TempTable>();
 		List<Scan> buckets = new ArrayList<Scan>();
 		Schema sch = tt.getTableInfo().schema();
 		for (int i = 0; i < k; i++) {
-			TempTable t = new TempTable(sch, tx);
+			TempTable t = new TempTable(sch, tx);//empty template table 
 			tables.add(t);
 			buckets.add(t.open());
 		}
@@ -172,7 +181,7 @@ public class HashJoinPlan extends AbstractJoinPlan {
 		while (src.next()) {
 			Constant val = src.getVal(fldname);
 			int bkt = hash(val, k, iteration);
-			copyRecord(src, (UpdateScan) buckets.get(bkt), sch);
+			copyRecord(src, (UpdateScan) buckets.get(bkt), sch);//assign one record to its corresponding bucket 
 		}
 		for (Scan s : buckets)
 			s.close();

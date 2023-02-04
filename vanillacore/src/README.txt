@@ -108,3 +108,4 @@ Each record.next() call recordfile.next(), and their connection is getVal()
 2. In FieldNameExpression, evaluate(Record rec), return rec.getVal(fldName)
 3. isSatisfied in scan.next() call evaluate in FieldNameExpression
 
+-- How to do Join in the code?

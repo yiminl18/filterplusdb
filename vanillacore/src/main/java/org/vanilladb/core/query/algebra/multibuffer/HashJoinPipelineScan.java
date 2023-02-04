@@ -31,53 +31,36 @@ import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.tx.Transaction;
 
 public class HashJoinPipelineScan implements Scan {
-	private List<TempTable> tables1, tables2;
 	private Transaction tx;
-	private int currentIndex;
+	private boolean build; //build = true means the lhs is the build table, otherwise is false
+	private Scan probe;
+	private String hashField; //the name of field that hash table has already been built 
 	private Scan current;
-	private Predicate pred;
 
-	public HashJoinPipelineScan(List<TempTable> tables1, List<TempTable> tables2,
-			String fldname1, String fldname2, Transaction tx) {
-		this.tables1 = tables1;
-		this.tables2 = tables2;
+	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Transaction tx) {
+		this.build = build;
 		this.tx = tx;
-		Expression exp1 = new FieldNameExpression(fldname1);
-		Expression exp2 = new FieldNameExpression(fldname2);
-		Term t = new Term(exp1, OP_EQ, exp2);
-		pred = new Predicate(t);
+		this.probe = probe;
+		if(build){
+			this.hashField = fldname1;
+		}else{
+			this.hashField = fldname2;
+		}
 	}
 
 	@Override
 	public void beforeFirst() {
-		openscan(0);
+		probe.beforeFirst();
 	}
 
 	@Override
 	public boolean next() {
-		while (true) {
-			if (current.next())
-				return true;
-			currentIndex++;
-			if (currentIndex >= tables1.size())
-				return false;
-			openscan(currentIndex);
-		}
-	}
-
-	private void openscan(int n) {
-		close();
-		currentIndex = n;
-		Scan s1 = tables1.get(n).open();
-		TableInfo ti2 = tables2.get(n).getTableInfo();
-		Scan s3 = new MultiBufferProductScan(s1, ti2, tx);
-		current = new SelectScan(s3, pred);
+		
 	}
 
 	@Override
 	public void close() {
-		if (current != null)
-			current.close();
+		
 	}
 
 	@Override
@@ -88,5 +71,12 @@ public class HashJoinPipelineScan implements Scan {
 	@Override
 	public boolean hasField(String fldname) {
 		return current.hasField(fldname);
+	}
+
+	/*
+	 * Open a product scan for one lhs record and its matched rhs records from the hashtable 
+	 */
+	public void openscan(){
+
 	}
 }

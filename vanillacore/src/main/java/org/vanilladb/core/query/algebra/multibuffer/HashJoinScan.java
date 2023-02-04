@@ -68,10 +68,12 @@ public class HashJoinScan implements Scan {
 	private void openscan(int n) {
 		close();
 		currentIndex = n;
+		//records in the temptable with same index share the same hashed value for join attribute
+		//for for each of such temptable pairs, join records between them by calling multibufferproduct 
 		Scan s1 = tables1.get(n).open();
 		TableInfo ti2 = tables2.get(n).getTableInfo();
-		Scan s3 = new MultiBufferProductScan(s1, ti2, tx);
-		current = new SelectScan(s3, pred);
+		Scan s3 = new MultiBufferProductScan(s1, ti2, tx);//join two tuples 
+		current = new SelectScan(s3, pred);//apply join condition to evaluate 
 	}
 
 	@Override
