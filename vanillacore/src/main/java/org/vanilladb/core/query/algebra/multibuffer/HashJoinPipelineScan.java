@@ -49,18 +49,17 @@ public class HashJoinPipelineScan implements Scan {
 		if(isProbeEmpty){
 			return false;
 		}
-		if(current.next()){
+		if(current.next()){//move to the next matched tuple 
 			return true;
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
 			Constant value = probe.getVal(hashField);
 			Scan matched = HashTables.Probe(hashField, value);
 			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
-				probe.next();
 				return next();
 			}else{
 				openscan(matched);
-				return next();
+				return current.next();
 			}
 		}else{
 			return false;
@@ -87,6 +86,9 @@ public class HashJoinPipelineScan implements Scan {
 	 * Open a product scan for one lhs record and its matched rhs records from the hashtable 
 	 */
 	public void openscan(Scan matched){
+		if(current != null){
+			current.close();
+		}
 		//first copy Probe record into a new scan dest that only contains current record
 		Scan dest = null;
 		copyRecord(probe, (UpdateScan) dest, probSch);
