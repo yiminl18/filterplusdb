@@ -65,15 +65,9 @@ public class NestedLoopJoinScan implements Scan {
 			return false;
 		// the old method
 		if (rhsScan.next()){
-			// if(s2.hasField("studentid")){
-			// 	//System.out.println("testing 1 s2 studentid: " + s2.getVal("studentid"));
-			// }
 			return true;
 		}
 		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
-			// if(s1.hasField("sid")){
-			// 	System.out.println("testing 1 s1 sid: " + s1.getVal("sid"));
-			// }
 			rhsScan.beforeFirst();
 			return rhsScan.next();
 		} else {
@@ -100,10 +94,14 @@ public class NestedLoopJoinScan implements Scan {
 	 */
 	@Override
 	public Constant getVal(String fldname) {
-		if (lhsScan.hasField(fldname))
+		//System.out.println("Print in NLJ: "+ fldname);
+		if (lhsScan.hasField(fldname)){
 			return lhsScan.getVal(fldname);
-		else
+		}
+		else if(rhsScan.hasField(fldname)){
 			return rhsScan.getVal(fldname);
+		}
+		return null;	
 	}
 
 	/**

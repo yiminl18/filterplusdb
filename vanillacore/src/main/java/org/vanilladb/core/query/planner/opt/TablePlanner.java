@@ -28,6 +28,7 @@ import org.vanilladb.core.query.algebra.TablePlan;
 import org.vanilladb.core.query.algebra.index.IndexJoinPlan;
 import org.vanilladb.core.query.algebra.multibuffer.MultiBufferProductPlan;
 import org.vanilladb.core.query.algebra.multibuffer.NestedLoopJoinPlan;
+import org.vanilladb.core.query.planner.JoinKnob;
 import org.vanilladb.core.query.planner.index.IndexSelector;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.Schema;
@@ -124,18 +125,19 @@ class TablePlanner {
 			System.out.println("Printing in TablePlanner: There exist more than one join connecting a pair of tables");
 		}
 		Plan p = makeIndexJoinPlan(trunk, trunkSch);
-		
 		if (p == null){
 			List<String> joinFields = findJoinFields(joinPred, sch, trunkSch);
-			if(joinFields.size() > 0){
-				String leftJoinField = joinFields.get(0);
-				String rightJoinField = joinFields.get(1);
-				System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
-				Plan p2 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
-				p = p2;
-			}else{
+			if(JoinKnob.nestedloop){
+				if(joinFields.size() > 0){
+					String leftJoinField = joinFields.get(0);
+					String rightJoinField = joinFields.get(1);
+					System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
+					Plan p2 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
+					p = p2;
+				}
+			}else if(JoinKnob.productJoin){
 				Plan p1 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
-				System.out.println("Printing in TablePlanner: A product join is used since join fields cannot be found!");
+				//System.out.println("Printing in TablePlanner: A product join is used since join fields cannot be found!");
 				p = p1;
 			}
 		}

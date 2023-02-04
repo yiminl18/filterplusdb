@@ -19,6 +19,7 @@ import org.vanilladb.core.storage.file.BlockId;
 import org.vanilladb.core.storage.file.Page;
 import org.vanilladb.core.storage.index.IndexType;
 import org.vanilladb.core.filter.filterPlan;
+import org.vanilladb.core.query.planner.JoinKnob;
 
 public class testrun {
 
@@ -297,7 +298,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("dname"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal("countofprof"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -322,13 +323,14 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        filterPlan.enable();
+        JoinKnob.disableNestLoopJoin();
+        //filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        //runStudentQueries(studentQueries.get(8));
-        explainQuery(studentQueries.get(3));
+        //runStudentQueries(studentQueries.get(7));
+        explainQuery(studentQueries.get(7));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("number of dropped tupels: " + filterPlan.numberOfDroppedTuple);
