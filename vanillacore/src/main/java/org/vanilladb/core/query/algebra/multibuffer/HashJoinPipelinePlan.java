@@ -32,14 +32,14 @@ import org.vanilladb.core.storage.tx.Transaction;
  * Non-recursive implementation of the hashjoin algorithm that performs hashing
  * during the preprocessing stage and merging during the scanning stage.
  */
-public class HashJoinPlan extends AbstractJoinPlan {
+public class HashJoinPipelinePlan extends AbstractJoinPlan {
 	private Plan lhs, rhs;
 	private String fldName1, fldName2;
 	private Transaction tx;
 	private Schema schema;
 	private Histogram hist;
 
-	public HashJoinPlan(Plan lhs, Plan rhs, String fldName1, String fldName2,
+	public HashJoinPipelinePlan(Plan lhs, Plan rhs, String fldName1, String fldName2,
 			Transaction tx) {
 		this.lhs = lhs;
 		this.rhs = rhs;

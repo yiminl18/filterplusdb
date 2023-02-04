@@ -298,7 +298,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("countofprof"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal("studentid"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -324,13 +324,14 @@ public class testrun {
         String dbname = "TESTDB2";
         init(dbname);
         JoinKnob.disableNestLoopJoin();
+        //JoinKnob.disableProductJoin();
         //filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        //runStudentQueries(studentQueries.get(7));
-        explainQuery(studentQueries.get(7));
+        runStudentQueries(studentQueries.get(4));
+        explainQuery(studentQueries.get(4));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("number of dropped tupels: " + filterPlan.numberOfDroppedTuple);

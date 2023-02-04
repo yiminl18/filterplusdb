@@ -26,6 +26,7 @@ import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.SelectPlan;
 import org.vanilladb.core.query.algebra.TablePlan;
 import org.vanilladb.core.query.algebra.index.IndexJoinPlan;
+import org.vanilladb.core.query.algebra.multibuffer.HashJoinPlan;
 import org.vanilladb.core.query.algebra.multibuffer.MultiBufferProductPlan;
 import org.vanilladb.core.query.algebra.multibuffer.NestedLoopJoinPlan;
 import org.vanilladb.core.query.planner.JoinKnob;
@@ -125,24 +126,43 @@ class TablePlanner {
 			System.out.println("Printing in TablePlanner: There exist more than one join connecting a pair of tables");
 		}
 		Plan p = makeIndexJoinPlan(trunk, trunkSch);
+		String leftJoinField = "", rightJoinField = "";
+		List<String> joinFields = findJoinFields(joinPred, sch, trunkSch);
+		if(joinFields.size() > 0){
+			leftJoinField = joinFields.get(0);
+			rightJoinField = joinFields.get(1);
+		}
+		else{
+			System.out.println("Printing in TablePlanner: Fail to find join fields in " + joinPred.toString());
+		}
+		Plan p4 = makeHashJoinPlan(trunk, leftJoinField, rightJoinField, tx);
+
 		if (p == null){
-			List<String> joinFields = findJoinFields(joinPred, sch, trunkSch);
+			Plan p1=null, p2=null, p3=null;
 			if(JoinKnob.nestedloop){
-				if(joinFields.size() > 0){
-					String leftJoinField = joinFields.get(0);
-					String rightJoinField = joinFields.get(1);
-					System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
-					Plan p2 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
-					p = p2;
-				}
-			}else if(JoinKnob.productJoin){
-				Plan p1 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
-				//System.out.println("Printing in TablePlanner: A product join is used since join fields cannot be found!");
+				//System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
+				p1 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
+			}
+			if(JoinKnob.productJoin){
+				p2 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+			}
+			if(JoinKnob.hashjoin){
+				p3 = makeHashJoinPlan(trunk, leftJoinField, rightJoinField, tx);
+			}
+			if(p3!=null && p2!=null && p3.blocksAccessed() < p2.blocksAccessed()){
+				p = p3;
+			}else if(p3!=null && p2!=null && p3.blocksAccessed() > p2.blocksAccessed()){
+				p = p2;
+			}else if(p2 == null){
+				p = p3;
+			}else if(p3 == null && p2!=null){
+				p = p2;
+			}else if(p3==null && p2==null){
 				p = p1;
 			}
 		}
 			
-		return p;
+		return p4;
 	}
 
 	public List<String> findJoinFields(Predicate joinPred, Schema leftSchema, Schema rightSchema){
@@ -183,6 +203,11 @@ class TablePlanner {
 	public Plan makeNestedLoopJoinPlan(Plan trunk, String leftJoinField, String rightJoinField){
 		Plan p = makeSelectPlan();
 		return new NestedLoopJoinPlan(trunk, p, leftJoinField, rightJoinField);
+	}
+
+	public Plan makeHashJoinPlan(Plan lhs, String fldName1, String fldName2, Transaction tx){
+		Plan p = makeSelectPlan();
+		return new HashJoinPlan(lhs, p, fldName1, fldName2, tx);
 	}
 
 	// public Plan makeHashPlan(Predicate joinPred, Plan trunk){
