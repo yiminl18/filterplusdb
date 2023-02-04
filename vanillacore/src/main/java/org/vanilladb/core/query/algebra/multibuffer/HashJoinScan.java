@@ -59,7 +59,7 @@ public class HashJoinScan implements Scan {
 			if (current.next())
 				return true;
 			currentIndex++;
-			if (currentIndex >= tables1.size())
+			if (currentIndex >= tables1.size())//join ends
 				return false;
 			openscan(currentIndex);
 		}

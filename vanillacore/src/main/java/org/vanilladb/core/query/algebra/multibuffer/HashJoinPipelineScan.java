@@ -15,32 +15,22 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra.multibuffer;
 
-import static org.vanilladb.core.sql.predicate.Term.OP_EQ;
-
-import java.util.List;
-
+import org.vanilladb.core.sql.Schema;
+import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.algebra.Scan;
-import org.vanilladb.core.query.algebra.SelectScan;
-import org.vanilladb.core.query.algebra.materialize.TempTable;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.sql.predicate.Expression;
-import org.vanilladb.core.sql.predicate.FieldNameExpression;
-import org.vanilladb.core.sql.predicate.Predicate;
-import org.vanilladb.core.sql.predicate.Term;
-import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.tx.Transaction;
 
 public class HashJoinPipelineScan implements Scan {
-	private Transaction tx;
-	private boolean build; //build = true means the lhs is the build table, otherwise is false
 	private Scan probe;
 	private String hashField; //the name of field that hash table has already been built 
-	private Scan current;
+	private Scan current = null;
+	private Schema probSch; //the schema in probe side table 
+	private boolean isProbeEmpty; //true is empty
 
-	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Transaction tx) {
-		this.build = build;
-		this.tx = tx;
+	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Schema sch, Transaction tx) {
 		this.probe = probe;
+		this.probSch = sch;
 		if(build){
 			this.hashField = fldname1;
 		}else{
@@ -51,16 +41,36 @@ public class HashJoinPipelineScan implements Scan {
 	@Override
 	public void beforeFirst() {
 		probe.beforeFirst();
+		isProbeEmpty = !probe.next();
 	}
 
 	@Override
 	public boolean next() {
-		
+		if(isProbeEmpty){
+			return false;
+		}
+		if(current.next()){
+			return true;
+		}
+		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
+			Constant value = probe.getVal(hashField);
+			Scan matched = HashTables.Probe(hashField, value);
+			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
+				probe.next();
+				return next();
+			}else{
+				openscan(matched);
+				return next();
+			}
+		}else{
+			return false;
+		}
 	}
 
 	@Override
 	public void close() {
-		
+		current.close();
+		probe.close();
 	}
 
 	@Override
@@ -76,7 +86,17 @@ public class HashJoinPipelineScan implements Scan {
 	/*
 	 * Open a product scan for one lhs record and its matched rhs records from the hashtable 
 	 */
-	public void openscan(){
-
+	public void openscan(Scan matched){
+		//first copy Probe record into a new scan dest that only contains current record
+		Scan dest = null;
+		copyRecord(probe, (UpdateScan) dest, probSch);
+		//join with matched records in the hash table 
+		current = new ProductScan(dest,matched); 
 	}
+
+	public void copyRecord(Scan src, UpdateScan dest, Schema sch) {
+        dest.insert();
+        for (String fldname : sch.fields())
+            dest.setVal(fldname, src.getVal(fldname));
+    }
 }
