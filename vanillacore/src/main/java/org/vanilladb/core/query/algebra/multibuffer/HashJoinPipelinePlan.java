@@ -15,13 +15,16 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra.multibuffer;
 
-
+import java.util.ArrayList;
+import java.util.List;
 import org.vanilladb.core.query.algebra.AbstractJoinPlan;
 import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.sql.predicate.Term;
+import org.vanilladb.core.sql.predicate.Predicate;
 
 /**
  * Non-recursive implementation of the hashjoin algorithm that performs hashing
@@ -30,23 +33,25 @@ import org.vanilladb.core.storage.tx.Transaction;
 public class HashJoinPipelinePlan extends AbstractJoinPlan {
 	private Plan lhs, rhs;
 	private String fldName1, fldName2;
+	private List<String> joinFields;
 	private Transaction tx;
 	private Schema schema;
 	private Histogram hist;
 	private boolean build; //build = true means the lhs is the build table, otherwise is false
 
-	public HashJoinPipelinePlan(Plan lhs, Plan rhs, String fldName1, String fldName2,
+	public HashJoinPipelinePlan(Plan lhs, Plan rhs, Predicate joinPredicate,
 			Transaction tx) {
 		this.lhs = lhs;
 		this.rhs = rhs;
-		this.fldName1 = fldName1;
-		this.fldName2 = fldName2;
 		this.tx = tx;
 		schema = new Schema();
 		schema.addAll(lhs.schema());
 		schema.addAll(rhs.schema());
 		hist = joinHistogram(lhs.histogram(), rhs.histogram(), fldName1,
 				fldName2);
+		joinFields = findJoinFields(joinPredicate, lhs.schema(), rhs.schema());
+		fldName1 = joinFields.get(0);
+		fldName2 = joinFields.get(1);
 	}
 
 	@Override
@@ -58,19 +63,22 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			Scan lhsScan = lhs.open();
 			lhsScan.beforeFirst();
 			while(lhsScan.next()){
-				HashTables.updateHashTable(fldName1,lhsScan.getVal(fldName1),lhsScan, lhs.schema());
+				HashTables.updateHashTable(fldName1,lhsScan.getVal(fldName1),lhsScan, lhs.schema(), tx);
 			}
 			lhsScan.close();
+			HashTables.close(fldName1);
 			return new HashJoinPipelineScan(build, rhs.open(), fldName1, fldName2, rhs.schema(), tx);
 		}else{
 			//build hash table for rhs
 			this.build = false;
-			Scan rhsScan = lhs.open();
+			Scan rhsScan = rhs.open();
 			rhsScan.beforeFirst();
 			while(rhsScan.next()){
-				HashTables.updateHashTable(fldName1,rhsScan.getVal(fldName1),rhsScan,rhs.schema());
+				System.out.println("In HashJoinPipelinePlan: "  + fldName2 + " " + rhs.schema().toString());
+				HashTables.updateHashTable(fldName2,rhsScan.getVal(fldName2),rhsScan,rhs.schema(), tx);
 			}
 			rhsScan.close();
+			HashTables.close(fldName2);
 			return new HashJoinPipelineScan(build, lhs.open(), fldName1, fldName2, lhs.schema(), tx);
 		}
 	}
@@ -121,7 +129,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 		String c1 = lhs.toString();
 		String[] cs1 = c1.split("\n");
 		StringBuilder sb = new StringBuilder();
-		sb.append("->HashJoinPlan (#blks=" + blocksAccessed() + ", #recs="
+		sb.append("->HashJoinPipelinePlan (#blks=" + blocksAccessed() + ", #recs="
 				+ recordsOutput() + ")\n");
 		// right child
 		for (String child : cs2)
@@ -132,5 +140,22 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			sb.append("\t").append(child).append("\n");
 		;
 		return sb.toString();
+	}
+
+	public List<String> findJoinFields(Predicate joinPred, Schema leftSchema, Schema rightSchema){
+		List<String> joinFields = new ArrayList<>();
+		Term t = joinPred.getTerms().iterator().next();
+		String leftJoinField = t.getlhsField();
+		String rightJoinField = t.getrhsField();
+		if(!leftJoinField.equals("NULL") && !rightJoinField.equals("NULL")){
+			if(leftSchema.hasField(leftJoinField) && rightSchema.hasField(rightJoinField)){
+				joinFields.add(leftJoinField);
+				joinFields.add(rightJoinField);
+			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
+				joinFields.add(rightJoinField);
+				joinFields.add(leftJoinField);
+			}
+		}
+		return joinFields;
 	}
 }

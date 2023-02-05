@@ -323,7 +323,7 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        JoinKnob.disableNestLoopJoin();
+        JoinKnob.forceHashJoin();
         //JoinKnob.disableProductJoin();
         //filterPlan.enable();
         //loadData();

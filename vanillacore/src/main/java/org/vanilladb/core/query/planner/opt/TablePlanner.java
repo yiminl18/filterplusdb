@@ -26,7 +26,7 @@ import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.SelectPlan;
 import org.vanilladb.core.query.algebra.TablePlan;
 import org.vanilladb.core.query.algebra.index.IndexJoinPlan;
-import org.vanilladb.core.query.algebra.multibuffer.HashJoinPlan;
+import org.vanilladb.core.query.algebra.multibuffer.HashJoinPipelinePlan;
 import org.vanilladb.core.query.algebra.multibuffer.MultiBufferProductPlan;
 import org.vanilladb.core.query.algebra.multibuffer.NestedLoopJoinPlan;
 import org.vanilladb.core.query.planner.JoinKnob;
@@ -125,62 +125,42 @@ class TablePlanner {
 		if(joinPred.length() > 1){
 			System.out.println("Printing in TablePlanner: There exist more than one join connecting a pair of tables");
 		}
-		Plan p = makeIndexJoinPlan(trunk, trunkSch);
-		String leftJoinField = "", rightJoinField = "";
-		List<String> joinFields = findJoinFields(joinPred, sch, trunkSch);
-		if(joinFields.size() > 0){
-			leftJoinField = joinFields.get(0);
-			rightJoinField = joinFields.get(1);
+		Plan p = null;
+		if(JoinKnob.indexjoin){
+			p = makeIndexJoinPlan(trunk, trunkSch);
 		}
-		else{
-			System.out.println("Printing in TablePlanner: Fail to find join fields in " + joinPred.toString());
-		}
-		Plan p4 = makeHashJoinPlan(trunk, leftJoinField, rightJoinField, tx);
+	
+		Plan p4 = makeHashJoinPlan(trunk, joinPred, tx);
 
-		if (p == null){
-			Plan p1=null, p2=null, p3=null;
-			if(JoinKnob.nestedloop){
-				//System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
-				p1 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
-			}
-			if(JoinKnob.productJoin){
-				p2 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
-			}
-			if(JoinKnob.hashjoin){
-				p3 = makeHashJoinPlan(trunk, leftJoinField, rightJoinField, tx);
-			}
-			if(p3!=null && p2!=null && p3.blocksAccessed() < p2.blocksAccessed()){
-				p = p3;
-			}else if(p3!=null && p2!=null && p3.blocksAccessed() > p2.blocksAccessed()){
-				p = p2;
-			}else if(p2 == null){
-				p = p3;
-			}else if(p3 == null && p2!=null){
-				p = p2;
-			}else if(p3==null && p2==null){
-				p = p1;
-			}
-		}
+		// if (p == null){
+		// 	Plan p1=null, p2=null, p3=null;
+		// 	if(JoinKnob.nestedloop){
+		// 		//System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
+		// 		//p1 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
+		// 	}
+		// 	if(JoinKnob.productJoin){
+		// 		p2 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+		// 	}
+		// 	if(JoinKnob.hashjoin){
+		// 		//p3 = makeHashJoinPlan(trunk, leftJoinField, rightJoinField, tx);
+		// 	}
+		// 	if(p3!=null && p2!=null && p3.blocksAccessed() < p2.blocksAccessed()){
+		// 		p = p3;
+		// 	}else if(p3!=null && p2!=null && p3.blocksAccessed() > p2.blocksAccessed()){
+		// 		p = p2;
+		// 	}else if(p2 == null){
+		// 		p = p3;
+		// 	}else if(p3 == null && p2!=null){
+		// 		p = p2;
+		// 	}else if(p3==null && p2==null){
+		// 		p = p1;
+		// 	}
+		// }
 			
 		return p4;
 	}
 
-	public List<String> findJoinFields(Predicate joinPred, Schema leftSchema, Schema rightSchema){
-		List<String> joinFields = new ArrayList<>();
-		Term t = joinPred.getTerms().iterator().next();
-		String leftJoinField = t.getlhsField();
-		String rightJoinField = t.getrhsField();
-		if(!leftJoinField.equals("NULL") && !rightJoinField.equals("NULL")){
-			if(leftSchema.hasField(leftJoinField) && rightSchema.hasField(rightJoinField)){
-				joinFields.add(leftJoinField);
-				joinFields.add(rightJoinField);
-			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
-				joinFields.add(rightJoinField);
-				joinFields.add(leftJoinField);
-			}
-		}
-		return joinFields;
-	}
+	
 
 	/**
 	 * Constructs a product plan of the specified trunk and this table.
@@ -205,9 +185,9 @@ class TablePlanner {
 		return new NestedLoopJoinPlan(trunk, p, leftJoinField, rightJoinField);
 	}
 
-	public Plan makeHashJoinPlan(Plan lhs, String fldName1, String fldName2, Transaction tx){
+	public Plan makeHashJoinPlan(Plan lhs, Predicate joinPredicate, Transaction tx){
 		Plan p = makeSelectPlan();
-		return new HashJoinPlan(lhs, p, fldName1, fldName2, tx);
+		return new HashJoinPipelinePlan(lhs, p, joinPredicate, tx);
 	}
 
 	// public Plan makeHashPlan(Predicate joinPred, Plan trunk){

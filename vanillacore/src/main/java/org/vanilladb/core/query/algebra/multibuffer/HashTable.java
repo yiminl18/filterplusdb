@@ -4,6 +4,9 @@ import java.util.*;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.query.algebra.*;
+import org.vanilladb.core.query.algebra.materialize.TempTable;
+import org.vanilladb.core.storage.tx.Transaction;
+
 /*
  * From key value to a list of records, hashMap storesa hash table. 
  * The hashed key is under fieldName  
@@ -17,12 +20,12 @@ public class HashTable {
         hashMap = new HashMap<>();
     }
 
-    public void updateHashTable(Constant key, Scan src, Schema sch){
+    public void updateHashTable(Constant key, Scan src, Schema sch, Transaction tx){
         if(hashMap.containsKey(key)){
             copyRecord(src, (UpdateScan) hashMap.get(key), sch);
         }
         else{
-            Scan dest = null;
+		    Scan dest = null;
             copyRecord(src, (UpdateScan) dest, sch);
             hashMap.put(key,dest);
         }

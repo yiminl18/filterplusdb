@@ -4,16 +4,17 @@ import java.util.*;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.sql.Schema;
+import org.vanilladb.core.storage.tx.Transaction;
 
 public class HashTables {
         public static HashMap<String, HashTable> hashTables = new HashMap<>();
 
-        public static void updateHashTable(String fieldName, Constant key, Scan r, Schema sch){
+        public static void updateHashTable(String fieldName, Constant key, Scan r, Schema sch, Transaction tx){
             if(hashTables.containsKey(fieldName)){
-                hashTables.get(fieldName).updateHashTable(key, r, sch);
+                hashTables.get(fieldName).updateHashTable(key, r, sch, tx);
             }else{
                 HashTable hashTable = new HashTable(fieldName);
-                hashTable.updateHashTable(key, r, sch);
+                hashTable.updateHashTable(key, r, sch, tx);
                 hashTables.put(fieldName, hashTable);
             }
         }
@@ -23,5 +24,11 @@ public class HashTables {
                 return null;
             }
             return hashTables.get(fieldName).Probe(key);
+        }
+
+        public static void close(String fieldName){
+            if(hashTables.containsKey(fieldName)){
+                hashTables.get(fieldName).close();
+            }
         }
 }

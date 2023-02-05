@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra.multibuffer;
 
+import org.vanilladb.core.query.algebra.materialize.TempTable;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.algebra.Scan;
@@ -27,10 +28,12 @@ public class HashJoinPipelineScan implements Scan {
 	private Scan current = null;
 	private Schema probSch; //the schema in probe side table 
 	private boolean isProbeEmpty; //true is empty
+	private Transaction tx;
 
 	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Schema sch, Transaction tx) {
 		this.probe = probe;
 		this.probSch = sch;
+		this.tx = tx;
 		if(build){
 			this.hashField = fldname1;
 		}else{
@@ -90,8 +93,10 @@ public class HashJoinPipelineScan implements Scan {
 			current.close();
 		}
 		//first copy Probe record into a new scan dest that only contains current record
-		Scan dest = null;
+		TempTable t = new TempTable(probSch, tx);
+		Scan dest = t.open();
 		copyRecord(probe, (UpdateScan) dest, probSch);
+		dest.close();
 		//join with matched records in the hash table 
 		current = new ProductScan(dest,matched); 
 	}
