@@ -63,7 +63,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			Scan lhsScan = lhs.open();
 			lhsScan.beforeFirst();
 			while(lhsScan.next()){
-				HashTables.updateHashTable(fldName1,lhsScan.getVal(fldName1),lhsScan, lhs.schema(), tx);
+				HashTables.updateHashTable(fldName1,lhsScan.getVal(fldName1),lhsScan, lhs.schema());
 			}
 			lhsScan.close();
 			HashTables.close(fldName1);
@@ -75,7 +75,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			rhsScan.beforeFirst();
 			while(rhsScan.next()){
 				System.out.println("In HashJoinPipelinePlan: "  + fldName2 + " " + rhs.schema().toString());
-				HashTables.updateHashTable(fldName2,rhsScan.getVal(fldName2),rhsScan,rhs.schema(), tx);
+				HashTables.updateHashTable(fldName2,rhsScan.getVal(fldName2),rhsScan,rhs.schema());
 			}
 			rhsScan.close();
 			HashTables.close(fldName2);

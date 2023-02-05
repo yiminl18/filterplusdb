@@ -4,30 +4,28 @@ import java.util.*;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.query.algebra.*;
-import org.vanilladb.core.query.algebra.materialize.TempTable;
-import org.vanilladb.core.storage.tx.Transaction;
 
 /*
  * From key value to a list of records, hashMap storesa hash table. 
- * The hashed key is under fieldName  
+ * The hashed key is under fieldName
  */
 public class HashTable {
     public String fieldName;
-    public HashMap<Constant, Scan> hashMap;
+    public HashMap<Constant, VirtualScan> hashMap;
 
     public HashTable(String fName){
         fieldName = fName;
         hashMap = new HashMap<>();
     }
 
-    public void updateHashTable(Constant key, Scan src, Schema sch, Transaction tx){
+    public void updateHashTable(Constant key, Scan src, Schema sch){
         if(hashMap.containsKey(key)){
-            copyRecord(src, (UpdateScan) hashMap.get(key), sch);
+            hashMap.get(key).insert(copyRecord(src, sch));
         }
         else{
-		    Scan dest = null;
-            copyRecord(src, (UpdateScan) dest, sch);
-            hashMap.put(key,dest);
+            VirtualScan s = new VirtualScan(sch);
+            s.insert(copyRecord(src, sch));
+		    hashMap.put(key, s);
         }
     }
 
@@ -41,14 +39,15 @@ public class HashTable {
     /*
      * Insert one record to the hashtable 
      */
-    public void copyRecord(Scan src, UpdateScan dest, Schema sch) {
-        dest.insert();
+    public VirtualRecord copyRecord(Scan src, Schema sch) {
+        HashMap<String, Constant> record = new HashMap<>();
         for (String fldname : sch.fields())
-            dest.setVal(fldname, src.getVal(fldname));
+            record.put(fldname, src.getVal(fldname));
+        return new VirtualRecord(record);
     }
 
     public void close(){
-        for (Map.Entry<Constant, Scan> entry : hashMap.entrySet()){
+        for (Map.Entry<Constant, VirtualScan> entry : hashMap.entrySet()){
             entry.getValue().close();
         }
     }

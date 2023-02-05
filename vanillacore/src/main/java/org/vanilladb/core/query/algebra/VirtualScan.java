@@ -26,11 +26,6 @@ public class VirtualScan implements Scan {
 	private int current = 0; 
 	/**
 	 * Creates a select scan having the specified underlying scan and predicate.
-	 * 
-	 * @param s
-	 *            the scan of the underlying query
-	 * @param pred
-	 *            the selection predicate
 	 */
 	public VirtualScan(Schema sch) {
 		this.sch = sch;
@@ -75,5 +70,9 @@ public class VirtualScan implements Scan {
 
 	public void insert(VirtualRecord vr){
 		records.add(vr);
+	}
+
+	public int getSize(){
+		return records.size();
 	}
 }
