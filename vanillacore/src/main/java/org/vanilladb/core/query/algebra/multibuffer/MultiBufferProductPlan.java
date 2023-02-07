@@ -25,6 +25,13 @@ import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.sql.predicate.Predicate;
+import org.vanilladb.core.sql.predicate.Term;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import org.vanilladb.core.sql.Constant;
+import org.vanilladb.core.filter.filterPlan;
 
 /**
  * The {@link Plan} class for the muti-buffer version of the <em>product</em>
@@ -35,6 +42,9 @@ public class MultiBufferProductPlan implements Plan {
 	private Transaction tx;
 	private Schema schema;
 	private Histogram hist;
+	private boolean isThetaJoin;
+	private String fldName1, fldName2;
+	private List<String> joinFields;
 
 	/**
 	 * Creates a product plan for the specified queries.
@@ -46,7 +56,7 @@ public class MultiBufferProductPlan implements Plan {
 	 * @param tx
 	 *            the calling transaction
 	 */
-	public MultiBufferProductPlan(Plan lhs, Plan rhs, Transaction tx) {
+	public MultiBufferProductPlan(Plan lhs, Plan rhs, Transaction tx, Predicate joinPredicate) {
 		this.lhs = lhs;
 		this.rhs = rhs;
 		this.tx = tx;
@@ -54,6 +64,10 @@ public class MultiBufferProductPlan implements Plan {
 		schema.addAll(lhs.schema());
 		schema.addAll(rhs.schema());
 		hist = ProductPlan.productHistogram(lhs.histogram(), rhs.histogram());
+		isThetaJoin = joinPredicate.isThetaJoin();
+		joinFields = findJoinFields(joinPredicate, lhs.schema(), rhs.schema());
+		fldName1 = joinFields.get(0);
+		fldName2 = joinFields.get(1);
 		//System.out.println("Printing in multibuffer scan: " +  lhs.schema().toString() + " " + rhs.schema().toString());
 	}
 
@@ -71,12 +85,22 @@ public class MultiBufferProductPlan implements Plan {
 	public Scan open() {
 		TempTable tt = copyRecordsFrom(rhs);
 		TableInfo ti = tt.getTableInfo();
-		Scan leftscan = lhs.open();
 		//create filter in left side only for equal join 
-		// leftscan.beforeFirst();
-		// while(leftscan.next()){
-
-		// }
+		if(!isThetaJoin){//if this is equal join 
+			Scan leftscan = lhs.open();
+			leftscan.beforeFirst();
+			HashMap<Constant, Boolean> membership = new HashMap<>();
+			while(leftscan.next()){
+				Constant value = leftscan.getVal(fldName1);
+				if(!membership.containsKey(value)){
+					membership.put(value,true);
+				}
+			}
+			leftscan.close();
+			filterPlan.addFilter(fldName1, "membership", membership);
+			filterPlan.addFilter(fldName2, "membership", membership);
+		}
+		Scan leftscan = lhs.open();
 		return new MultiBufferProductScan(leftscan, ti, tx);
 	}
 
@@ -164,5 +188,22 @@ public class MultiBufferProductPlan implements Plan {
 		src.close();
 		dest.close();
 		return tt;
+	}
+
+	public List<String> findJoinFields(Predicate joinPred, Schema leftSchema, Schema rightSchema){
+		List<String> joinFields = new ArrayList<>();
+		Term t = joinPred.getTerms().iterator().next();
+		String leftJoinField = t.getlhsField();
+		String rightJoinField = t.getrhsField();
+		if(!leftJoinField.equals("NULL") && !rightJoinField.equals("NULL")){
+			if(leftSchema.hasField(leftJoinField) && rightSchema.hasField(rightJoinField)){
+				joinFields.add(leftJoinField);
+				joinFields.add(rightJoinField);
+			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
+				joinFields.add(rightJoinField);
+				joinFields.add(leftJoinField);
+			}
+		}
+		return joinFields;
 	}
 }
