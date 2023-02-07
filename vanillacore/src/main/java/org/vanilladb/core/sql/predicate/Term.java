@@ -116,7 +116,7 @@ public class Term {
 
 	private Operator op;
 	private Expression lhs, rhs;
-	private boolean isJoin;
+	private boolean isJoin, isThetaJoin;
 
 	public String getlhsField(){
 		if(lhs.isFieldName()){
@@ -138,14 +138,24 @@ public class Term {
 		this.rhs = rhs;
 		if(lhs.isFieldName() && rhs.isFieldName()){
 			isJoin = true;
+			if(!op.equals(OP_EQ)){
+				isThetaJoin = true;
+			}else{
+				isThetaJoin = false;
+			}
 		}
 		else{
 			isJoin = false;
+			isThetaJoin = false;
 		}
 	}
 
 	public boolean isjoin(){
 		return this.isJoin;
+	}
+
+	public boolean isThetaJoin(){
+		return this.isThetaJoin;
 	}
 
 	/**

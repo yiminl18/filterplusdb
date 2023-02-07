@@ -72,6 +72,11 @@ public class MultiBufferProductPlan implements Plan {
 		TempTable tt = copyRecordsFrom(rhs);
 		TableInfo ti = tt.getTableInfo();
 		Scan leftscan = lhs.open();
+		//create filter in left side only for equal join 
+		// leftscan.beforeFirst();
+		// while(leftscan.next()){
+
+		// }
 		return new MultiBufferProductScan(leftscan, ti, tx);
 	}
 

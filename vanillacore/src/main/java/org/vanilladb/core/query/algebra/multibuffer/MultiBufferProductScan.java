@@ -130,7 +130,7 @@ public class MultiBufferProductScan implements Scan {
 		long end = nextBlkNum + rhsChunkSize - 1;
 		if (end >= rhsFileSize)
 			end = rhsFileSize - 1;
-		rhsScan = new ChunkScan(rhsTi, nextBlkNum, end, tx);//the rhsScan is the optimization goal, in the ChunkScan 
+		rhsScan = new ChunkScan(rhsTi, nextBlkNum, end, tx);
 		prodScan = new ProductScan(lhsScan, rhsScan);//left table join with one chunk in the right table, so multi-scan in left table 
 		prodScan.beforeFirst();
 		nextBlkNum = end + 1;

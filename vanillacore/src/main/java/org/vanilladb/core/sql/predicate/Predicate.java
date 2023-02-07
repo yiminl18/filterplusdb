@@ -41,6 +41,7 @@ import org.vanilladb.core.sql.predicate.Term.Operator;
 public class Predicate {
 	private Collection<Term> terms = new ArrayList<Term>();
 	private boolean isJoin;
+	private boolean isThetaJoin;
 
 	/**
 	 * Creates an empty predicate, corresponding to "true".
@@ -56,6 +57,10 @@ public class Predicate {
 		return isJoin;
 	}
 
+	public boolean isThetaJoin(){
+		return isThetaJoin;
+	}
+
 	public Collection<Term> getTerms(){
 		return terms;
 	}
@@ -68,6 +73,14 @@ public class Predicate {
 		isJoin = false;
 	}
 
+	public void setThetaJoinbit(){
+		isThetaJoin = true;
+	}
+
+	public void unsetThetaJoinbit(){
+		isThetaJoin = false;
+	}
+
 	/**
 	 * Creates a predicate containing a single term.
 	 * 
@@ -77,7 +90,7 @@ public class Predicate {
 	public Predicate(Term t) {
 		terms.add(t);
 		isJoin = t.isjoin();
-		//System.out.print("print in predicate: " + t.toString() + " " + t.isjoin());
+		isThetaJoin = t.isThetaJoin();
 	}
 
 	/**
@@ -91,6 +104,9 @@ public class Predicate {
 		terms.add(t);
 		if(!t.isjoin()){
 			this.isJoin = false;
+		}
+		if(!t.isThetaJoin()){
+			this.isThetaJoin = false;
 		}
 	}
 
@@ -147,11 +163,15 @@ public class Predicate {
 		for (Term t : terms){
 			//System.out.println("checking term: " + t.toString());
 			if (!t.isApplicableTo(sch1) && !t.isApplicableTo(sch2)
-					&& t.isApplicableTo(newsch))
-				result.terms.add(t);
+					&& t.isApplicableTo(newsch)){
+						result.terms.add(t);
+						//t is a join predicate
+						if(t.isThetaJoin()){
+							result.setThetaJoinbit();
+						}
+					}
 		}
 		result.setJoinbit();
-			
 		return result.terms.size() == 0 ? null : result;
 	}
 
