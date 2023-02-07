@@ -298,7 +298,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("maxofcid"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal("maxofgradyear"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -326,12 +326,12 @@ public class testrun {
         JoinKnob.forceHashJoin();
         //JoinKnob.forceMultiBufferJoin();
         //JoinKnob.forceIndexJoin();
-        filterPlan.enable();
+        //filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        runStudentQueries(studentQueries.get(1));
+        runStudentQueries(studentQueries.get(2));
         //explainQuery(studentQueries.get(7));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));

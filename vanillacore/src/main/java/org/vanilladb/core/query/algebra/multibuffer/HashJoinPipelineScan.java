@@ -16,6 +16,7 @@
 package org.vanilladb.core.query.algebra.multibuffer;
 
 import org.vanilladb.core.sql.Schema;
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
@@ -49,6 +50,29 @@ public class HashJoinPipelineScan implements Scan {
 		isProbeEmpty = !probe.next();
 	}
 
+	// @Override
+	// public boolean next() {
+	// 	if(isProbeEmpty){
+	// 		return false;
+	// 	}
+	// 	if(current != null && current.next()){//move to the next matched tuple 
+	// 		return true;
+	// 	}
+	// 	else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
+	// 		Constant value = probe.getVal(probeField);
+	// 		Scan matched = HashTables.Probe(hashField, value);
+	// 		if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
+	// 			return next();
+	// 		}else{
+	// 			//System.out.println("Print in Hash Join: " + value);
+	// 			openscan(matched);
+	// 			return current.next();
+	// 		}
+	// 	}else{
+	// 		return false;
+	// 	}
+	// }
+
 	@Override
 	public boolean next() {
 		if(isProbeEmpty){
@@ -58,6 +82,9 @@ public class HashJoinPipelineScan implements Scan {
 			return true;
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
+			if(!filterPlan.checkFilter(probe)){//current probe tuple is invalid, move to next probe record 
+				return next();
+			}
 			Constant value = probe.getVal(probeField);
 			Scan matched = HashTables.Probe(hashField, value);
 			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
@@ -71,6 +98,36 @@ public class HashJoinPipelineScan implements Scan {
 			return false;
 		}
 	}
+
+	// @Override
+	// public boolean next() {
+	// 	if(isProbeEmpty){//if probe is complete 
+	// 		return false;
+	// 	}
+	// 	if(current != null && current.next()){//move to the next matched tuple 
+	// 		return true;
+	// 	}
+	// 	//move to next *valid* probe record 
+	// 	while(true){
+	// 		isProbeEmpty = !probe.next();
+	// 		if(!isProbeEmpty){
+	// 			if(filterPlan.checkFilter(probe)){//true means probe tuple passes test, then do join
+	// 				Constant value = probe.getVal(probeField);
+	// 				Scan matched = HashTables.Probe(hashField, value);
+	// 				if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
+	// 					return next();
+	// 				}else{
+	// 					openscan(matched);
+	// 					return current.next();
+	// 				}
+	// 			}else{//current probe tuple is invalid, move to next probe tuple 
+	// 				continue;
+	// 			}
+	// 		}else{
+	// 			return false;
+	// 		}
+	// 	}
+	// }
 
 	@Override
 	public void close() {
