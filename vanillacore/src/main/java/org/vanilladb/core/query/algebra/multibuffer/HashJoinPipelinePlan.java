@@ -22,7 +22,6 @@ import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
-import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.sql.predicate.Term;
 import org.vanilladb.core.sql.predicate.Predicate;
 
@@ -34,16 +33,13 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 	private Plan lhs, rhs;
 	private String fldName1, fldName2;
 	private List<String> joinFields;
-	private Transaction tx;
 	private Schema schema;
 	private Histogram hist;
 	private boolean build; //build = true means the lhs is the build table, otherwise is false
 
-	public HashJoinPipelinePlan(Plan lhs, Plan rhs, Predicate joinPredicate,
-			Transaction tx) {
+	public HashJoinPipelinePlan(Plan lhs, Plan rhs, Predicate joinPredicate) {
 		this.lhs = lhs;
 		this.rhs = rhs;
-		this.tx = tx;
 		schema = new Schema();
 		schema.addAll(lhs.schema());
 		schema.addAll(rhs.schema());
@@ -67,19 +63,19 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			}
 			lhsScan.close();
 			HashTables.close(fldName1);
-			return new HashJoinPipelineScan(build, rhs.open(), fldName1, fldName2, rhs.schema(), tx);
+			return new HashJoinPipelineScan(build, rhs.open(), fldName1, fldName2, rhs.schema());
 		}else{
 			//build hash table for rhs
 			this.build = false;
 			Scan rhsScan = rhs.open();
 			rhsScan.beforeFirst();
 			while(rhsScan.next()){
-				System.out.println("In HashJoinPipelinePlan: "  + fldName2 + " " + rhs.schema().toString());
+				//System.out.println("In HashJoinPipelinePlan: "  + fldName2 + " " + rhs.schema().toString());
 				HashTables.updateHashTable(fldName2,rhsScan.getVal(fldName2),rhsScan,rhs.schema());
 			}
 			rhsScan.close();
 			HashTables.close(fldName2);
-			return new HashJoinPipelineScan(build, lhs.open(), fldName1, fldName2, lhs.schema(), tx);
+			return new HashJoinPipelineScan(build, lhs.open(), fldName1, fldName2, lhs.schema());
 		}
 	}
 

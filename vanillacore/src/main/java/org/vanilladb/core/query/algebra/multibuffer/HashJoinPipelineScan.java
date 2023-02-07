@@ -19,24 +19,28 @@ import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.storage.tx.Transaction;
 import java.util.*;
 
 public class HashJoinPipelineScan implements Scan {
 	private Scan probe;
 	private String hashField; //the name of field that hash table has already been built 
+	private String probeField; //the name of field that probe table has 
 	private Scan current = null;
 	private Schema probSch; //the schema in probe side table 
 	private boolean isProbeEmpty; //true is empty
 
-	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Schema sch, Transaction tx) {
+	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Schema sch) {
 		this.probe = probe;
 		this.probSch = sch;
-		if(build){
+		if(build){//left is the build table 
 			this.hashField = fldname1;
+			this.probeField = fldname2;
 		}else{
 			this.hashField = fldname2;
+			this.probeField = fldname1;
 		}
+		//print debug info 
+		//System.out.println("In HashJoinPipelineScan: " + build + " " + hashField + " " + HashTables.hashTables.containsKey(hashField));
 	}
 
 	@Override
@@ -50,15 +54,16 @@ public class HashJoinPipelineScan implements Scan {
 		if(isProbeEmpty){
 			return false;
 		}
-		if(current.next()){//move to the next matched tuple 
+		if(current != null && current.next()){//move to the next matched tuple 
 			return true;
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
-			Constant value = probe.getVal(hashField);
+			Constant value = probe.getVal(probeField);
 			Scan matched = HashTables.Probe(hashField, value);
 			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
 				return next();
 			}else{
+				//System.out.println("Print in Hash Join: " + value);
 				openscan(matched);
 				return current.next();
 			}
@@ -95,6 +100,7 @@ public class HashJoinPipelineScan implements Scan {
 		vs.insert(copyRecord(probe, probSch));
 		//join with matched records in the hash table 
 		current = new ProductScan(vs,matched); 
+		current.beforeFirst();
 	}
 
 	public VirtualRecord copyRecord(Scan src, Schema sch) {

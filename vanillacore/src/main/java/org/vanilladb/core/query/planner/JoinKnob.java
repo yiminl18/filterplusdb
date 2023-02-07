@@ -27,4 +27,16 @@ public class JoinKnob {
         indexjoin = false;
         nestedloop = false;
     }
+
+    public static void forceMultiBufferJoin(){
+        indexjoin = false;
+        nestedloop = false;
+        hashjoin = false;
+    }
+
+    public static void forceIndexJoin(){
+        nestedloop = false;
+        hashjoin = false;
+        productJoin = false;
+    }
 }

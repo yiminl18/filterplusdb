@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.vanilladb.core.query.planner.opt;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +35,6 @@ import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.sql.predicate.Predicate;
 import org.vanilladb.core.storage.metadata.index.IndexInfo;
 import org.vanilladb.core.storage.tx.Transaction;
-import org.vanilladb.core.sql.predicate.Term;
 
 /**
  * This class contains methods for planning a single table.
@@ -129,35 +127,14 @@ class TablePlanner {
 		if(JoinKnob.indexjoin){
 			p = makeIndexJoinPlan(trunk, trunkSch);
 		}
-	
-		Plan p4 = makeHashJoinPlan(trunk, joinPred, tx);
-
-		// if (p == null){
-		// 	Plan p1=null, p2=null, p3=null;
-		// 	if(JoinKnob.nestedloop){
-		// 		//System.out.println("Printing in TablePlanner: A NestedLoopJoin applied in: " + leftJoinField + " " + rightJoinField);
-		// 		//p1 = makeNestedLoopJoinPlan(trunk, leftJoinField, rightJoinField);
-		// 	}
-		// 	if(JoinKnob.productJoin){
-		// 		p2 = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
-		// 	}
-		// 	if(JoinKnob.hashjoin){
-		// 		//p3 = makeHashJoinPlan(trunk, leftJoinField, rightJoinField, tx);
-		// 	}
-		// 	if(p3!=null && p2!=null && p3.blocksAccessed() < p2.blocksAccessed()){
-		// 		p = p3;
-		// 	}else if(p3!=null && p2!=null && p3.blocksAccessed() > p2.blocksAccessed()){
-		// 		p = p2;
-		// 	}else if(p2 == null){
-		// 		p = p3;
-		// 	}else if(p3 == null && p2!=null){
-		// 		p = p2;
-		// 	}else if(p3==null && p2==null){
-		// 		p = p1;
-		// 	}
-		// }
+		if(JoinKnob.hashjoin){
+			p = makeHashJoinPlan(trunk, joinPred);
+		}
+		if(JoinKnob.productJoin){
+			p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+		}
 			
-		return p4;
+		return p;
 	}
 
 	
@@ -176,7 +153,7 @@ class TablePlanner {
 	 */
 	public Plan makeProductPlan(Plan trunk) {
 		Plan p = makeSelectPlan();
-		System.out.print("Printing in TablePlanner: Product Plan is called!");
+		//System.out.print("Printing in TablePlanner: Product Plan is called!");
 		return new MultiBufferProductPlan(trunk, p, tx);
 	}
 
@@ -185,9 +162,9 @@ class TablePlanner {
 		return new NestedLoopJoinPlan(trunk, p, leftJoinField, rightJoinField);
 	}
 
-	public Plan makeHashJoinPlan(Plan lhs, Predicate joinPredicate, Transaction tx){
+	public Plan makeHashJoinPlan(Plan lhs, Predicate joinPredicate){
 		Plan p = makeSelectPlan();
-		return new HashJoinPipelinePlan(lhs, p, joinPredicate, tx);
+		return new HashJoinPipelinePlan(lhs, p, joinPredicate);
 	}
 
 	// public Plan makeHashPlan(Predicate joinPred, Plan trunk){

@@ -35,6 +35,22 @@ public class ProductScan implements Scan {
 	public ProductScan(Scan s1, Scan s2) {
 		this.s1 = s1;
 		this.s2 = s2;
+		// System.out.println("In ProductScan: print s1 and s2");
+		// s1.beforeFirst();
+		// while(!s1.next()){
+		// 	if(s1.hasField("cid")){
+		// 		System.out.println(s1.getVal("cid"));
+		// 	}
+		// }
+		// s1.beforeFirst();
+		// s2.beforeFirst();
+		// while(!s2.next()){
+		// 	if(s2.hasField("cid")){
+		// 		System.out.println(s2.getVal("cid"));
+		// 	}
+		// }
+		// s2.beforeFirst();
+		// System.out.println("In ProductScan: end");
 	}
 
 	/**
@@ -65,15 +81,9 @@ public class ProductScan implements Scan {
 			return false;
 		// the old method
 		if (s2.next()){
-			// if(s2.hasField("studentid")){
-			// 	//System.out.println("testing 1 s2 studentid: " + s2.getVal("studentid"));
-			// }
 			return true;
 		}
 		else if (!(isLhsEmpty = !s1.next())) {//rhs is empty but but Lhs is not empty
-			// if(s1.hasField("sid")){
-			// 	System.out.println("testing 1 s1 sid: " + s1.getVal("sid"));
-			// }
 			s2.beforeFirst();
 			return s2.next();
 		} else {

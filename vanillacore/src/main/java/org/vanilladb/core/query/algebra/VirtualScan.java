@@ -35,7 +35,7 @@ public class VirtualScan implements Scan {
 
 	@Override
 	public void beforeFirst() {
-		current = 0;
+		current = -1;
 	}
 
 	/**
@@ -47,10 +47,10 @@ public class VirtualScan implements Scan {
 	 */
 	@Override
 	public boolean next() {
+		current ++;
 		if(current >= records.size()){
 			return false;
 		}
-		current ++; 
 		return true;
 	}
 
