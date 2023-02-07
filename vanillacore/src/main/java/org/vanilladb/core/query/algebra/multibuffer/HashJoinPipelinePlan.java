@@ -16,7 +16,10 @@
 package org.vanilladb.core.query.algebra.multibuffer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.AbstractJoinPlan;
 import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.Scan;
@@ -24,6 +27,7 @@ import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
 import org.vanilladb.core.sql.predicate.Term;
 import org.vanilladb.core.sql.predicate.Predicate;
+import org.vanilladb.core.sql.Constant;
 
 /**
  * Non-recursive implementation of the hashjoin algorithm that performs hashing
@@ -52,6 +56,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 
 	@Override
 	public Scan open() {
+		HashMap<Constant, Boolean> membership = new HashMap<>();
 		//build hash table for the smaller relation 
 		if(lhs.blocksAccessed() < rhs.blocksAccessed()){
 			//build hash table for lhs
@@ -59,10 +64,16 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			Scan lhsScan = lhs.open();
 			lhsScan.beforeFirst();
 			while(lhsScan.next()){
-				HashTables.updateHashTable(fldName1,lhsScan.getVal(fldName1),lhsScan, lhs.schema());
+				Constant value = lhsScan.getVal(fldName1);
+				HashTables.updateHashTable(fldName1,value,lhsScan, lhs.schema());
+				if(!membership.containsKey(value)){
+					membership.put(value,true);
+				}
 			}
 			lhsScan.close();
 			HashTables.close(fldName1);
+			filterPlan.addFilter(fldName1, "membership", membership);
+			filterPlan.addFilter(fldName2, "membership", membership);
 			return new HashJoinPipelineScan(build, rhs.open(), fldName1, fldName2, rhs.schema());
 		}else{
 			//build hash table for rhs
@@ -70,11 +81,16 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			Scan rhsScan = rhs.open();
 			rhsScan.beforeFirst();
 			while(rhsScan.next()){
-				//System.out.println("In HashJoinPipelinePlan: "  + fldName2 + " " + rhs.schema().toString());
-				HashTables.updateHashTable(fldName2,rhsScan.getVal(fldName2),rhsScan,rhs.schema());
+				Constant value = rhsScan.getVal(fldName2);
+				HashTables.updateHashTable(fldName2,value,rhsScan,rhs.schema());
+				if(!membership.containsKey(value)){
+					membership.put(value,true);
+				}
 			}
 			rhsScan.close();
 			HashTables.close(fldName2);
+			filterPlan.addFilter(fldName1, "membership", membership);
+			filterPlan.addFilter(fldName2, "membership", membership);
 			return new HashJoinPipelineScan(build, lhs.open(), fldName1, fldName2, lhs.schema());
 		}
 	}

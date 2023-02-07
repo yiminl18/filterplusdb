@@ -323,10 +323,10 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        //JoinKnob.forceHashJoin();
-        JoinKnob.forceMultiBufferJoin();
+        JoinKnob.forceHashJoin();
+        //JoinKnob.forceMultiBufferJoin();
         //JoinKnob.forceIndexJoin();
-        //filterPlan.enable();
+        filterPlan.enable();
         //loadData();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");

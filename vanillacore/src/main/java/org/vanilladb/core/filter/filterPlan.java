@@ -117,7 +117,7 @@ public class filterPlan{
      * We do not update membership filter for now, only update the range filter
      */
 
-    public static boolean updateFilter(String filterType, String attr, Constant low, Constant high, HashMap<Constant, Boolean> memberships){
+    public static boolean updateFilter(String filterType, String attr, Constant low, Constant high){
         if(!enable){
             return false;
         }
@@ -131,8 +131,6 @@ public class filterPlan{
                     f.low = low;
                 }else if(filterType.equals("min")){
                     f.high = high;
-                }else if(filterType.equals("membership")){
-                    f.memberships = memberships;
                 }
                 return true;
             }

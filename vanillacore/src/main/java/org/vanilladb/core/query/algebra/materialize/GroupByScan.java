@@ -81,6 +81,7 @@ public class GroupByScan implements Scan {
 		if (aggFns != null)
 			for (AggregationFn fn : aggFns){
 				String agg = fn.fieldName().substring(0,3);
+				//System.out.println("In Groupby scan filter creation!");
 				if(agg.equals("max")){//filter should be attr >= fn.value()
 					String attr = fn.fieldName().substring(5);
 					filterPlan.addFilter(attr, "max", fn.value(), new DoubleConstant(0), true, false, true, false);
@@ -108,13 +109,14 @@ public class GroupByScan implements Scan {
 					//fn.value() is the computed aggregation value so far, e.g., if agg = max, fn.value() is the maxmum value so far, we can directly use it 
 					//fn.fieldName(), maxof, minof, countof, avgof, sumof, use the first 3 letters to decide type 
 					String agg = fn.fieldName().substring(0,3);
+					//System.out.println("In Groupby scan filter update!");
 					if(agg.equals("max")){//filter should be attr >= fn.value()
 						String attr = fn.fieldName().substring(5);
-						filterPlan.updateFilter("max", attr, fn.value(), new IntegerConstant(0), null);
+						filterPlan.updateFilter("max", attr, fn.value(), new IntegerConstant(0));
 					}
 					else if(agg.equals("min")){//filter should be attr<=fn.value()
 						String attr = fn.fieldName().substring(5);
-						filterPlan.updateFilter("min", attr, new IntegerConstant(0), fn.value(), null);
+						filterPlan.updateFilter("min", attr, new IntegerConstant(0), fn.value());
 					}
 					
 					fn.processNext(ss);
