@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
 
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.sql.Constant;
 /**
  * The scan class corresponding to the <em>product</em> relational algebra
@@ -35,22 +36,6 @@ public class ProductScan implements Scan {
 	public ProductScan(Scan s1, Scan s2) {
 		this.s1 = s1;
 		this.s2 = s2;
-		// System.out.println("In ProductScan: print s1 and s2");
-		// s1.beforeFirst();
-		// while(!s1.next()){
-		// 	if(s1.hasField("cid")){
-		// 		System.out.println(s1.getVal("cid"));
-		// 	}
-		// }
-		// s1.beforeFirst();
-		// s2.beforeFirst();
-		// while(!s2.next()){
-		// 	if(s2.hasField("cid")){
-		// 		System.out.println(s2.getVal("cid"));
-		// 	}
-		// }
-		// s2.beforeFirst();
-		// System.out.println("In ProductScan: end");
 	}
 
 	/**
@@ -79,40 +64,23 @@ public class ProductScan implements Scan {
 	public boolean next() {
 		if (isLhsEmpty)
 			return false;
-		// the old method
 		if (s2.next()){
+			//if rhs record does not pass filter check, move to next rhs record
+			if(!filterPlan.checkFilter(s2)){
+				return next();
+			}
 			return true;
 		}
 		else if (!(isLhsEmpty = !s1.next())) {//rhs is empty but but Lhs is not empty
+			//if lhs record does not pass filter check, move to next lhs record
+			if(!filterPlan.checkFilter(s1)){
+				return next();
+			}
 			s2.beforeFirst();
 			return s2.next();
 		} else {
 			return false;
 		}
-		// the new code s
-		// while(!s2.next()){
-		// 	if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
-		// 		System.out.println("s2 failed in 1!");
-		// 		continue;
-		// 	}
-		// 	//current tuple pass filter test 
-		// 	return true;
-		// }
-		// if(!(isLhsEmpty = !s1.next())){//Lhs is not empty
-		// 	s2.beforeFirst();
-		// 	while(!s2.next()){
-		// 		if(!filterPlan.checkFilter(s2)){//if current tuple failed filter test, check next tuple
-		// 			System.out.println("s2 failed in 2!");
-		// 			continue;
-		// 		}
-		// 		return true;
-		// 	}
-		// 	return false;
-		// }
-		// else{
-		// 	return false;
-		// }
-		
 	}
 
 	/**
