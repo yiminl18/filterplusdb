@@ -18,6 +18,8 @@ package org.vanilladb.core.query.algebra.index;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.vanilladb.core.filter.filter;
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.query.algebra.TableScan;
 import org.vanilladb.core.sql.Constant;
@@ -87,9 +89,16 @@ public class IndexJoinScan implements Scan {
 			return false;
 		if (idx.next()) {//if index finds matched tuples for current lhs record, return true 
 			ts.moveToRecordId(idx.getDataRecordId());
+			if(!filterPlan.checkFilter(ts)){//if current tuple failed filter check, move to next record in rhs from index 
+				return next();
+			}
 			ifNext = true;
 			return true;
 		} else if (!(isLhsEmpty = !s.next())) {//lhs is not empty, move to next lhs record 
+			//if current lhs record does not satisfy the filter check, move to the next one 
+			if(!filterPlan.checkFilter(s)){
+				return next();
+			}
 			// if(!ifNext){
 			// 	//add theta-join check point here 
 			// }
@@ -134,6 +143,9 @@ public class IndexJoinScan implements Scan {
 		return ts.hasField(fldName) || s.hasField(fldName);
 	}
 
+	/*
+	 * Reset the index based on the current join attribute value 
+	 */
 	private void resetIndex() {
 		Map<String, ConstantRange> ranges = new HashMap<String, ConstantRange>();
 		
