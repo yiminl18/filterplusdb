@@ -81,6 +81,13 @@ public class Predicate {
 		isThetaJoin = false;
 	}
 
+	public Operator getOp(){
+		for (Term t : terms){
+			return t.getOp();
+		}
+		return null;
+	}
+
 	/**
 	 * Creates a predicate containing a single term.
 	 * 

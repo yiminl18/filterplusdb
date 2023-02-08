@@ -118,6 +118,10 @@ public class Term {
 	private Expression lhs, rhs;
 	private boolean isJoin, isThetaJoin;
 
+	public Operator getOp(){
+		return op;
+	}
+
 	public String getlhsField(){
 		if(lhs.isFieldName()){
 			return lhs.toString();

@@ -153,7 +153,7 @@ public class IndexJoinScan implements Scan {
 			String lhsField = fieldPair.getKey();
 			String rhsField = fieldPair.getValue();
 			Constant commonVal = s.getVal(lhsField);
-			ConstantRange range = ConstantRange.newInstance(commonVal);
+			ConstantRange range = ConstantRange.newInstance(commonVal);//only for equal join, could be improved to be theta join
 			ranges.put(rhsField, range);
 		}
 		

@@ -31,7 +31,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.vanilladb.core.sql.Constant;
+import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.filter.filterPlan;
+import org.vanilladb.core.sql.predicate.Term.Operator;
+import static org.vanilladb.core.sql.predicate.Term.OP_EQ;
+import static org.vanilladb.core.sql.predicate.Term.OP_GT;
+import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
+import static org.vanilladb.core.sql.predicate.Term.OP_LT;
+import static org.vanilladb.core.sql.predicate.Term.OP_LTE;
 
 /**
  * The {@link Plan} class for the muti-buffer version of the <em>product</em>
@@ -45,6 +52,7 @@ public class MultiBufferProductPlan implements Plan {
 	private boolean isThetaJoin;
 	private String fldName1, fldName2;
 	private List<String> joinFields;
+	private Operator op;
 
 	/**
 	 * Creates a product plan for the specified queries.
@@ -68,6 +76,7 @@ public class MultiBufferProductPlan implements Plan {
 		joinFields = findJoinFields(joinPredicate, lhs.schema(), rhs.schema());
 		fldName1 = joinFields.get(0);
 		fldName2 = joinFields.get(1);
+		op = joinPredicate.getOp();
 		//System.out.println("Printing in multibuffer scan: " +  lhs.schema().toString() + " " + rhs.schema().toString());
 	}
 
@@ -99,6 +108,39 @@ public class MultiBufferProductPlan implements Plan {
 			leftscan.close();
 			filterPlan.addFilter(fldName1, "membership", membership);
 			filterPlan.addFilter(fldName2, "membership", membership);
+		}else{//if this is theta-join
+			if(op!=null){
+				Scan leftscan = lhs.open();
+				leftscan.beforeFirst();
+				Constant max_v = null, min_v = null;
+				boolean first = false;
+				while(leftscan.next()){
+					Constant value = leftscan.getVal(fldName1);
+					if(!first){//assign initial values of max_v, min_v
+						max_v = value;
+						min_v = value;
+						first = true;
+					}
+					if(value.compareTo(max_v) > 0){
+						max_v = value;
+					}
+					if(value.compareTo(min_v) < 0){
+						min_v = value;
+					}
+				}
+				leftscan.close();
+				//create filter from theta join
+				if(op == OP_GT){//> filter: rhs < max_v
+					filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, false, false, true);
+				}else if(op == OP_GTE){//>= filter: rhs <= max_v
+					filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, true, false, true);
+				}else if(op == OP_LT){//< filter: rhs > min_v
+					filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), false, false, true, false);
+				}else if(op == OP_LTE){//<= filter: rhs >= min_v
+					filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), true, false, true, false);
+				}
+			}
+			
 		}
 		Scan leftscan = lhs.open();
 		return new MultiBufferProductScan(leftscan, ti, tx);
