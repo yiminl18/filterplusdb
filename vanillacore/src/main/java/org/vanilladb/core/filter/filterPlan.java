@@ -14,7 +14,13 @@ public class filterPlan{
         enableMaxmin = true;
     }
 
+    public static void enableEqualJoinFilter(){
+        enableEqual = true;
+    }
 
+    public static void enableThetaJoinFilter(){
+        enableTheta = true;
+    }
 
     public static void addFilter(String attr, String filterType, Constant low, Constant high, Boolean low_include, Boolean high_include, Boolean is_low, Boolean is_high){
         filter f = new filter(attr, filterType, low, high, low_include, high_include, is_low, is_high);
@@ -46,6 +52,9 @@ public class filterPlan{
         for(int i=0;i<filters.get(attr).size();i++){
             filter f = filters.get(attr).get(i);
             if(f.filterType.equals("max")){
+                if(!enableMaxmin){//max,min filter is closed, do not check 
+                    return true;
+                }
                 if(f.low == null){
                     return true;
                 }
@@ -53,6 +62,9 @@ public class filterPlan{
                     return false;
                 }
             }else if(f.filterType.equals("min")){
+                if(!enableMaxmin){//max,min filter is closed, do not check 
+                    return true;
+                }
                 if(f.high == null){
                     return true;
                 }
@@ -60,6 +72,9 @@ public class filterPlan{
                     return false;
                 }
             }else if(f.filterType.equals("membership")){
+                if(!enableEqual){//equal filter is closed, do not check 
+                    return true;
+                }
                 if(!f.memberships.containsKey(value)){
                     return false;
                 }
@@ -76,7 +91,9 @@ public class filterPlan{
                 for(int i=0;i<filters.get(attr).size();i++){
                     filter f = filters.get(attr).get(i);
                     if(f.filterType.equals("max")){
-                        //System.out.println("---- in filter Plan: " + attr + " " + f.low + " " + value);
+                        if(!enableMaxmin){//max,min filter is closed, do not check 
+                            return true;
+                        }
                         if(f.low == null){
                             return true;
                         }
@@ -84,6 +101,9 @@ public class filterPlan{
                             return false;
                         }
                     }else if(f.filterType.equals("min")){
+                        if(!enableMaxmin){//max,min filter is closed, do not check 
+                            return true;
+                        }
                         if(f.high == null){
                             return true;
                         }
@@ -91,6 +111,9 @@ public class filterPlan{
                             return false;
                         }
                     }else if(f.filterType.equals("membership")){
+                        if(!enableEqual){//equal filter is closed, do not check 
+                            return true;
+                        }
                         if(!f.memberships.containsKey(value)){
                             return false;
                         }
