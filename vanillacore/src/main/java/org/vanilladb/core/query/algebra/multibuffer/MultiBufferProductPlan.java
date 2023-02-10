@@ -34,7 +34,6 @@ import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.sql.predicate.Term.Operator;
-import static org.vanilladb.core.sql.predicate.Term.OP_EQ;
 import static org.vanilladb.core.sql.predicate.Term.OP_GT;
 import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
 import static org.vanilladb.core.sql.predicate.Term.OP_LT;

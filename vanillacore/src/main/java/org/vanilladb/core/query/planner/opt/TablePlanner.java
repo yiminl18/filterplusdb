@@ -131,7 +131,7 @@ class TablePlanner {
 			p = makeHashJoinPlan(trunk, joinPred);
 		}
 		if(JoinKnob.productJoin){
-			p = makeProductJoinPlan(trunk, trunkSch, joinPred);//ihe: do not use product join for now 
+			p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
 		}
 			
 		return p;
@@ -151,10 +151,12 @@ class TablePlanner {
 	 *            the specified trunk of join
 	 * @return a product plan of the trunk and this table
 	 */
-	public Plan makeProductPlan(Plan trunk, Predicate joinPredicate) {
+	public Plan makeProductPlan(Plan trunk) {
 		Plan p = makeSelectPlan();
+		Schema trunkSch = trunk.schema();
+		Predicate joinPred = pred.joinPredicate(sch, trunkSch);
 		//System.out.print("Printing in TablePlanner: Product Plan is called!");
-		return new MultiBufferProductPlan(trunk, p, tx, joinPredicate);
+		return new MultiBufferProductPlan(trunk, p, tx, joinPred);
 	}
 
 	public Plan makeNestedLoopJoinPlan(Plan trunk, String leftJoinField, String rightJoinField){
@@ -249,8 +251,8 @@ class TablePlanner {
 		return null;
 	}
 
-	private Plan makeProductJoinPlan(Plan current, Schema currSch, Predicate joinPredicate) {
-		Plan p = makeProductPlan(current, joinPredicate);
+	private Plan makeProductJoinPlan(Plan current, Schema currSch) {
+		Plan p = makeProductPlan(current);
 		return addJoinPredicate(p, currSch);
 	}
 

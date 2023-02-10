@@ -18,7 +18,6 @@ package org.vanilladb.core.query.algebra.index;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vanilladb.core.filter.filter;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.query.algebra.TableScan;
@@ -39,7 +38,6 @@ public class IndexJoinScan implements Scan {
 	private Index idx;
 	private Map<String, String> joinFields; // <LHS field -> RHS field>
 	private boolean isLhsEmpty;
-	private boolean ifNext;// use to record if current lhs record has any matched tuple in the right side 
 
 	/**
 	 * Creates an index join scan for the specified LHS scan and RHS index.
@@ -92,7 +90,6 @@ public class IndexJoinScan implements Scan {
 			if(!filterPlan.checkFilter(ts)){//if current tuple failed filter check, move to next record in rhs from index 
 				return next();
 			}
-			ifNext = true;
 			return true;
 		} else if (!(isLhsEmpty = !s.next())) {//lhs is not empty, move to next lhs record 
 			//if current lhs record does not satisfy the filter check, move to the next one 
@@ -160,7 +157,6 @@ public class IndexJoinScan implements Scan {
 		SearchRange searchRange = new SearchRange(idx.getIndexInfo().fieldNames(),
 				idx.getKeyType(), ranges);
 		idx.beforeFirst(searchRange);
-		ifNext = false;
 	}
 
 }

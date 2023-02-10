@@ -72,7 +72,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			}
 			lhsScan.close();
 			HashTables.close(fldName1);
-			filterPlan.addFilter(fldName1, "membership", membership);
+			//filterPlan.addFilter(fldName1, "membership", membership);
 			filterPlan.addFilter(fldName2, "membership", membership);
 			return new HashJoinPipelineScan(build, rhs.open(), fldName1, fldName2, rhs.schema());
 		}else{
@@ -90,7 +90,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			rhsScan.close();
 			HashTables.close(fldName2);
 			filterPlan.addFilter(fldName1, "membership", membership);
-			filterPlan.addFilter(fldName2, "membership", membership);
+			//filterPlan.addFilter(fldName2, "membership", membership);
 			return new HashJoinPipelineScan(build, lhs.open(), fldName1, fldName2, lhs.schema());
 		}
 	}
