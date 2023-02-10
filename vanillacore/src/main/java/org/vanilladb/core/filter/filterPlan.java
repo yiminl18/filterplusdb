@@ -79,6 +79,27 @@ public class filterPlan{
                     return false;
                 }
             }
+            else if(f.filterType.equals("range")){
+                if(!enableTheta){
+                    return true;
+                }
+                if(f.is_low){//low<value
+                    if(f.low_include && f.low != null && value.compareTo(f.low) < 0){//filter is low <= value, but the fact is low > value
+                        return false;
+                    }
+                    if(!f.low_include && f.low != null && value.compareTo(f.low) <= 0){//filter is low < value, but the fact is low >= value
+                        return false;
+                    }
+                }
+                if(f.is_high){//value<high
+                    if(f.high_include && f.high != null && value.compareTo(f.high) > 0){//filter is value <= high, but the fact is value > high
+                        return false;
+                    }
+                    if(!f.high_include && f.high != null && value.compareTo(f.high) >= 0){//filter is value < high, but the fact is value >= high
+                        return false;
+                    }
+                }
+            }
         }
         return true;
     }
@@ -117,6 +138,26 @@ public class filterPlan{
                         if(!f.memberships.containsKey(value)){
                             return false;
                         }
+                    }else if(f.filterType.equals("range")){
+                        if(!enableTheta){
+                            return true;
+                        }
+                        if(f.is_low){//low<value
+                            if(f.low_include && f.low != null && value.compareTo(f.low) < 0){//filter is low <= value, but the fact is low > value
+                                return false;
+                            }
+                            if(!f.low_include && f.low != null && value.compareTo(f.low) <= 0){//filter is low < value, but the fact is low >= value
+                                return false;
+                            }
+                        }
+                        if(f.is_high){//value<high
+                            if(f.high_include && f.high != null && value.compareTo(f.high) > 0){//filter is value <= high, but the fact is value > high
+                                return false;
+                            }
+                            if(!f.high_include && f.high != null && value.compareTo(f.high) >= 0){//filter is value < high, but the fact is value >= high
+                                return false;
+                            }
+                        }
                     }
                 }
             }
@@ -125,7 +166,7 @@ public class filterPlan{
     }
 
     /*
-     * We do not update membership filter for now, only update the range filter
+     * We do not update membership filter for now, only update the range filter.
      */
 
     public static boolean updateFilter(String filterType, String attr, Constant low, Constant high){

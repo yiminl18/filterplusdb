@@ -9,7 +9,7 @@ public class filter{
      * This class implements new filters discovered at query runtime
      */
     public String attr;
-    public String filterType;//"max", "min" or "membership"
+    public String filterType;//"max", "min", "membership", "range"
     //range filters
     public Constant low, high;
     public boolean low_include, high_include, is_low, is_high;//is low: low side valid or not, low include, low side include (>=) or not (>)
