@@ -123,12 +123,19 @@ class TablePlanner {
 		if(joinPred.length() > 1){
 			System.out.println("Printing in TablePlanner: There exist more than one join connecting a pair of tables");
 		}
+		//in the order of index plan, hash plan and product plan 
 		Plan p = null;
 		if(JoinKnob.indexjoin){
 			p = makeIndexJoinPlan(trunk, trunkSch);
 		}
+		if(p != null){
+			return p;
+		}
 		if(JoinKnob.hashjoin){
 			p = makeHashJoinPlan(trunk, joinPred);
+		}
+		if(p != null){
+			return p;
 		}
 		if(JoinKnob.productJoin){
 			p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 

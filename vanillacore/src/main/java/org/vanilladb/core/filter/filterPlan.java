@@ -8,7 +8,9 @@ public class filterPlan{
     public static HashMap<String, List<filter>> filters = new HashMap<>();//store attr to a set of filters that are applicable on it 
     //public static HashMap<String, Boolean> attrs = new HashMap<>();
 
-    public static int numberOfDroppedTuple = 0;
+    public static int numberOfDroppedTuplefromMAXMIN = 0;
+    public static int numberOfDroppedTuplefromEqual = 0;
+    public static int numberOfDroppedTuplefromTheta = 0;
 
     public static void enableMaxminFilter(){
         enableMaxmin = true;
@@ -59,6 +61,7 @@ public class filterPlan{
                     return true;
                 }
                 if(value.compareTo(f.low) < 0){
+                    numberOfDroppedTuplefromMAXMIN ++;
                     return false;
                 }
             }else if(f.filterType.equals("min")){
@@ -69,6 +72,7 @@ public class filterPlan{
                     return true;
                 }
                 if(value.compareTo(f.high) > 0){
+                    numberOfDroppedTuplefromMAXMIN ++;
                     return false;
                 }
             }else if(f.filterType.equals("membership")){
@@ -76,6 +80,7 @@ public class filterPlan{
                     return true;
                 }
                 if(!f.memberships.containsKey(value)){
+                    numberOfDroppedTuplefromEqual ++;
                     return false;
                 }
             }
@@ -85,17 +90,21 @@ public class filterPlan{
                 }
                 if(f.is_low){//low<value
                     if(f.low_include && f.low != null && value.compareTo(f.low) < 0){//filter is low <= value, but the fact is low > value
+                        numberOfDroppedTuplefromTheta ++;
                         return false;
                     }
                     if(!f.low_include && f.low != null && value.compareTo(f.low) <= 0){//filter is low < value, but the fact is low >= value
+                        numberOfDroppedTuplefromTheta ++;
                         return false;
                     }
                 }
                 if(f.is_high){//value<high
                     if(f.high_include && f.high != null && value.compareTo(f.high) > 0){//filter is value <= high, but the fact is value > high
+                        numberOfDroppedTuplefromTheta ++;
                         return false;
                     }
                     if(!f.high_include && f.high != null && value.compareTo(f.high) >= 0){//filter is value < high, but the fact is value >= high
+                        numberOfDroppedTuplefromTheta ++;
                         return false;
                     }
                 }
@@ -119,6 +128,7 @@ public class filterPlan{
                             return true;
                         }
                         if(value.compareTo(f.low) < 0){
+                            numberOfDroppedTuplefromMAXMIN ++;
                             return false;
                         }
                     }else if(f.filterType.equals("min")){
@@ -129,6 +139,7 @@ public class filterPlan{
                             return true;
                         }
                         if(value.compareTo(f.high) > 0){
+                            numberOfDroppedTuplefromMAXMIN ++;
                             return false;
                         }
                     }else if(f.filterType.equals("membership")){
@@ -136,6 +147,7 @@ public class filterPlan{
                             return true;
                         }
                         if(!f.memberships.containsKey(value)){
+                            numberOfDroppedTuplefromEqual ++;
                             return false;
                         }
                     }else if(f.filterType.equals("range")){
@@ -144,17 +156,21 @@ public class filterPlan{
                         }
                         if(f.is_low){//low<value
                             if(f.low_include && f.low != null && value.compareTo(f.low) < 0){//filter is low <= value, but the fact is low > value
+                                numberOfDroppedTuplefromTheta ++;
                                 return false;
                             }
                             if(!f.low_include && f.low != null && value.compareTo(f.low) <= 0){//filter is low < value, but the fact is low >= value
+                                numberOfDroppedTuplefromTheta ++;
                                 return false;
                             }
                         }
                         if(f.is_high){//value<high
                             if(f.high_include && f.high != null && value.compareTo(f.high) > 0){//filter is value <= high, but the fact is value > high
+                                numberOfDroppedTuplefromTheta ++;
                                 return false;
                             }
                             if(!f.high_include && f.high != null && value.compareTo(f.high) >= 0){//filter is value < high, but the fact is value >= high
+                                numberOfDroppedTuplefromTheta ++;
                                 return false;
                             }
                         }
@@ -196,5 +212,9 @@ public class filterPlan{
                 filter.get(i).print();
             }
         }
+    }
+
+    public static void filterStats(){
+        System.out.println("number of saved tuples from max/min, equal, theta join filter: " + numberOfDroppedTuplefromMAXMIN + " " + numberOfDroppedTuplefromEqual + " " + numberOfDroppedTuplefromTheta);
     }
 }

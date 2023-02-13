@@ -323,21 +323,19 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        JoinKnob.forceHashJoin();
-        //JoinKnob.forceMultiBufferJoin();
-        //JoinKnob.forceIndexJoin();
-        //filterPlan.enable();
+        filterPlan.enableMaxminFilter();
+        //filterPlan.enableEqualJoinFilter();
         //loadData();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(2));
-        //explainQuery(studentQueries.get(7));
+        explainQuery(studentQueries.get(7));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
-        System.out.println("number of dropped tupels: " + filterPlan.numberOfDroppedTuple);
         System.out.println("Filters:");
         filterPlan.printFilter();
+        filterPlan.filterStats();
         //resetDb(dbname);
         
         //test1();
