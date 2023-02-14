@@ -350,9 +350,9 @@ public class RecordPage implements Record {
 		return false;
 	}
 
-	private Constant getVal(int offset, Type type) {
-		if (!isTempTable())
-			tx.concurrencyMgr().readRecord(new RecordId(blk, currentSlot));
+	private Constant getVal(int offset, Type type) {//ihe
+		// if (!isTempTable())
+		// 	tx.concurrencyMgr().readRecord(new RecordId(blk, currentSlot));
 		return currentBuff.getVal(offset, type);
 	}
 

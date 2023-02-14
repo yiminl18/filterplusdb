@@ -76,7 +76,7 @@ public class SerializableConcurrencyMgr extends ConcurrencyMgr {
 	}
 
 	@Override
-	public void readRecord(RecordId recId) {
+	public void readRecord(RecordId recId) {//ihe
 		lockTbl.isLock(recId.block().fileName(), txNum);
 		lockTbl.isLock(recId.block(), txNum);
 		lockTbl.sLock(recId, txNum);

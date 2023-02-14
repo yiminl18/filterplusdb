@@ -92,9 +92,12 @@ public class IndexJoinScan implements Scan {
 			}
 			return true;
 		} else if (!(isLhsEmpty = !s.next())) {//lhs is not empty, move to next lhs record 
-			//if current lhs record does not satisfy the filter check, move to the next one 
-			if(!filterPlan.checkFilter(s)){
-				return next();
+			//if current lhs record does not satisfy the filter check, move to the next valid one 
+			while(!filterPlan.checkFilter(s)){
+				if(!s.next()){
+					isLhsEmpty = false;
+					return false;
+				}				
 			}
 			// if(!ifNext){
 			// 	//add theta-join check point here 

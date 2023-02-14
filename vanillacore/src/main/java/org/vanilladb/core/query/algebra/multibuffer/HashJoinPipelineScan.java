@@ -40,6 +40,7 @@ public class HashJoinPipelineScan implements Scan {
 			this.hashField = fldname2;
 			this.probeField = fldname1;
 		}
+		System.out.println("In hashscan: " + hashField + " " + probeField + " " + probSch.toString());
 		//print debug info 
 		//System.out.println("In HashJoinPipelineScan: " + build + " " + hashField + " " + HashTables.hashTables.containsKey(hashField));
 	}
@@ -82,12 +83,24 @@ public class HashJoinPipelineScan implements Scan {
 			return true;
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
-			if(!filterPlan.checkFilter(probe)){//current probe tuple is invalid, move to next probe record 
-				return next();
+			//System.out.println("In hashscan: "+ probe.getVal("sectionid"));
+			//filterPlan.printFilter();
+			//move to next valid probe
+			while(!filterPlan.checkFilter(probe)){
+				if(!probe.next()){
+					isProbeEmpty = false;
+					return false;
+				}				
 			}
+			// if(!filterPlan.checkFilter(probe)){//current probe tuple is invalid, move to next valid probe record 
+			// 	current = null;
+			// 	return next();
+			// }
+			//System.out.println("In HashJoinScan: " + probSch.toString());
 			Constant value = probe.getVal(probeField);
 			Scan matched = HashTables.Probe(hashField, value);
 			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
+				current = null;
 				return next();
 			}else{
 				//System.out.println("Print in Hash Join: " + value);

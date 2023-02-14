@@ -109,10 +109,11 @@ public class GroupByScan implements Scan {
 					//fn.value() is the computed aggregation value so far, e.g., if agg = max, fn.value() is the maxmum value so far, we can directly use it 
 					//fn.fieldName(), maxof, minof, countof, avgof, sumof, use the first 3 letters to decide type 
 					String agg = fn.fieldName().substring(0,3);
-					//System.out.println("In Groupby scan filter update!");
+					
 					if(agg.equals("max")){//filter should be attr >= fn.value()
 						String attr = fn.fieldName().substring(5);
 						filterPlan.updateFilter("max", attr, fn.value(), new IntegerConstant(0));
+						//System.out.println("In Groupby scan filter update!" + attr + " " + fn.value());
 					}
 					else if(agg.equals("min")){//filter should be attr<=fn.value()
 						String attr = fn.fieldName().substring(5);

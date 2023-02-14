@@ -51,14 +51,14 @@ public class filterPlan{
             return true;
         }
         Constant value = ts.getVal(attr);
-        for(int i=0;i<filters.get(attr).size();i++){
+        for(int i=0;i<filters.get(attr).size();i++){//scan all filters corresponding to attr
             filter f = filters.get(attr).get(i);
             if(f.filterType.equals("max")){
                 if(!enableMaxmin){//max,min filter is closed, do not check 
-                    return true;
+                    continue;
                 }
                 if(f.low == null){
-                    return true;
+                    continue;
                 }
                 if(value.compareTo(f.low) < 0){
                     numberOfDroppedTuplefromMAXMIN ++;
@@ -66,10 +66,10 @@ public class filterPlan{
                 }
             }else if(f.filterType.equals("min")){
                 if(!enableMaxmin){//max,min filter is closed, do not check 
-                    return true;
+                    continue;
                 }
                 if(f.high == null){
-                    return true;
+                    continue;
                 }
                 if(value.compareTo(f.high) > 0){
                     numberOfDroppedTuplefromMAXMIN ++;
@@ -77,7 +77,7 @@ public class filterPlan{
                 }
             }else if(f.filterType.equals("membership")){
                 if(!enableEqual){//equal filter is closed, do not check 
-                    return true;
+                    continue;
                 }
                 if(!f.memberships.containsKey(value)){
                     numberOfDroppedTuplefromEqual ++;
@@ -86,7 +86,7 @@ public class filterPlan{
             }
             else if(f.filterType.equals("range")){
                 if(!enableTheta){
-                    return true;
+                    continue;
                 }
                 if(f.is_low){//low<value
                     if(f.low_include && f.low != null && value.compareTo(f.low) < 0){//filter is low <= value, but the fact is low > value
@@ -121,11 +121,12 @@ public class filterPlan{
                 for(int i=0;i<filters.get(attr).size();i++){
                     filter f = filters.get(attr).get(i);
                     if(f.filterType.equals("max")){
+                        //System.out.println("In filterPlan: " + value.toString() + " " + f.low);
                         if(!enableMaxmin){//max,min filter is closed, do not check 
-                            return true;
+                            continue;
                         }
                         if(f.low == null){
-                            return true;
+                            continue;
                         }
                         if(value.compareTo(f.low) < 0){
                             numberOfDroppedTuplefromMAXMIN ++;
@@ -133,10 +134,10 @@ public class filterPlan{
                         }
                     }else if(f.filterType.equals("min")){
                         if(!enableMaxmin){//max,min filter is closed, do not check 
-                            return true;
+                            continue;
                         }
                         if(f.high == null){
-                            return true;
+                            continue;
                         }
                         if(value.compareTo(f.high) > 0){
                             numberOfDroppedTuplefromMAXMIN ++;
@@ -144,7 +145,7 @@ public class filterPlan{
                         }
                     }else if(f.filterType.equals("membership")){
                         if(!enableEqual){//equal filter is closed, do not check 
-                            return true;
+                            continue;
                         }
                         if(!f.memberships.containsKey(value)){
                             numberOfDroppedTuplefromEqual ++;
@@ -152,7 +153,7 @@ public class filterPlan{
                         }
                     }else if(f.filterType.equals("range")){
                         if(!enableTheta){
-                            return true;
+                            continue;
                         }
                         if(f.is_low){//low<value
                             if(f.low_include && f.low != null && value.compareTo(f.low) < 0){//filter is low <= value, but the fact is low > value

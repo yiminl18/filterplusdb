@@ -58,7 +58,8 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 	public Scan open() {
 		HashMap<Constant, Boolean> membership = new HashMap<>();
 		//build hash table for the smaller relation 
-		if(lhs.blocksAccessed() < rhs.blocksAccessed()){
+		System.out.println("In Hashjoin: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
+		if(lhs.recordsOutput() < rhs.recordsOutput()){//
 			//build hash table for lhs
 			this.build = true;
 			Scan lhsScan = lhs.open();
@@ -73,6 +74,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			lhsScan.close();
 			HashTables.close(fldName1);
 			//filterPlan.addFilter(fldName1, "membership", membership);
+			System.out.println("In HashJoin, build table is "  + fldName1);
 			filterPlan.addFilter(fldName2, "membership", membership);
 			return new HashJoinPipelineScan(build, rhs.open(), fldName1, fldName2, rhs.schema());
 		}else{
@@ -90,6 +92,7 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 			rhsScan.close();
 			HashTables.close(fldName2);
 			filterPlan.addFilter(fldName1, "membership", membership);
+			System.out.println("In HashJoin, build table is "  + fldName2);
 			//filterPlan.addFilter(fldName2, "membership", membership);
 			return new HashJoinPipelineScan(build, lhs.open(), fldName1, fldName2, lhs.schema());
 		}
