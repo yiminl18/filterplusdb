@@ -77,7 +77,10 @@ public class MultiBufferProductScan implements Scan {
 		if (prodScan == null)
 			return false;
 		while (!prodScan.next()){
-			//System.out.println("printing prodScan in multi-buffer scan: " + prodScan.toString());
+			// if(prodScan.hasField("eid")){
+			// 	System.out.println("in multi-buffer scan: " + prodScan.getVal("eid"));
+			// }
+			
 			if (!useNextChunk()){
 				return false;
 			}

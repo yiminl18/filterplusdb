@@ -241,6 +241,7 @@ public class Predicate {
 		 * Handles the equal transitivity. For example, join fields of F1 in the
 		 * predicate "F1=F3 and F3=F4 and F4=F7" are F3, F4 and F7.
 		 */
+		Set<String> opposite = new HashSet<String>();
 		while (!queue.isEmpty()) {
 			String fld = queue.removeFirst();
 			for (Term t : terms) {
@@ -250,9 +251,13 @@ public class Predicate {
 					flds.add(s);
 					queue.addLast(s);
 				}
+				else if(t.operator(fldName) != OP_EQ && s != null && !flds.contains(s)){//ihe: add support for theta join in index join
+					opposite.add(s);
+				}
 			}
 		}
 		flds.remove(fldName);
+		flds.addAll(opposite);
 		return flds.size() == 0 ? null : flds;
 	}
 

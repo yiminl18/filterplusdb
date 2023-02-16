@@ -52,6 +52,7 @@ public class MultiBufferProductPlan implements Plan {
 	private String fldName1, fldName2;
 	private List<String> joinFields;
 	private Operator op;
+	private boolean exchange = false;//denote the direction of theta join 
 
 	/**
 	 * Creates a product plan for the specified queries.
@@ -76,7 +77,23 @@ public class MultiBufferProductPlan implements Plan {
 		fldName1 = joinFields.get(0);
 		fldName2 = joinFields.get(1);
 		op = joinPredicate.getOp();
-		//System.out.println("Printing in multibuffer scan: " +  lhs.schema().toString() + " " + rhs.schema().toString());
+		if(exchange){
+			op = reverse(op);
+		}
+		System.out.println("in multibuffer scan: " +  fldName1 + " " + fldName2 + " " + op);
+	}
+
+	public Operator reverse(Operator op){
+		if(op == OP_GT){//> 
+			return OP_LT;
+		}else if(op == OP_GTE){//>= filter: rhs <= max_v
+			return OP_LTE;
+		}else if(op == OP_LT){//< filter: rhs > min_v
+			return OP_GT;
+		}else if(op == OP_LTE){//<= filter: rhs >= min_v
+			return OP_GTE;
+		}
+		return op;
 	}
 
 	/**
@@ -109,37 +126,76 @@ public class MultiBufferProductPlan implements Plan {
 			filterPlan.addFilter(fldName2, "membership", membership);
 		}else{//if this is theta-join
 			if(op!=null){
-				Scan leftscan = lhs.open();
-				leftscan.beforeFirst();
+				boolean isleft = false;
 				Constant max_v = null, min_v = null;
 				boolean first = false;
-				while(leftscan.next()){
-					Constant value = leftscan.getVal(fldName1);
-					if(!first){//assign initial values of max_v, min_v
-						max_v = value;
-						min_v = value;
-						first = true;
+				//create filters in the smaller relation to help filter away larger relation 
+				if(lhs.recordsOutput() < rhs.recordsOutput()){
+					//scan left relation 
+					isleft = true;
+					Scan leftscan = lhs.open();
+					leftscan.beforeFirst();
+					while(leftscan.next()){
+						Constant value = leftscan.getVal(fldName1);
+						if(!first){//assign initial values of max_v, min_v
+							max_v = value;
+							min_v = value;
+							first = true;
+						}
+						if(value.compareTo(max_v) > 0){
+							max_v = value;
+						}
+						if(value.compareTo(min_v) < 0){
+							min_v = value;
+						}
 					}
-					if(value.compareTo(max_v) > 0){
-						max_v = value;
-					}
-					if(value.compareTo(min_v) < 0){
-						min_v = value;
-					}
+					leftscan.close();
 				}
-				leftscan.close();
+				else{
+					//scan right relation 
+					Scan rightscan = rhs.open();
+					rightscan.beforeFirst();
+					
+					while(rightscan.next()){
+						Constant value = rightscan.getVal(fldName2);
+						if(!first){//assign initial values of max_v, min_v
+							max_v = value;
+							min_v = value;
+							first = true;
+						}
+						if(value.compareTo(max_v) > 0){
+							max_v = value;
+						}
+						if(value.compareTo(min_v) < 0){
+							min_v = value;
+						}
+					}
+					rightscan.close();
+				}
+				
 				//create filter from theta join
-				if(op == OP_GT){//> filter: rhs < max_v
-					filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, false, false, true);
-				}else if(op == OP_GTE){//>= filter: rhs <= max_v
-					filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, true, false, true);
-				}else if(op == OP_LT){//< filter: rhs > min_v
-					filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), false, false, true, false);
-				}else if(op == OP_LTE){//<= filter: rhs >= min_v
-					filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), true, false, true, false);
+				if(isleft){//use fitlers created in the left side to filter right side
+					if(op == OP_GT){//> filter: rhs < max_v
+						filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, false, false, true);
+					}else if(op == OP_GTE){//>= filter: rhs <= max_v
+						filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, true, false, true);
+					}else if(op == OP_LT){//< filter: rhs > min_v
+						filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), false, false, true, false);
+					}else if(op == OP_LTE){//<= filter: rhs >= min_v
+						filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), true, false, true, false);
+					}
+				}else{///use fitlers created in the right side to filter left side
+					if(op == OP_GT){//> filter: lhs > min_v
+						filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), false, false, true, false);
+					}else if(op == OP_GTE){//>= filter: lhs >= min_v
+						filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), true, false, true, false);
+					}else if(op == OP_LT){//< filter: lhs < max_v
+						filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, false, false, true);
+					}else if(op == OP_LTE){//<= filter: lhs <= max_v
+						filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, true, false, true);
+					}
 				}
 			}
-			
 		}
 		Scan leftscan = lhs.open();
 		return new MultiBufferProductScan(leftscan, ti, tx);
@@ -243,6 +299,7 @@ public class MultiBufferProductPlan implements Plan {
 			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
 				joinFields.add(rightJoinField);
 				joinFields.add(leftJoinField);
+				exchange = true;
 			}
 		}
 		return joinFields;
