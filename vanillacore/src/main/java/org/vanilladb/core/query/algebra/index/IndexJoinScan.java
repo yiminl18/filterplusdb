@@ -23,8 +23,15 @@ import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.query.algebra.TableScan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.ConstantRange;
+import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.storage.index.Index;
 import org.vanilladb.core.storage.index.SearchRange;
+import org.vanilladb.core.sql.predicate.Predicate;
+import org.vanilladb.core.sql.predicate.Term.Operator;
+import static org.vanilladb.core.sql.predicate.Term.OP_GT;
+import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
+import static org.vanilladb.core.sql.predicate.Term.OP_LT;
+import static org.vanilladb.core.sql.predicate.Term.OP_LTE;
 
 /**
  * The scan class corresponding to the indexjoin relational algebra operator.
@@ -38,6 +45,7 @@ public class IndexJoinScan implements Scan {
 	private Index idx;
 	private Map<String, String> joinFields; // <LHS field -> RHS field>
 	private boolean isLhsEmpty;
+	private Predicate JoinPreds;
 
 	/**
 	 * Creates an index join scan for the specified LHS scan and RHS index.
@@ -51,11 +59,12 @@ public class IndexJoinScan implements Scan {
 	 * @param ts
 	 *            the table scan of data table
 	 */
-	public IndexJoinScan(Scan s, Index idx, Map<String, String> joinFields, TableScan ts) {
+	public IndexJoinScan(Scan s, Index idx, Map<String, String> joinFields, Predicate JoinPreds, TableScan ts) {
 		this.s = s;
 		this.idx = idx;
 		this.joinFields = joinFields;
 		this.ts = ts;
+		this.JoinPreds = JoinPreds;
 	}
 
 	/**
@@ -152,8 +161,22 @@ public class IndexJoinScan implements Scan {
 		for (Map.Entry<String, String> fieldPair : joinFields.entrySet()) {
 			String lhsField = fieldPair.getKey();
 			String rhsField = fieldPair.getValue();
-			Constant commonVal = s.getVal(lhsField);
-			ConstantRange range = ConstantRange.newInstance(commonVal);//only for equal join, could be improved to be theta join
+			ConstantRange range = null;
+			Constant val = s.getVal(lhsField);
+			if(JoinPreds.isThetaJoin()){//for theta join
+				Operator op = JoinPreds.getOp();
+				if(op == OP_GT){//lhs > rhs: rhs < val
+					range = ConstantRange.newInstance(null, false, val, false);
+				}else if(op == OP_GTE){
+					range = ConstantRange.newInstance(null, false, val, true);
+				}else if(op == OP_LT){//lhs < rhs: rhs > val
+					range = ConstantRange.newInstance(val, false, null, false);
+				}else if(op == OP_LTE){
+					range = ConstantRange.newInstance(val,true,null, false);
+				}
+			}else{//for equal join
+				range = ConstantRange.newInstance(val);
+			}
 			ranges.put(rhsField, range);
 		}
 		

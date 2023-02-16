@@ -28,6 +28,7 @@ import org.vanilladb.core.storage.index.SearchKeyType;
 import org.vanilladb.core.storage.metadata.index.IndexInfo;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
 import org.vanilladb.core.storage.tx.Transaction;
+import org.vanilladb.core.sql.predicate.Predicate;
 
 /**
  * The {@link Plan} class corresponding to the <em>indexjoin</em> relational
@@ -41,6 +42,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 	private Schema schema = new Schema();
 	private Transaction tx;
 	private Histogram hist;
+	private Predicate joinPreds;
 
 	/**
 	 * Implements the join operator, using the specified LHS and RHS plans.
@@ -57,7 +59,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 	 *            the calling transaction
 	 */
 	public IndexJoinPlan(Plan p1, TablePlan tp2, IndexInfo ii,
-			Map<String, String> joinFields, Transaction tx) {
+			Map<String, String> joinFields, Predicate joinPreds, Transaction tx) {
 		this.p1 = p1;
 		this.tp2 = tp2;
 		this.ii = ii;
@@ -65,6 +67,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 		this.tx = tx;
 		schema.addAll(p1.schema());
 		schema.addAll(tp2.schema());
+		this.joinPreds = joinPreds;
 		
 		// XXX: It needs to be updated for multi-key indexes
 		for (String lhsField : joinFields.keySet()) {
@@ -85,7 +88,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 		// throws an exception if p2 is not a tableplan
 		TableScan ts = (TableScan) tp2.open();
 		Index idx = ii.open(tx);
-		return new IndexJoinScan(s, idx, joinFields, ts);
+		return new IndexJoinScan(s, idx, joinFields, joinPreds, ts);
 	}
 
 	/**

@@ -127,7 +127,7 @@ class TablePlanner {
 		Plan p = null;
 		if(!joinPred.isThetaJoin()){//make plan for equal join
 			if(JoinKnob.indexjoin){
-				p = makeIndexJoinPlan(trunk, trunkSch);
+				p = makeIndexJoinPlan(trunk, trunkSch, joinPred);
 			}
 			if(p != null){
 				return p;
@@ -144,7 +144,7 @@ class TablePlanner {
 		}
 		else{//make plan for theta join: prefer index join, otherwise block based NL join
 			if(JoinKnob.indexjoin){
-				p = makeIndexJoinPlan(trunk, trunkSch);
+				p = makeIndexJoinPlan(trunk, trunkSch, joinPred);
 			}
 			if(p != null){
 				System.out.println("in table planner: index scan is used");
@@ -214,7 +214,7 @@ class TablePlanner {
 	 * possible index joins. It is users' responsibility to issue queries that
 	 * help the identification: e.g., "F1 = F2", not "F1 - F2 = 0".
 	 */
-	private Plan makeIndexJoinPlan(Plan trunk, Schema trunkSch) {
+	private Plan makeIndexJoinPlan(Plan trunk, Schema trunkSch, Predicate joinPred) {
 		int matchedCount = 0;
 		IndexInfo bestIndex = null;
 		Map<String, String> bestJoinPairs = null; // <Outer Field -> Self Field>
@@ -257,7 +257,7 @@ class TablePlanner {
 		}
 		
 		if (bestIndex != null) {
-			Plan p = new IndexJoinPlan(trunk, tp, bestIndex, bestJoinPairs, tx);
+			Plan p = new IndexJoinPlan(trunk, tp, bestIndex, bestJoinPairs, joinPred, tx);
 			/*
 			 * Ideally, a select plan for this table should be
 			 * created before applying the join. However, since

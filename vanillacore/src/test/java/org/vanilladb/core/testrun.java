@@ -298,7 +298,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("maxofgradyear"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal("maxofstudentid"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -324,20 +324,20 @@ public class testrun {
         String dbname = "TESTDB2";
         init(dbname);
         //filterPlan.enableEqualJoinFilter();
-        //JoinKnob.disableProductJoin();
+        JoinKnob.disableIndexJoin();
         //JoinKnob.disableHashJoin();
-        filterPlan.enableThetaJoinFilter();
+        //filterPlan.enableThetaJoinFilter();
         //loadData();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        runStudentQueries(studentQueries.get(2));
+        runStudentQueries(studentQueries.get(4));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("Filters:"); 
         filterPlan.printFilter();
         filterPlan.filterStats();
-        explainQuery(studentQueries.get(2));
+        explainQuery(studentQueries.get(4));
         //resetDb(dbname);
         
         //test1();

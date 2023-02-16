@@ -279,7 +279,7 @@ public class MultiKeyIndexAlgebraTest {
 		// Create an IndexJoinPlan
 		tp = new TablePlan(TABLE_NAME, tx);
 		IndexInfo ii = VanillaDb.catalogMgr().getIndexInfoByName(INDEX_NAME, tx);
-		p = new IndexJoinPlan(p, tp, ii, joinFields, tx);
+		p = new IndexJoinPlan(p, tp, ii, joinFields, pred, tx);
 		
 		// Open the scan
 		Scan scan = p.open();
