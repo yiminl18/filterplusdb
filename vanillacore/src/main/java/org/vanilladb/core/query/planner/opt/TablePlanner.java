@@ -125,20 +125,33 @@ class TablePlanner {
 		}
 		//in the order of index plan, hash plan and product plan 
 		Plan p = null;
-		if(JoinKnob.indexjoin){
-			p = makeIndexJoinPlan(trunk, trunkSch);
+		if(!joinPred.isThetaJoin()){//make plan for equal join
+			if(JoinKnob.indexjoin){
+				p = makeIndexJoinPlan(trunk, trunkSch);
+			}
+			if(p != null){
+				return p;
+			}
+			if(JoinKnob.hashjoin){
+				p = makeHashJoinPlan(trunk, joinPred);
+			}
+			if(p != null){
+				return p;
+			}
+			if(JoinKnob.productJoin){
+				p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+			}
 		}
-		if(p != null){
-			return p;
-		}
-		if(JoinKnob.hashjoin){
-			p = makeHashJoinPlan(trunk, joinPred);
-		}
-		if(p != null){
-			return p;
-		}
-		if(JoinKnob.productJoin){
-			p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+		else{//make plan for theta join: prefer index join, otherwise block based NL join
+			if(JoinKnob.indexjoin){
+				p = makeIndexJoinPlan(trunk, trunkSch);
+			}
+			if(p != null){
+				return p;
+			}
+			if(JoinKnob.productJoin){
+				p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+			}
 		}
 			
 		return p;
