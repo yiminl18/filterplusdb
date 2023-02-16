@@ -83,10 +83,11 @@ public class HashJoinPipelineScan implements Scan {
 			return true;
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
-			//System.out.println("In hashscan: "+ probe.getVal("sectionid"));
-			//filterPlan.printFilter();
+			// System.out.println("In hashscan: "+ probe.getVal("eid"));
+			// filterPlan.printFilter();
 			//move to next valid probe
 			while(!filterPlan.checkFilter(probe)){
+				//System.out.println("in hashscan: probe failed filter check!");
 				if(!probe.next()){
 					isProbeEmpty = false;
 					return false;
