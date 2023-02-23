@@ -145,8 +145,12 @@ public class HashJoinPipelineScan implements Scan {
 
 	@Override
 	public void close() {
-		current.close();
-		probe.close();
+		if(current!=null){
+			current.close();
+		}
+		if(probe != null){
+			probe.close();
+		}
 	}
 
 	@Override

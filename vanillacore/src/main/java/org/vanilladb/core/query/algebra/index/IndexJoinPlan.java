@@ -43,6 +43,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 	private Transaction tx;
 	private Histogram hist;
 	private Predicate joinPreds;
+	
 
 	/**
 	 * Implements the join operator, using the specified LHS and RHS plans.
@@ -69,6 +70,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 		schema.addAll(tp2.schema());
 		this.joinPreds = joinPreds;
 		
+
 		// XXX: It needs to be updated for multi-key indexes
 		for (String lhsField : joinFields.keySet()) {
 			hist = joinHistogram(p1.histogram(), tp2.histogram(), lhsField,
@@ -77,6 +79,10 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 		}
 	}
 
+	
+
+	
+
 	/**
 	 * Opens an index-join scan for this query
 	 * 
@@ -84,13 +90,14 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 	 */
 	@Override
 	public Scan open() {
+		//createFilter();
 		Scan s = p1.open();
 		// throws an exception if p2 is not a tableplan
 		TableScan ts = (TableScan) tp2.open();
 		Index idx = ii.open(tx);
-		return new IndexJoinScan(s, idx, joinFields, joinPreds, ts);
+		return new IndexJoinScan(s, idx, joinFields, joinPreds, p1.schema(), tp2.schema(), ts);
 	}
-
+	
 	/**
 	 * Estimates the number of block accesses to compute the join. The formula
 	 * is:

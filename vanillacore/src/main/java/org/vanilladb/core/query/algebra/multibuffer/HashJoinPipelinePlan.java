@@ -58,8 +58,8 @@ public class HashJoinPipelinePlan extends AbstractJoinPlan {
 	public Scan open() {
 		HashMap<Constant, Boolean> membership = new HashMap<>();
 		//build hash table for the smaller relation 
-		System.out.println("In Hashjoin: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
-		if(lhs.recordsOutput() < rhs.recordsOutput()){//
+		//System.out.println("In Hashjoin: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
+		if(lhs.blocksAccessed() < rhs.blocksAccessed()){//
 			//build hash table for lhs
 			this.build = true;
 			Scan lhsScan = lhs.open();

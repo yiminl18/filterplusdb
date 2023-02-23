@@ -298,7 +298,7 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("maxofstudentid"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal("avgofeid"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
@@ -323,21 +323,22 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        //filterPlan.enableEqualJoinFilter();
-        JoinKnob.disableIndexJoin();
-        //JoinKnob.disableHashJoin();
-        //filterPlan.enableThetaJoinFilter();
+        filterPlan.enableEqualJoinFilter();
+        filterPlan.enableThetaJoinFilter();
+        filterPlan.enableMaxminFilter();
         //loadData();
+        //JoinKnob.disableIndexJoin();
+        //JoinKnob.disableHashJoin();
         //createIndexByCode("student","sid");
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        runStudentQueries(studentQueries.get(4));
+        runStudentQueries(studentQueries.get(7));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("Filters:"); 
         filterPlan.printFilter();
         filterPlan.filterStats();
-        explainQuery(studentQueries.get(4));
+        explainQuery(studentQueries.get(7));
         //resetDb(dbname);
         
         //test1();

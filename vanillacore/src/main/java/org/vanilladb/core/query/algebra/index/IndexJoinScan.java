@@ -17,7 +17,10 @@ package org.vanilladb.core.query.algebra.index;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import org.vanilladb.core.sql.Schema;
+import java.util.List;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.query.algebra.TableScan;
@@ -32,7 +35,7 @@ import static org.vanilladb.core.sql.predicate.Term.OP_GT;
 import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
 import static org.vanilladb.core.sql.predicate.Term.OP_LT;
 import static org.vanilladb.core.sql.predicate.Term.OP_LTE;
-
+import org.vanilladb.core.sql.predicate.Term;
 /**
  * The scan class corresponding to the indexjoin relational algebra operator.
  * The code is very similar to that of ProductScan, which makes sense because an
@@ -46,6 +49,13 @@ public class IndexJoinScan implements Scan {
 	private Map<String, String> joinFields; // <LHS field -> RHS field>
 	private boolean isLhsEmpty;
 	private Predicate JoinPreds;
+	private boolean matched_idx = false;
+	private Operator op; 
+	private boolean is_create = false;
+	private boolean isThetaJoin;
+	private List<String> joinFieldsNames;
+	private String fldName1, fldName2;
+	private boolean exchange = false;//denote the direction of theta join 
 
 	/**
 	 * Creates an index join scan for the specified LHS scan and RHS index.
@@ -59,12 +69,67 @@ public class IndexJoinScan implements Scan {
 	 * @param ts
 	 *            the table scan of data table
 	 */
-	public IndexJoinScan(Scan s, Index idx, Map<String, String> joinFields, Predicate JoinPreds, TableScan ts) {
+	public IndexJoinScan(Scan s, Index idx, Map<String, String> joinFields, Predicate JoinPreds, Schema left_schema, Schema right_schema, TableScan ts) {
 		this.s = s;
 		this.idx = idx;
 		this.joinFields = joinFields;
 		this.ts = ts;
 		this.JoinPreds = JoinPreds;
+		joinFieldsNames = findJoinFields(JoinPreds, left_schema, right_schema);
+		fldName1 = joinFieldsNames.get(0);
+		fldName2 = joinFieldsNames.get(1);
+		isThetaJoin = JoinPreds.isThetaJoin();
+		op = JoinPreds.getOp();
+		if(exchange){
+			op = reverse(op);
+		}
+	}
+
+	public Operator reverse(Operator op){
+		if(op == OP_GT){//> 
+			return OP_LT;
+		}else if(op == OP_GTE){//>= filter: rhs <= max_v
+			return OP_LTE;
+		}else if(op == OP_LT){//< filter: rhs > min_v
+			return OP_GT;
+		}else if(op == OP_LTE){//<= filter: rhs >= min_v
+			return OP_GTE;
+		}
+		return op;
+	}
+
+	public void createFilter(Operator op, String fldName, Constant value){
+		if(!isThetaJoin){
+			return;
+		}
+		//make sure to create filter one time 
+		if(is_create){
+			return;
+		}
+		is_create = true;
+		if(op == OP_GT){//> filter: lhs > value
+			filterPlan.addFilter(fldName, "range", value, new IntegerConstant(0), false, false, true, false);
+		}else if(op == OP_GTE){//>= filter: lhs >= value
+			filterPlan.addFilter(fldName, "range", value, new IntegerConstant(0), true, false, true, false);
+		}else if(op == OP_LT){//< filter: lhs < value
+			filterPlan.addFilter(fldName, "range", new IntegerConstant(0), value, false, false, false, true);
+		}else if(op == OP_LTE){//<= filter: lhs <= value
+			filterPlan.addFilter(fldName, "range", new IntegerConstant(0), value, false, true, false, true);
+		}
+	}
+
+	public void updateFilter(String attr, Constant value){
+		//only create for theta join 
+		if(!isThetaJoin){
+			return;
+		}
+		//the filter is on left
+		if(op == OP_GT || op == OP_GTE){//> or >=
+			filterPlan.updateFilter("range", attr, value, null);
+		}else if(op == OP_LT || op == OP_LTE){//< or <=
+			filterPlan.updateFilter("range", attr, null, value);
+		}
+		
 	}
 
 	/**
@@ -99,8 +164,15 @@ public class IndexJoinScan implements Scan {
 			if(!filterPlan.checkFilter(ts)){//if current tuple failed filter check, move to next record in rhs from index 
 				return next();
 			}
+			matched_idx = true;//idx has matched tuple for current lhs probe
 			return true;
 		} else if (!(isLhsEmpty = !s.next())) {//lhs is not empty, move to next lhs record 
+			if(!matched_idx){//there is no matched tuple from index-look-up for current lhs probe 
+				//create filter on probe side
+				createFilter(op, fldName1, s.getVal(fldName1));
+				//update filter 
+				updateFilter(fldName1, s.getVal(fldName1));
+			}
 			//if current lhs record does not satisfy the filter check, move to the next valid one 
 			while(!filterPlan.checkFilter(s)){
 				if(!s.next()){
@@ -108,9 +180,6 @@ public class IndexJoinScan implements Scan {
 					return false;
 				}				
 			}
-			// if(!ifNext){
-			// 	//add theta-join check point here 
-			// }
 			resetIndex();//reset index to search for next lhs record 
 			return next();//recursive calls 
 		} else//if lhs is complete, the algorithm close
@@ -183,6 +252,25 @@ public class IndexJoinScan implements Scan {
 		SearchRange searchRange = new SearchRange(idx.getIndexInfo().fieldNames(),
 				idx.getKeyType(), ranges);
 		idx.beforeFirst(searchRange);
+		matched_idx = false;
+	}
+
+	public List<String> findJoinFields(Predicate joinPred, Schema leftSchema, Schema rightSchema){
+		List<String> joinFields = new ArrayList<>();
+		Term t = joinPred.getTerms().iterator().next();
+		String leftJoinField = t.getlhsField();
+		String rightJoinField = t.getrhsField();
+		if(!leftJoinField.equals("NULL") && !rightJoinField.equals("NULL")){
+			if(leftSchema.hasField(leftJoinField) && rightSchema.hasField(rightJoinField)){
+				joinFields.add(leftJoinField);
+				joinFields.add(rightJoinField);
+			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
+				joinFields.add(rightJoinField);
+				joinFields.add(leftJoinField);
+				exchange = true;
+			}
+		}
+		return joinFields;
 	}
 
 }

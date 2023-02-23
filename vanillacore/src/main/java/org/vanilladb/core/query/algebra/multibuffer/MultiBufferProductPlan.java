@@ -110,6 +110,12 @@ public class MultiBufferProductPlan implements Plan {
 	public Scan open() {
 		TempTable tt = copyRecordsFrom(rhs);
 		TableInfo ti = tt.getTableInfo();
+		createFilter();
+		Scan leftscan = lhs.open();
+		return new MultiBufferProductScan(leftscan, ti, tx);
+	}
+
+	public void createFilter(){
 		//create filter in left side only for equal join 
 		if(!isThetaJoin){//if this is equal join 
 			Scan leftscan = lhs.open();
@@ -197,8 +203,6 @@ public class MultiBufferProductPlan implements Plan {
 				}
 			}
 		}
-		Scan leftscan = lhs.open();
-		return new MultiBufferProductScan(leftscan, ti, tx);
 	}
 
 	/**
