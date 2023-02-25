@@ -133,6 +133,9 @@ public class filterPlan{
             }
         }
         //check for group filter 
+        if(!enableGroup){//group filter is closed, do not check 
+            return true;
+        }
         if(!ts.hasField(groupFld)){//group filter is not applicable 
             return true;
         }
@@ -143,13 +146,7 @@ public class filterPlan{
         for(int i=0;i<groupFilters.get(gVal).size();i++){
             filter f = groupFilters.get(gVal).get(i);
             if(f.filterType.equals("groupmax")){
-                if(!enableGroup){//group filter is closed, do not check 
-                    continue;
-                }
                 if(f.low == null){
-                    continue;
-                }
-                if(!ts.hasField(f.getGroupField())){
                     continue;
                 }
                 //conditional range filter 
@@ -158,13 +155,7 @@ public class filterPlan{
                     return false;
                 }
             }else if(f.filterType.equals("groupmin")){
-                if(!enableGroup){//max,min filter is closed, do not check 
-                    continue;
-                }
                 if(f.high == null){
-                    continue;
-                }
-                if(!ts.hasField(f.getGroupField())){
                     continue;
                 }
                 if(ts.getVal(f.getGroupField()).compareTo(f.getGroupVal()) == 0 && value.compareTo(f.high) > 0){
@@ -242,44 +233,35 @@ public class filterPlan{
             }
         }
         //check for group filter 
+        if(!enableGroup){
+            return true;
+        }
         if(!ts.hasField(groupFld)){//group filter is not applicable 
             return true;
         }
+        Constant gVal = ts.getVal(groupFld);
+        if(!groupFilters.containsKey(gVal)){//group filter is not applicable 
+            return true;
+        }
         for(int j=0;j<groupPredAttr.size();j++){//scan each group pred attr
-            String attr = groupPredAttr.get(j);
-            if(ts.hasField(attr)){//if current tuple has some attr, check for group filter 
+            String attr = groupPredAttr.get(j);//attr is the attribute that max or min is applied on 
+            if(ts.hasField(attr)){//if current tuple has some attr
                 Constant value = ts.getVal(attr);
-                if(!groupFilters.containsKey(value)){//group filter is not applicable 
-                    continue;
-                }
-                for(int i=0;i<groupFilters.get(value).size();i++){
-                    filter f = groupFilters.get(value).get(i);
+                for(int i=0;i<groupFilters.get(gVal).size();i++){
+                    filter f = groupFilters.get(gVal).get(i);
                     if(!f.attr.equals(attr)){//if current attr is inconsistent with attr to search, stop 
                         continue;
                     }
                     if(f.filterType.equals("groupmax")){
-                        if(!enableGroup){//group filter is closed, do not check 
-                            continue;
-                        }
                         if(f.low == null){
                             continue;
                         }
-                        if(!ts.hasField(f.getGroupField())){
-                            continue;
-                        }
-                        //conditional range filter 
                         if(ts.getVal(f.getGroupField()).compareTo(f.getGroupVal()) == 0 && value.compareTo(f.low) < 0){
                             numberOfDroppedTuplefromGroup ++;
                             return false;
                         }
                     }else if(f.filterType.equals("groupmin")){
-                        if(!enableGroup){//max,min filter is closed, do not check 
-                            continue;
-                        }
                         if(f.high == null){
-                            continue;
-                        }
-                        if(!ts.hasField(f.getGroupField())){
                             continue;
                         }
                         if(ts.getVal(f.getGroupField()).compareTo(f.getGroupVal()) == 0 && value.compareTo(f.high) > 0){
@@ -338,9 +320,21 @@ public class filterPlan{
                 filter.get(i).print();
             }
         }
+        int numOfGroupFilter = groupFilters.size()*groupPredAttr.size();
+        System.out.println("Number of group filters is: " + numOfGroupFilter);
+        if(numOfGroupFilter > 100){
+            return ;
+        }
+        for(Map.Entry<Constant, List<filter>> entry : groupFilters.entrySet()){
+            System.out.println(entry.getKey());
+            List<filter> filter = entry.getValue();
+            for(int i=0;i<filter.size();i++){
+                filter.get(i).print();
+            }
+        }
     }
 
     public static void filterStats(){
-        System.out.println("number of saved tuples from max/min, equal, theta join filter: " + numberOfDroppedTuplefromMAXMIN + " " + numberOfDroppedTuplefromEqual + " " + numberOfDroppedTuplefromTheta);
+        System.out.println("number of saved tuples from max/min, equal, theta join, group filter: " + numberOfDroppedTuplefromMAXMIN + " " + numberOfDroppedTuplefromEqual + " " + numberOfDroppedTuplefromTheta + " " + numberOfDroppedTuplefromGroup);
     }
 }
