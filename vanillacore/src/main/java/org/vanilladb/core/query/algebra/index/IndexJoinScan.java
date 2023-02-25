@@ -18,7 +18,6 @@ package org.vanilladb.core.query.algebra.index;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.vanilladb.core.sql.Schema;
 import java.util.List;
 import org.vanilladb.core.filter.filterPlan;

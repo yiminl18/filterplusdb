@@ -64,9 +64,18 @@ public class MultiBufferProductPlan implements Plan {
 	 * @param tx
 	 *            the calling transaction
 	 */
-	public MultiBufferProductPlan(Plan lhs, Plan rhs, Transaction tx, Predicate joinPredicate) {
-		this.lhs = lhs;
-		this.rhs = rhs;
+	public MultiBufferProductPlan(Plan Lhs, Plan Rhs, Transaction tx, Predicate joinPredicate) {
+		// System.out.println("in multibuffer: " + Lhs.blocksAccessed() + " " + Rhs.blocksAccessed() + " " + joinPredicate.toString());
+		// System.out.println(Lhs.recordsOutput() +  " " + Rhs.recordsOutput());
+		// System.out.println(Lhs.schema().toString() + " " + Rhs.schema().toString());
+		if(Lhs.recordsOutput() < Rhs.recordsOutput()){
+			//put the smaller table in the right side 
+			this.rhs = Lhs;
+			this.lhs = Rhs;
+		}else{
+			this.lhs = Lhs;
+			this.rhs = Rhs;
+		}
 		this.tx = tx;
 		schema = new Schema();
 		schema.addAll(lhs.schema());
@@ -281,22 +290,51 @@ public class MultiBufferProductPlan implements Plan {
 		TempTable tt = new TempTable(sch, tx);
 		UpdateScan dest = (UpdateScan) tt.open();
 		src.beforeFirst();
+		boolean first = false;
+		Constant max_v = null, min_v = null;
 		HashMap<Constant, Boolean> membership = new HashMap<>();
 		while (src.next()) {
 			dest.insert();
 			for (String fldname : sch.fields()){
 				dest.setVal(fldname, src.getVal(fldname));
 			}
-			//update membership filter in the right side 
 			Constant value = src.getVal(fldName2);
-			if(!membership.containsKey(value)){
-				membership.put(value,true);
+			//update membership filter in the right side for equal join
+			if(!isThetaJoin){
+				if(!membership.containsKey(value)){
+					membership.put(value,true);
+				}
+			}//maintain info for theta filter 
+			else{
+				if(!first){//assign initial values of max_v, min_v
+					max_v = value;
+					min_v = value;
+					first = true;
+				}
+				if(value.compareTo(max_v) > 0){
+					max_v = value;
+				}
+				if(value.compareTo(min_v) < 0){
+					min_v = value;
+				}
 			}
 		}
 		src.close();
 		dest.close();
-		filterPlan.addFilter(fldName1, "membership", membership);
-		filterPlan.addFilter(fldName2, "membership", membership);
+		if(!isThetaJoin){//create fitler for equal join
+			filterPlan.addFilter(fldName1, "membership", membership);
+			filterPlan.addFilter(fldName2, "membership", membership);
+		}else{//create filter for theta join 
+			if(op == OP_GT){//> filter: lhs > min_v
+				filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), false, false, true, false);
+			}else if(op == OP_GTE){//>= filter: lhs >= min_v
+				filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), true, false, true, false);
+			}else if(op == OP_LT){//< filter: lhs < max_v
+				filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, false, false, true);
+			}else if(op == OP_LTE){//<= filter: lhs <= max_v
+				filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, true, false, true);
+			}
+		}
 		return tt;
 	}
 

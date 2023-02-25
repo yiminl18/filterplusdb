@@ -272,7 +272,7 @@ public class testrun {
                     sql = "";
                 }else if(line.charAt(0) == 'Q'){//start of a new query
                     //System.out.println(line.charAt(1));
-                    queryID = Character.getNumericValue(line.charAt(1));
+                    queryID = Integer.valueOf(line.substring(1, line.length()));
                 }else{
                     sql += line;
                     sql += " ";
@@ -290,7 +290,7 @@ public class testrun {
     }
 
     public static void runStudentQueries(String query){
-        //System.out.print(query);
+        System.out.println(query);
         Transaction tx = VanillaDb.txMgr().newTransaction(
 				Connection.TRANSACTION_SERIALIZABLE, true);
         Planner planner = VanillaDb.newPlanner();
@@ -299,7 +299,7 @@ public class testrun {
         s.beforeFirst();
         String projection = getProjection(query);
         while(s.next()){
-            System.out.println(s.getVal(projection));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal(projection));
         }
         s.close();
         tx.commit();
@@ -333,16 +333,16 @@ public class testrun {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         String dbname = "TESTDB2";
         init(dbname);
-        filterPlan.enableEqualJoinFilter();
+        //filterPlan.enableEqualJoinFilter();
         //filterPlan.enableThetaJoinFilter();
         //filterPlan.enableMaxminFilter();
         //loadData();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableHashJoin();
+        //JoinKnob.disableIndexJoin();
+        //JoinKnob.disableHashJoin();
         //createIndexByCode("student","sid");
 
 
-        int queryID = 2;
+        int queryID = 11;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(queryID));

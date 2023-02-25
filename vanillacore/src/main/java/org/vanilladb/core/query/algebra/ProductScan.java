@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
 
+import org.vanilladb.core.filter.filter;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.sql.Constant;
 /**
@@ -73,11 +74,15 @@ public class ProductScan implements Scan {
 		}
 		else if (!(isLhsEmpty = !s1.next())) {//rhs is empty but but Lhs is not empty
 			//if lhs record does not pass filter check, move to next lhs record
-			if(!filterPlan.checkFilter(s1)){
-				return next();
+			while(!filterPlan.checkFilter(s1)){
+				if(!s1.next()){
+					isLhsEmpty = false;
+					return false;
+				}
 			}
+			//scan s2 from the begining 
 			s2.beforeFirst();
-			return s2.next();
+			return next();
 		} else {
 			return false;
 		}
