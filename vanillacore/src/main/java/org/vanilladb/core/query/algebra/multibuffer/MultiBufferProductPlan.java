@@ -110,7 +110,7 @@ public class MultiBufferProductPlan implements Plan {
 	public Scan open() {
 		TempTable tt = copyRecordsFrom(rhs);
 		TableInfo ti = tt.getTableInfo();
-		createFilter();
+		//createFilter();
 		Scan leftscan = lhs.open();
 		return new MultiBufferProductScan(leftscan, ti, tx);
 	}
@@ -281,13 +281,22 @@ public class MultiBufferProductPlan implements Plan {
 		TempTable tt = new TempTable(sch, tx);
 		UpdateScan dest = (UpdateScan) tt.open();
 		src.beforeFirst();
+		HashMap<Constant, Boolean> membership = new HashMap<>();
 		while (src.next()) {
 			dest.insert();
-			for (String fldname : sch.fields())
+			for (String fldname : sch.fields()){
 				dest.setVal(fldname, src.getVal(fldname));
+			}
+			//update membership filter in the right side 
+			Constant value = src.getVal(fldName2);
+			if(!membership.containsKey(value)){
+				membership.put(value,true);
+			}
 		}
 		src.close();
 		dest.close();
+		filterPlan.addFilter(fldName1, "membership", membership);
+		filterPlan.addFilter(fldName2, "membership", membership);
 		return tt;
 	}
 

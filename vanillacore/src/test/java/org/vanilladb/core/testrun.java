@@ -297,11 +297,21 @@ public class testrun {
         Plan plan = planner.createQueryPlan(query, tx);
         Scan s = plan.open();
         s.beforeFirst();
+        String projection = getProjection(query);
         while(s.next()){
-            System.out.println(s.getVal("avgofeid"));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
+            System.out.println(s.getVal(projection));//countofgradyear, avgofyearoffered, maxofstudentid, maxofgradyear
         }
         s.close();
         tx.commit();
+    }
+
+    public static String getProjection(String query){
+        String[] projection = query.split(" ");
+        String word = projection[1];
+        System.out.println(word);
+        //work for aggregate for now
+        String s = word.substring(0,word.length()-1);
+        return s.replace("(", "of");
     }
 
     public static void explainQuery(String query){
@@ -324,23 +334,29 @@ public class testrun {
         String dbname = "TESTDB2";
         init(dbname);
         filterPlan.enableEqualJoinFilter();
-        filterPlan.enableThetaJoinFilter();
-        filterPlan.enableMaxminFilter();
+        //filterPlan.enableThetaJoinFilter();
+        //filterPlan.enableMaxminFilter();
         //loadData();
-        //JoinKnob.disableIndexJoin();
-        //JoinKnob.disableHashJoin();
+        JoinKnob.disableIndexJoin();
+        JoinKnob.disableHashJoin();
         //createIndexByCode("student","sid");
+
+
+        int queryID = 2;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
-        runStudentQueries(studentQueries.get(7));
+        runStudentQueries(studentQueries.get(queryID));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
         System.out.println("Filters:"); 
         filterPlan.printFilter();
         filterPlan.filterStats();
-        explainQuery(studentQueries.get(7));
-        //resetDb(dbname);
+        explainQuery(studentQueries.get(queryID));
         
+
+
+
+
         //test1();
         //testReadCSV();
         //test();
