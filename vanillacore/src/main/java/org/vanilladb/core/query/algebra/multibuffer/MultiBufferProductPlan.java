@@ -191,23 +191,23 @@ public class MultiBufferProductPlan implements Plan {
 				//create filter from theta join
 				if(isleft){//use fitlers created in the left side to filter right side
 					if(op == OP_GT){//> filter: rhs < max_v
-						filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, false, false, true);
+						filterPlan.addFilter(fldName2, "range", null, null, new IntegerConstant(0), max_v, false, false, false, true);
 					}else if(op == OP_GTE){//>= filter: rhs <= max_v
-						filterPlan.addFilter(fldName2, "range", new IntegerConstant(0), max_v, false, true, false, true);
+						filterPlan.addFilter(fldName2, "range", null, null, new IntegerConstant(0), max_v, false, true, false, true);
 					}else if(op == OP_LT){//< filter: rhs > min_v
-						filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), false, false, true, false);
+						filterPlan.addFilter(fldName2, "range", null, null, min_v, new IntegerConstant(0), false, false, true, false);
 					}else if(op == OP_LTE){//<= filter: rhs >= min_v
-						filterPlan.addFilter(fldName2, "range", min_v, new IntegerConstant(0), true, false, true, false);
+						filterPlan.addFilter(fldName2, "range", null, null, min_v, new IntegerConstant(0), true, false, true, false);
 					}
 				}else{///use fitlers created in the right side to filter left side
 					if(op == OP_GT){//> filter: lhs > min_v
-						filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), false, false, true, false);
+						filterPlan.addFilter(fldName1, "range", null, null, min_v, new IntegerConstant(0), false, false, true, false);
 					}else if(op == OP_GTE){//>= filter: lhs >= min_v
-						filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), true, false, true, false);
+						filterPlan.addFilter(fldName1, "range", null, null, min_v, new IntegerConstant(0), true, false, true, false);
 					}else if(op == OP_LT){//< filter: lhs < max_v
-						filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, false, false, true);
+						filterPlan.addFilter(fldName1, "range", null, null, new IntegerConstant(0), max_v, false, false, false, true);
 					}else if(op == OP_LTE){//<= filter: lhs <= max_v
-						filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, true, false, true);
+						filterPlan.addFilter(fldName1, "range", null, null, new IntegerConstant(0), max_v, false, true, false, true);
 					}
 				}
 			}
@@ -326,13 +326,13 @@ public class MultiBufferProductPlan implements Plan {
 			filterPlan.addFilter(fldName2, "membership", membership);
 		}else{//create filter for theta join 
 			if(op == OP_GT){//> filter: lhs > min_v
-				filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), false, false, true, false);
+				filterPlan.addFilter(fldName1, "range", null, null, min_v, new IntegerConstant(0), false, false, true, false);
 			}else if(op == OP_GTE){//>= filter: lhs >= min_v
-				filterPlan.addFilter(fldName1, "range", min_v, new IntegerConstant(0), true, false, true, false);
+				filterPlan.addFilter(fldName1, "range", null, null, min_v, new IntegerConstant(0), true, false, true, false);
 			}else if(op == OP_LT){//< filter: lhs < max_v
-				filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, false, false, true);
+				filterPlan.addFilter(fldName1, "range", null, null, new IntegerConstant(0), max_v, false, false, false, true);
 			}else if(op == OP_LTE){//<= filter: lhs <= max_v
-				filterPlan.addFilter(fldName1, "range", new IntegerConstant(0), max_v, false, true, false, true);
+				filterPlan.addFilter(fldName1, "range", null, null, new IntegerConstant(0), max_v, false, true, false, true);
 			}
 		}
 		return tt;

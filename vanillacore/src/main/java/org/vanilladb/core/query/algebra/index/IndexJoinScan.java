@@ -107,13 +107,13 @@ public class IndexJoinScan implements Scan {
 		}
 		is_create = true;
 		if(op == OP_GT){//> filter: lhs > value
-			filterPlan.addFilter(fldName, "range", value, new IntegerConstant(0), false, false, true, false);
+			filterPlan.addFilter(fldName, "range", null, null, value, new IntegerConstant(0), false, false, true, false);
 		}else if(op == OP_GTE){//>= filter: lhs >= value
-			filterPlan.addFilter(fldName, "range", value, new IntegerConstant(0), true, false, true, false);
+			filterPlan.addFilter(fldName, "range", null, null ,value, new IntegerConstant(0), true, false, true, false);
 		}else if(op == OP_LT){//< filter: lhs < value
-			filterPlan.addFilter(fldName, "range", new IntegerConstant(0), value, false, false, false, true);
+			filterPlan.addFilter(fldName, "range", null, null ,new IntegerConstant(0), value, false, false, false, true);
 		}else if(op == OP_LTE){//<= filter: lhs <= value
-			filterPlan.addFilter(fldName, "range", new IntegerConstant(0), value, false, true, false, true);
+			filterPlan.addFilter(fldName, "range", null, null, new IntegerConstant(0), value, false, true, false, true);
 		}
 	}
 
@@ -124,9 +124,9 @@ public class IndexJoinScan implements Scan {
 		}
 		//the filter is on left
 		if(op == OP_GT || op == OP_GTE){//> or >=
-			filterPlan.updateFilter("range", attr, value, null);
+			filterPlan.updateFilter("range", attr, null, value, null);
 		}else if(op == OP_LT || op == OP_LTE){//< or <=
-			filterPlan.updateFilter("range", attr, null, value);
+			filterPlan.updateFilter("range", attr, null, null, value);
 		}
 		
 	}

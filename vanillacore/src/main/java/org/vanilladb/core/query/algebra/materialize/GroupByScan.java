@@ -23,6 +23,7 @@ import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.aggfn.AggregationFn;
+import java.util.Iterator;
 
 /**
  * The Scan class for the <em>groupby</em> operator.
@@ -33,6 +34,7 @@ public class GroupByScan implements Scan {
 	private Collection<AggregationFn> aggFns;
 	private GroupValue groupVal;
 	private boolean moreGroups;
+	private String gFld = null;
 
 	/**
 	 * Creates a groupby scan, given a grouped table scan.
@@ -50,6 +52,10 @@ public class GroupByScan implements Scan {
 		this.ss = s;
 		this.groupFlds = groupFlds;
 		this.aggFns = aggFns;
+		Iterator<String> iterator = groupFlds.iterator();
+		if(iterator.hasNext()){
+			gFld = iterator.next();
+		}
 	}
 
 	/**
@@ -78,23 +84,37 @@ public class GroupByScan implements Scan {
 	public boolean next() {
 		if (!moreGroups)
 			return false;
+		groupVal = new GroupValue(ss, groupFlds);
 		if (aggFns != null)
 			for (AggregationFn fn : aggFns){
 				String agg = fn.fieldName().substring(0,3);
-				//System.out.println("In Groupby scan filter creation!");
-				if(agg.equals("max")){//filter should be attr >= fn.value()
-					String attr = fn.fieldName().substring(5);
-					filterPlan.addFilter(attr, "max", fn.value(), new DoubleConstant(0), true, false, true, false);
+				if(groupFlds.size() == 0){
+					if(agg.equals("max")){//filter should be attr >= fn.value()
+						String attr = fn.fieldName().substring(5);
+						filterPlan.addFilter(attr, "max", null, null, fn.value(), new DoubleConstant(0), true, false, true, false);
+					}
+					else if(agg.equals("min")){//filter should be attr<=fn.value()
+						String attr = fn.fieldName().substring(5);
+						filterPlan.addFilter(attr, "min", null, null, new DoubleConstant(0), fn.value(), false, true, false, true);
+					}
+				}else{
+					//handle for group by max min
+					if(agg.equals("max")){//filter should be attr >= fn.value()
+						String attr = fn.fieldName().substring(5);
+						filterPlan.addFilter(attr, "max", groupVal.getVal(gFld), gFld, fn.value(), new DoubleConstant(0), true, false, true, false);
+					}
+					else if(agg.equals("min")){//filter should be attr<=fn.value()
+						String attr = fn.fieldName().substring(5);
+						filterPlan.addFilter(attr, "min", groupVal.getVal(gFld), gFld, new DoubleConstant(0), fn.value(), false, true, false, true);
+					}
 				}
-				else if(agg.equals("min")){//filter should be attr<=fn.value()
-					String attr = fn.fieldName().substring(5);
-					filterPlan.addFilter(attr, "min", new DoubleConstant(0), fn.value(), false, true, false, true);
-				}
-				//System.out.println("testing1: " + fn.fieldName() + " " + fn.value() + " " + fn.argumentFieldName());
+				
 				fn.processFirst(ss);
 			}
 				
-		groupVal = new GroupValue(ss, groupFlds);
+		
+		
+		//System.out.println("in group by creation: " + groupVal.getVal(gFld));
 		while (moreGroups = ss.next()) {
 			GroupValue gv = new GroupValue(ss, groupFlds);
 			
@@ -104,21 +124,31 @@ public class GroupByScan implements Scan {
 
 			if (aggFns != null)
 				for (AggregationFn fn : aggFns){
-					//System.out.println("testing1: " + fn.fieldName() + " " + fn.value() + " " + fn.argumentFieldName());
-					//this is the right place to create, the value is fn.value()
-					//fn.value() is the computed aggregation value so far, e.g., if agg = max, fn.value() is the maxmum value so far, we can directly use it 
-					//fn.fieldName(), maxof, minof, countof, avgof, sumof, use the first 3 letters to decide type 
 					String agg = fn.fieldName().substring(0,3);
 					
-					if(agg.equals("max")){//filter should be attr >= fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.updateFilter("max", attr, fn.value(), new IntegerConstant(0));
-						//System.out.println("In Groupby scan filter update!" + attr + " " + fn.value());
+					if(groupFlds.size() == 0){
+						if(agg.equals("max")){//filter should be attr >= fn.value()
+							String attr = fn.fieldName().substring(5);
+							filterPlan.updateFilter("max", attr, null, fn.value(), new IntegerConstant(0));
+							
+						}
+						else if(agg.equals("min")){//filter should be attr<=fn.value()
+							String attr = fn.fieldName().substring(5);
+							filterPlan.updateFilter("min", attr, null, new IntegerConstant(0), fn.value());
+						}
+					}else{
+						//handle for group by 
+						//System.out.println("in group by update: " + gv.getVal(gFld) + " " +  fn.value());
+						if(agg.equals("max")){//filter should be attr >= fn.value()
+							String attr = fn.fieldName().substring(5);
+							filterPlan.updateFilter("max", attr, gv.getVal(gFld), fn.value(), new IntegerConstant(0));
+						}
+						else if(agg.equals("min")){//filter should be attr<=fn.value()
+							String attr = fn.fieldName().substring(5);
+							filterPlan.updateFilter("min", attr, gv.getVal(gFld), new IntegerConstant(0), fn.value());
+						}
 					}
-					else if(agg.equals("min")){//filter should be attr<=fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.updateFilter("min", attr, new IntegerConstant(0), fn.value());
-					}
+					
 					
 					fn.processNext(ss);
 				}
@@ -151,7 +181,6 @@ public class GroupByScan implements Scan {
 		if (aggFns != null)
 			for (AggregationFn fn : aggFns)
 				if (fn.fieldName().equals(fldname)){
-					//System.out.println("testing: " + fn.fieldName() + " " + fn.value());
 					return fn.value();
 				}
 					

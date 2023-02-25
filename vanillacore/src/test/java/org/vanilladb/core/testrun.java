@@ -265,7 +265,7 @@ public class testrun {
             String sql = "";
             int queryID = 0;
             while((line = br.readLine()) != null) {
-                System.out.println(line);
+                //System.out.println(line);
                 if(line.charAt(0) == '#'){//end of a query
                     //System.out.println(queryID + " " + sql);
                     queries.put(queryID, sql);
@@ -283,9 +283,9 @@ public class testrun {
         }catch(IOException ioe) {
                ioe.printStackTrace();
         }
-        for(Map.Entry<Integer,String> iter : queries.entrySet()){
-            System.out.println(iter.getKey() + " " + iter.getValue());
-        }
+        // for(Map.Entry<Integer,String> iter : queries.entrySet()){
+        //     System.out.println(iter.getKey() + " " + iter.getValue());
+        // }
         return queries;
     }
 
@@ -297,21 +297,31 @@ public class testrun {
         Plan plan = planner.createQueryPlan(query, tx);
         Scan s = plan.open();
         s.beforeFirst();
-        String projection = getProjection(query);
+        List<String> projection = getProjection(query);
         while(s.next()){
-            System.out.println(s.getVal(projection));
+            for(int i=0;i<projection.size();i++){
+                System.out.print(s.getVal(projection.get(i)) + " ");
+            }
+            System.out.println("");
         }
         s.close();
         tx.commit();
     }
 
-    public static String getProjection(String query){
+    public static List<String> getProjection(String query){
         String[] projection = query.split(" ");
         String word = projection[1];
-        System.out.println(word);
         //work for aggregate for now
-        String s = word.substring(0,word.length()-1);
-        return s.replace("(", "of");
+        String[] attrs = word.split(",");
+        List<String> output = new ArrayList<>();
+        output.add(attrs[0].substring(0,attrs[0].length()-1).replace("(", "of"));
+        for(int i=1;i<attrs.length;i++){
+            output.add(attrs[i]);
+        }
+        // for(int i=0;i<output.size();i++){
+        //     System.out.println(output.get(i));
+        // }
+        return output;
     }
 
     public static void explainQuery(String query){
@@ -331,6 +341,7 @@ public class testrun {
     }
     public static void main(String[] args) {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
+        //getProjection(studentQueries.get(11));
         String dbname = "TESTDB2";
         init(dbname);
         //filterPlan.enableEqualJoinFilter();
@@ -342,16 +353,16 @@ public class testrun {
         //createIndexByCode("student","sid");
 
 
-        int queryID = 11;
+        int queryID = 12;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(queryID));
         long end = System.currentTimeMillis();
         System.out.println("running time: " + (end-start));
-        System.out.println("Filters:"); 
+        System.out.println("Filters:");
         filterPlan.printFilter();
         filterPlan.filterStats();
-        explainQuery(studentQueries.get(queryID));
+        //explainQuery(studentQueries.get(queryID));
         
 
 
