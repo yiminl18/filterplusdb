@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.ReduceRecordsPlan;
 import org.vanilladb.core.query.algebra.Scan;
+import org.vanilladb.core.query.algebra.SimpleGroupByScan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.ConstantRange;
 import org.vanilladb.core.sql.DoubleConstant;
@@ -267,7 +268,7 @@ public class GroupByPlan extends ReduceRecordsPlan {
 			for (String fld : groupFlds)
 				schema.add(fld, p.schema());
 			// sort records by group-by fields with default direction
-			sp = new SortPlan(p, new ArrayList<String>(groupFlds), tx);
+			//sp = new SortPlan(p, new ArrayList<String>(groupFlds), tx);
 		} else
 			// all records are in a single group, so p is already sorted
 			sp = p;
@@ -290,7 +291,11 @@ public class GroupByPlan extends ReduceRecordsPlan {
 	@Override
 	public Scan open() {
 		Scan ss = sp.open();
-		return new GroupByScan(ss, groupFlds, aggFns);
+		if (!this.groupFlds.isEmpty()) {//has group fields
+			return new SimpleGroupByScan(ss, groupFlds, aggFns);
+		}else{//no group fields 
+			return new GroupByScan(ss, groupFlds, aggFns);
+		}
 	}
 
 	/**
