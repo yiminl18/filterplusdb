@@ -13,28 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.vanilladb.core.query.algebra.materialize;
+package org.vanilladb.core.query.algebra;
 
-import java.util.Collection;
-
+import java.util.*;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.aggfn.AggregationFn;
+import org.vanilladb.core.query.algebra.materialize.GroupValue;
 import java.util.Iterator;
 
 /**
  * The Scan class for the <em>groupby</em> operator.
  */
-public class GroupByScan implements Scan {
+public class SimpleGroupByScan implements Scan {
 	private Scan ss;
 	private Collection<String> groupFlds;
+	private Constant gval; 
 	private Collection<AggregationFn> aggFns;
 	private GroupValue groupVal;
 	private boolean moreGroups;
 	private String gFld = null;
+	private HashMap<Constant, List<AggregationFn>> aggFnsMap = new HashMap<>();
+	private List<AggregationFn> currentAggFns; 
+	private Constant currentGVal;
+	private Iterator<Map.Entry<Constant, List<AggregationFn>>> iter = null;
+	private boolean isProcessed = false;//to indicate if the aggregation is done
 
 	/**
 	 * Creates a groupby scan, given a grouped table scan.
@@ -47,7 +53,7 @@ public class GroupByScan implements Scan {
 	 * @param aggFns
 	 *            the aggregation functions
 	 */
-	public GroupByScan(Scan s, Collection<String> groupFlds,
+	public SimpleGroupByScan(Scan s, Collection<String> groupFlds,
 			Collection<AggregationFn> aggFns) {
 		this.ss = s;
 		this.groupFlds = groupFlds;
@@ -56,6 +62,15 @@ public class GroupByScan implements Scan {
 		if(iterator.hasNext()){
 			gFld = iterator.next();
 		}
+	}
+
+		/*
+		 * Make a deep copy of aggregate constructors. 
+		 */
+	public List<AggregationFn> createAggFns(){
+		List<AggregationFn> copyAggs = new ArrayList<>();
+		copyAggs.addAll(this.aggFns);
+		return copyAggs; 
 	}
 
 	/**
@@ -82,79 +97,39 @@ public class GroupByScan implements Scan {
 	 */
 	@Override
 	public boolean next() {
-		if (!moreGroups)
-			return false;
-		groupVal = new GroupValue(ss, groupFlds);
-		if (aggFns != null)
-			for (AggregationFn fn : aggFns){
-				String agg = fn.fieldName().substring(0,3);
-				if(groupFlds.size() == 0){
-					if(agg.equals("max")){//filter should be attr >= fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.addFilter(attr, "max", null, null, fn.value(), new DoubleConstant(0), true, false, true, false);
-					}
-					else if(agg.equals("min")){//filter should be attr<=fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.addFilter(attr, "min", null, null, new DoubleConstant(0), fn.value(), false, true, false, true);
-					}
-				}else{
-					//handle for group by max min
-					//System.out.println("in group by create: " + groupVal.getVal(gFld) + " " + fn.value());
-					if(agg.equals("max")){//filter should be attr >= fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.addFilter(attr, "groupmax", groupVal.getVal(gFld), gFld, fn.value(), new DoubleConstant(0), true, false, true, false);
-					}
-					else if(agg.equals("min")){//filter should be attr<=fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.addFilter(attr, "groupmin", groupVal.getVal(gFld), gFld, new DoubleConstant(0), fn.value(), false, true, false, true);
-					}
-				}
-				
-				fn.processFirst(ss);
-			}
-				
-		
-		
-		//System.out.println("in group by creation: " + groupVal.getVal(gFld));
-		while (moreGroups = ss.next()) {
-			GroupValue gv = new GroupValue(ss, groupFlds);
-			
-			if (!groupVal.equals(gv)){
-				break;
-			}
-
-			if (aggFns != null)
-				for (AggregationFn fn : aggFns){
-					String agg = fn.fieldName().substring(0,3);
-					
-					if(groupFlds.size() == 0){
-						if(agg.equals("max")){//filter should be attr >= fn.value()
-							String attr = fn.fieldName().substring(5);
-							filterPlan.updateFilter("max", attr, null, fn.value(), new IntegerConstant(0));
-							
-						}
-						else if(agg.equals("min")){//filter should be attr<=fn.value()
-							String attr = fn.fieldName().substring(5);
-							filterPlan.updateFilter("min", attr, null, new IntegerConstant(0), fn.value());
-						}
-					}else{
-						//handle for group by 
-						//System.out.println("in group by update: " + gv.getVal(gFld) + " " +  fn.value());
-						if(agg.equals("max")){//filter should be attr >= fn.value()
-							String attr = fn.fieldName().substring(5);
-							filterPlan.updateFilter("groupmax", attr, gv.getVal(gFld), fn.value(), new IntegerConstant(0));
-						}
-						else if(agg.equals("min")){//filter should be attr<=fn.value()
-							String attr = fn.fieldName().substring(5);
-							filterPlan.updateFilter("groupmin", attr, gv.getVal(gFld), new IntegerConstant(0), fn.value());
-						}
-					}
-					
-					
-					fn.processNext(ss);
-				}
+		processAggregation();
+		//iterate the computed aggFnsMap -- iterate each group 
+		while(iter.hasNext()){
+			Map.Entry<Constant, List<AggregationFn>> e = iter.next();
+			currentGVal = e.getKey();
+			currentAggFns = e.getValue();
+			return true;
 		}
-		return true;
+		//end of the processing
+		return false;
+	}
+
+	public void processAggregation(){
+		if(!isProcessed){//make sure aggregation only happen one time 
+			while (moreGroups = ss.next()) {
+				GroupValue gv = new GroupValue(ss, groupFlds);
+				gval = gv.getVal(gFld);
+				if(aggFns != null){
+					List<AggregationFn> CaggFns= null;
+					if(!aggFnsMap.containsKey(gval)){//if the group field has new value, start a new aggFn
+						CaggFns = createAggFns();	
+						aggFnsMap.put(gval, CaggFns);
+					}else{
+						CaggFns = aggFnsMap.get(gval);
+					}
+					for (AggregationFn fn : CaggFns){
+						fn.processNext(ss);
+					}
+				}
+			}
+			isProcessed = true;
+			iter = aggFnsMap.entrySet().iterator();
+		}
 	}
 
 	/**
@@ -178,9 +153,9 @@ public class GroupByScan implements Scan {
 	@Override
 	public Constant getVal(String fldname) {
 		if (groupFlds.contains(fldname))
-			return groupVal.getVal(fldname);
+			return currentGVal;
 		if (aggFns != null)
-			for (AggregationFn fn : aggFns)
+			for (AggregationFn fn : currentAggFns)
 				if (fn.fieldName().equals(fldname)){
 					return fn.value();
 				}

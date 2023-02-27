@@ -87,6 +87,7 @@ public class SortPlan implements Plan {
 	 */
 	@Override
 	public Scan open() {
+		//System.out.println("in sort plan....");
 		Scan src = p.open();
 		List<TempTable> runs = splitIntoRuns(src);
 		/*

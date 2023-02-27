@@ -108,6 +108,7 @@ public class Schema implements Serializable {
 	 * @return true if the field is in this schema
 	 */
 	public boolean hasField(String fldName) {
+		//System.out.println("in schema.java: " + fldName + " " + fields().toString());
 		return fields().contains(fldName);
 	}
 

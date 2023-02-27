@@ -236,6 +236,9 @@ public class filterPlan{
         if(!enableGroup){
             return true;
         }
+        if(groupFld == null){
+            return true;
+        }
         if(!ts.hasField(groupFld)){//group filter is not applicable 
             return true;
         }
