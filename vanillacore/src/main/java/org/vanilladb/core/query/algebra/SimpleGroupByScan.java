@@ -130,11 +130,32 @@ public class SimpleGroupByScan implements Scan {
 					if(isFirst){
 						for (AggregationFn fn : CaggFns){
 							fn.processFirst(ss);
+							//add group filters for max and min
+							String agg = fn.fieldName().substring(0,3);
+							if(agg.equals("max")){//filter should be attr >= fn.value()
+								String attr = fn.fieldName().substring(5);
+								filterPlan.addFilter(attr, "groupmax", gval, gFld, fn.value(), new DoubleConstant(0), true, false, true, false);
+							}
+							else if(agg.equals("min")){//filter should be attr<=fn.value()
+								String attr = fn.fieldName().substring(5);
+								filterPlan.addFilter(attr, "groupmin", gval, gFld, new DoubleConstant(0), fn.value(), false, true, false, true);
+							}
 						}
 						isFirst = false;
+						
 					}else{
 						for (AggregationFn fn : CaggFns){
 							fn.processNext(ss);
+							//update group filters for max and min
+							String agg = fn.fieldName().substring(0,3);
+							if(agg.equals("max")){//filter should be attr >= fn.value()
+								String attr = fn.fieldName().substring(5);
+								filterPlan.updateFilter("groupmax", attr, gval, fn.value(), new IntegerConstant(0));
+							}
+							else if(agg.equals("min")){//filter should be attr<=fn.value()
+								String attr = fn.fieldName().substring(5);
+								filterPlan.updateFilter("groupmin", attr, gval, new IntegerConstant(0), fn.value());
+							}
 						}
 					}
 					//refresh hashmap
