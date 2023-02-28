@@ -16,14 +16,13 @@
 package org.vanilladb.core.query.algebra;
 
 import java.util.*;
+
 import org.vanilladb.core.filter.filterPlan;
-import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.aggfn.AggregationFn;
 import org.vanilladb.core.query.algebra.materialize.GroupValue;
-import java.util.Iterator;
 
 /**
  * The Scan class for the <em>groupby</em> operator.
@@ -33,7 +32,6 @@ public class SimpleGroupByScan implements Scan {
 	private Collection<String> groupFlds;
 	private Constant gval; 
 	private Collection<AggregationFn> aggFns;
-	private GroupValue groupVal;
 	private boolean moreGroups;
 	private String gFld = null;
 	private HashMap<Constant, List<AggregationFn>> aggFnsMap = new HashMap<>();
@@ -41,6 +39,7 @@ public class SimpleGroupByScan implements Scan {
 	private Constant currentGVal;
 	private Iterator<Map.Entry<Constant, List<AggregationFn>>> iter = null;
 	private boolean isProcessed = false;//to indicate if the aggregation is done
+	private boolean isFirst = true;
 
 	/**
 	 * Creates a groupby scan, given a grouped table scan.
@@ -65,11 +64,15 @@ public class SimpleGroupByScan implements Scan {
 	}
 
 		/*
-		 * Make a deep copy of aggregate constructors. 
+		 * Make a deep copy of source. 
 		 */
-	public List<AggregationFn> createAggFns(){
+	public List<AggregationFn> createAggFns(List<AggregationFn> source){
 		List<AggregationFn> copyAggs = new ArrayList<>();
-		copyAggs.addAll(this.aggFns);
+		try{
+			for(AggregationFn fn: source){
+				copyAggs.add((AggregationFn)fn.clone());
+			}
+		}catch(CloneNotSupportedException c){}  
 		return copyAggs; 
 	}
 
@@ -96,11 +99,11 @@ public class SimpleGroupByScan implements Scan {
 	 * @see Scan#next()
 	 */
 	@Override
-	public boolean next() {
+	public boolean next(){
 		processAggregation();
 		//iterate the computed aggFnsMap -- iterate each group 
-		while(iter.hasNext()){
-			Map.Entry<Constant, List<AggregationFn>> e = iter.next();
+		while(this.iter.hasNext()){
+			Map.Entry<Constant, List<AggregationFn>> e = this.iter.next();
 			currentGVal = e.getKey();
 			currentAggFns = e.getValue();
 			return true;
@@ -115,20 +118,32 @@ public class SimpleGroupByScan implements Scan {
 				GroupValue gv = new GroupValue(ss, groupFlds);
 				gval = gv.getVal(gFld);
 				if(aggFns != null){
-					List<AggregationFn> CaggFns= null;
-					if(!aggFnsMap.containsKey(gval)){//if the group field has new value, start a new aggFn
-						CaggFns = createAggFns();	
-						aggFnsMap.put(gval, CaggFns);
+					List<AggregationFn> CaggFns = null;
+					if(aggFnsMap.containsKey(gval)){
+						CaggFns = createAggFns(aggFnsMap.get(gval));
+					}else{//if the group field has new value, start a new aggFn
+						List<AggregationFn> tempAggFns = new ArrayList<>(this.aggFns);
+						CaggFns = createAggFns(tempAggFns);
+						isFirst = true;
+					}
+					//update CaggFns
+					if(isFirst){
+						for (AggregationFn fn : CaggFns){
+							fn.processFirst(ss);
+						}
+						isFirst = false;
 					}else{
-						CaggFns = aggFnsMap.get(gval);
+						for (AggregationFn fn : CaggFns){
+							fn.processNext(ss);
+						}
 					}
-					for (AggregationFn fn : CaggFns){
-						fn.processNext(ss);
-					}
+					//refresh hashmap
+					aggFnsMap.put(gval, CaggFns);
+					
 				}
 			}
 			isProcessed = true;
-			iter = aggFnsMap.entrySet().iterator();
+			this.iter = aggFnsMap.entrySet().iterator();
 		}
 	}
 

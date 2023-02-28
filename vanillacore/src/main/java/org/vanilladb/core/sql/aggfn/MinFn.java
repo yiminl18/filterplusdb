@@ -58,6 +58,11 @@ public class MinFn extends AggregationFn {
 	}
 
 	@Override
+	public String aggType(){
+		return "min";
+	}
+
+	@Override
 	public Type fieldType() {
 		throw new IllegalStateException();
 	}

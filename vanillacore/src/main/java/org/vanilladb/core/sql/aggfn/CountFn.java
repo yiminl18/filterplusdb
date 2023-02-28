@@ -64,6 +64,11 @@ public class CountFn extends AggregationFn {
 	}
 
 	@Override
+	public String aggType(){
+		return "count";
+	}
+
+	@Override
 	public boolean isArgumentTypeDependent() {
 		return false;
 	}

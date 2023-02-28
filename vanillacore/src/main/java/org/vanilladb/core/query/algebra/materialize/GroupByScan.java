@@ -114,8 +114,6 @@ public class GroupByScan implements Scan {
 			}
 				
 		
-		
-		//System.out.println("in group by creation: " + groupVal.getVal(gFld));
 		while (moreGroups = ss.next()) {
 			GroupValue gv = new GroupValue(ss, groupFlds);
 			

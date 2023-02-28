@@ -27,7 +27,7 @@ import org.vanilladb.core.sql.Type;
  * aggregation functions.
  * </p>
  */
-public abstract class AggregationFn {
+public abstract class AggregationFn implements Cloneable{
 	/**
 	 * Processes the specified record by regarding it as the first record in a
 	 * group.
@@ -75,6 +75,14 @@ public abstract class AggregationFn {
 	 */
 	public abstract Type fieldType();
 
+	/*
+	 * Return the clone of object. 
+	 */
+
+	public Object clone()throws CloneNotSupportedException{  
+		return super.clone();  
+	}  
+
 	/**
 	 * Returns true if the type of aggregation value is depend on the argument
 	 * field.
@@ -83,6 +91,11 @@ public abstract class AggregationFn {
 	 *         field
 	 */
 	public abstract boolean isArgumentTypeDependent();
+
+	/*
+	 * Returns the class of type of aggregation
+	 */
+	public abstract String aggType();
 
 	/**
 	 * Returns a hash code value for the object.

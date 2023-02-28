@@ -298,6 +298,9 @@ public class testrun {
         Scan s = plan.open();
         s.beforeFirst();
         List<String> projection = getProjection(query);
+        for(int i=0;i<projection.size();i++){
+            System.out.println(projection.get(i) + " ");
+        }
         while(s.next()){
             for(int i=0;i<projection.size();i++){
                 System.out.print(s.getVal(projection.get(i)) + " ");
@@ -347,14 +350,14 @@ public class testrun {
         //filterPlan.enableEqualJoinFilter();
         //filterPlan.enableThetaJoinFilter();
         //filterPlan.enableMaxminFilter();
-        filterPlan.enableGroupFilter();
+        //filterPlan.enableGroupFilter();
         //loadData();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableHashJoin();
+        //JoinKnob.disableIndexJoin();
+        //JoinKnob.disableHashJoin();
         //createIndexByCode("student","sid");
 
 
-        int queryID = 11;
+        int queryID = 12;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(queryID));
@@ -363,7 +366,7 @@ public class testrun {
         System.out.println("Filters:");
         filterPlan.printFilter();
         filterPlan.filterStats();
-        explainQuery(studentQueries.get(queryID));
+        //explainQuery(studentQueries.get(queryID));
         
 
 

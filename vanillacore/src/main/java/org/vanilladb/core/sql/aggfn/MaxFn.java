@@ -58,6 +58,11 @@ public class MaxFn extends AggregationFn {
 	}
 
 	@Override
+	public String aggType(){
+		return "max";
+	}
+
+	@Override
 	public Type fieldType() {
 		throw new IllegalStateException();
 	}

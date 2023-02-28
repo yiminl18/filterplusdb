@@ -32,6 +32,10 @@ public class SumFn extends AggregationFn {
 		this.fldName = fldName;
 	}
 
+	public void setVal(Constant val){
+		this.val = val;
+	}
+
 	@Override
 	public void processFirst(Record rec) {
 		Constant c = rec.getVal(fldName);
@@ -57,6 +61,11 @@ public class SumFn extends AggregationFn {
 	@Override
 	public Constant value() {
 		return val;
+	}
+
+	@Override
+	public String aggType(){
+		return "sum";
 	}
 
 	@Override

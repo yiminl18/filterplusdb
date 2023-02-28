@@ -72,6 +72,11 @@ public class AvgFn extends AggregationFn {
 	}
 
 	@Override
+	public String aggType(){
+		return "avg";
+	}
+
+	@Override
 	public int hashCode() {
 		return fieldName().hashCode();
 	}

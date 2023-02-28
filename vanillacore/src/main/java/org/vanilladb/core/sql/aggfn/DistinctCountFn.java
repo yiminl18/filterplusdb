@@ -65,6 +65,11 @@ public class DistinctCountFn extends AggregationFn {
 	}
 
 	@Override
+	public String aggType(){
+		return "distinct";
+	}
+
+	@Override
 	public Type fieldType() {
 		return INTEGER;
 	}

@@ -269,6 +269,7 @@ public class GroupByPlan extends ReduceRecordsPlan {
 				schema.add(fld, p.schema());
 			// sort records by group-by fields with default direction
 			//sp = new SortPlan(p, new ArrayList<String>(groupFlds), tx);
+			sp = p;
 		} else
 			// all records are in a single group, so p is already sorted
 			sp = p;
@@ -292,6 +293,7 @@ public class GroupByPlan extends ReduceRecordsPlan {
 	public Scan open() {
 		Scan ss = sp.open();
 		if (!this.groupFlds.isEmpty()) {//has group fields
+			//return new GroupByScan(ss, groupFlds, aggFns);
 			return new SimpleGroupByScan(ss, groupFlds, aggFns);
 		}else{//no group fields 
 			return new GroupByScan(ss, groupFlds, aggFns);
