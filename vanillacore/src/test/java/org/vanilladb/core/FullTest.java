@@ -168,16 +168,16 @@ public class FullTest {
     }
 
     public static void testReadCSV(){
-        // String sql = "CREATE TABLE PART (" + 
-        //     "P_PARTKEY		int," + 
-        //     "P_NAME			varchar(55)," + 
-        //     "P_MFGR			varchar(25)," + 
-        //     "P_BRAND			varchar(10)," + 
-        //     "P_TYPE			varchar(25)," + 
-        //     "P_SIZE			int," + 
-        //     "P_CONTAINER		varchar(10)," + 
-        //     "P_RETAILPRICE	double," + 
-        //     "P_COMMENT		varchar(23))" ;
+        String sql = "CREATE TABLE PART (" + 
+            "P_PARTKEY		int," + 
+            "P_NAME			varchar(55)," + 
+            "P_MFGR			varchar(25)," + 
+            "P_BRAND			varchar(10)," + 
+            "P_TYPE			varchar(25)," + 
+            "P_SIZE			int," + 
+            "P_CONTAINER		varchar(10)," + 
+            "P_RETAILPRICE	double," + 
+            "P_COMMENT		varchar(23))" ;
         // String sql = "CREATE TABLE SUPPLIER (" + 
         // "S_SUPPKEY		int," + 
         // "S_NAME			varchar(25)," + 
@@ -211,23 +211,23 @@ public class FullTest {
         // "O_CLERK			varchar(15)," +
         // "O_SHIPPRIORITY	int," +
         // "O_COMMENT		varchar(79))";
-        String sql = "CREATE TABLE LINEITEM (" +
-        "L_ORDERKEY		long," +
-        "L_PARTKEY		long, " +
-        "L_SUPPKEY		long, " +
-        "L_LINENUMBER	int," +
-        "L_QUANTITY		 double," +
-        "L_EXTENDEDPRICE	 double," +
-        "L_DISCOUNT		 double," +
-        "L_TAX			 double," +
-        "L_RETURNFLAG	varchar(1)," +
-        "L_LINESTATUS	varchar(1)," +
-        "L_SHIPDATE		 varchar(50)," +
-        "L_COMMITDATE	 varchar(50)," +
-        "L_RECEIPTDATE	 varchar(50)," +
-        "L_SHIPINSTRUCT	varchar(25)," +
-        "L_SHIPMODE		varchar(10)," +
-        "L_COMMENT		varchar(44))"; 
+        // String sql = "CREATE TABLE LINEITEM (" +
+        // "L_ORDERKEY		long," +
+        // "L_PARTKEY		long, " +
+        // "L_SUPPKEY		long, " +
+        // "L_LINENUMBER	int," +
+        // "L_QUANTITY		 double," +
+        // "L_EXTENDEDPRICE	 double," +
+        // "L_DISCOUNT		 double," +
+        // "L_TAX			 double," +
+        // "L_RETURNFLAG	varchar(1)," +
+        // "L_LINESTATUS	varchar(1)," +
+        // "L_SHIPDATE		 varchar(50)," +
+        // "L_COMMITDATE	 varchar(50)," +
+        // "L_RECEIPTDATE	 varchar(50)," +
+        // "L_SHIPINSTRUCT	varchar(25)," +
+        // "L_SHIPMODE		varchar(10)," +
+        // "L_COMMENT		varchar(44))"; 
         // String sql = "CREATE TABLE NATION (" +
         // "N_NATIONKEY		int," +
         // "N_NAME			varchar(25)," +
@@ -241,23 +241,13 @@ public class FullTest {
         
         
         
-        // String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
-        // String tableName = "lineitem";
-        // CSVReader csvReader = new CSVReader();
-        // csvReader.loadTable(sql,tableName,csvFilePath);
+        String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
+        String tableName = "part";
+        String indexName = "P_PARTKEY";
+        CSVReader csvReader = new CSVReader();
+        csvReader.loadTable(sql,tableName,csvFilePath,indexName);
     }
 
-    
-    public static int nextGaussian(Random r, int mean, int deviation, int min, int max){
-        double next = r.nextGaussian()*deviation+mean;
-        if(next > max){
-            next = max;
-        }
-        if(next < min){
-            next = min;
-        }
-        return (int)next;
-    }
 
     public static HashMap<Integer, String> readStudentQueryTest(){
         String csvFile = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";

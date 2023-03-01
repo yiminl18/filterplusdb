@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.util.*;  
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
-import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.planner.*;
 import static org.vanilladb.core.sql.Type.INTEGER;
 import static org.vanilladb.core.sql.Type.VARCHAR;
@@ -13,21 +12,12 @@ import static org.vanilladb.core.sql.Type.BIGINT;
 
 
 import java.io.File;
-import java.sql.Connection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.vanilladb.core.storage.file.BlockId;
-import org.vanilladb.core.storage.file.FileMgr;
-import org.vanilladb.core.storage.file.Page;
+import org.vanilladb.core.storage.index.IndexType;
 import org.vanilladb.core.storage.metadata.CatalogMgr;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.metadata.statistics.StatMgr;
-import org.vanilladb.core.storage.record.RecordFile;
-import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 import org.vanilladb.core.query.parse.*;
-import java.util.*;
 import org.vanilladb.core.sql.*;
 
 /*
@@ -36,9 +26,6 @@ import org.vanilladb.core.sql.*;
  * table name is contained in the file as name.csv
  */
 public class CSVReader {
-    private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
-    private static final int LOADED_FLAG_POS = 0;
-	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
 
     public void insert(String query){ // "INSERT INTO test2(a,b,c) values(1,2,3)"
         Transaction tx = VanillaDb.txMgr().newTransaction(
@@ -117,10 +104,12 @@ public class CSVReader {
         return str.toLowerCase();
     }
 
-    public void loadTable(String createTableSQL, String tableName, String csvFilePath){
+    public void loadTable(String createTableSQL, String tbName, String csvFilePath, String fieldName){
+        int limit = 10000;
         Map<String, Type> schema = parseTable(createTableSQL);
 
         CatalogMgr md = VanillaDb.catalogMgr();
+        StatMgr stat = VanillaDb.statMgr();
         Transaction tx = VanillaDb.txMgr().newTransaction(
                 Connection.TRANSACTION_SERIALIZABLE, false);
 
@@ -131,20 +120,25 @@ public class CSVReader {
             Type value = entry.getValue();
             sch.addField(field, value);
         }
-        md.createTable(tableName, sch, tx);
-        TableInfo ti = md.getTableInfo(tableName, tx);
+        md.createTable(tbName, sch, tx);
+        TableInfo ti = md.getTableInfo(tbName, tx);
 
-        RecordFile rf = ti.open(tx, true);
-        rf.beforeFirst();
-        while (rf.next())
-            rf.delete();
-        rf.close();
+        String idxName = "";
+        List<String> indexedFlds = new LinkedList<String>();
+        List<String> fields = new ArrayList<>();
+        List<Constant> vals = new ArrayList<>();
 
-        rf = ti.open(tx, false);
+        //create index 
+        if(!idxName.equals("null")){
+            indexedFlds = new LinkedList<String>();
+            indexedFlds.add(fieldName);
+            idxName = "idx_" + fieldName;
+            md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
+        }
 
         //populate table 
         //read data from csv
-        String csvFile = csvFilePath + tableName.toLowerCase() + ".csv";
+        String csvFile = csvFilePath + tbName.toLowerCase() + ".csv";
         try {
             File file = new File(csvFile);
             FileReader fr = new FileReader(file);
@@ -160,11 +154,16 @@ public class CSVReader {
             while((line = br.readLine()) != null) {
                 //System.out.println(line);
                 idx += 1;
+                if(idx > limit){
+                    break;
+                }
                 if(idx%100 == 0){
                     System.out.println(idx);
                 }
-                values = line.split(delimiter);
-                rf.insert();
+                values = line.split(delimiter);//values are a set of value in one tuple
+                //scan each value in a tuple
+                fields = new ArrayList<>();
+                vals = new ArrayList<>();
                 for(int i=0;i<values.length;i++){
                     String field = header[i];
                     if(!schema.containsKey(field)){
@@ -172,55 +171,47 @@ public class CSVReader {
                     }
                     Type type = schema.get(field);
                     String rawValue = clean(values[i]);
+                    fields.add(field);
                     //System.out.println(field + " " + rawValue);
+                    Constant val= null;
                     if(type == INTEGER){
-                        if(rawValue == ""){
-                            rf.setVal(field, new IntegerConstant(0));
+                        if(rawValue == ""){//missing value 
+                            //rf.setVal(field, new IntegerConstant(0));
+                            val = new IntegerConstant(0);
                         }else{
                             int value = Integer.valueOf(rawValue);
-                            rf.setVal(field, new IntegerConstant(value));
+                            val = new IntegerConstant(value);
                         }
                     }else if(type == DOUBLE){
                         if(rawValue == ""){
-                            rf.setVal(field, new DoubleConstant(0));
+                            val =  new DoubleConstant(0);
                         }else{
                             double value = Double.valueOf(rawValue);
-                            rf.setVal(field, new DoubleConstant(value));
+                            val = new DoubleConstant(value);
                         }
                     }else if(type == VARCHAR){
-                        rf.setVal(field, new VarcharConstant(rawValue));
+                        val = new VarcharConstant(rawValue);
                     }else if(type == BIGINT){
                         if(rawValue == ""){
-                            rf.setVal(field, new BigIntConstant(Long.valueOf(0)));
+                            val =  new BigIntConstant(Long.valueOf(0));
                         }else{
-                            rf.setVal(field, new BigIntConstant(Long.valueOf(rawValue)));
+                            val = new BigIntConstant(Long.valueOf(rawValue));
                         }
                     }
+                    vals.add(val);
                 }
             }
             br.close();
             } catch(IOException ioe) {
                ioe.printStackTrace();
             }
-        
-        rf.close();
-        // refresh the statistical information after populating this table
-        // this info only stored in memory, so no need to compute here 
-        //stat.getTableStatInfo(ti, tx);
+        stat.getTableStatInfo(ti, tx);
         tx.commit();
-
+        //add a checkpoint record to limit rollback
         tx = VanillaDb.txMgr().newTransaction(
-					Connection.TRANSACTION_SERIALIZABLE, false);
-			RecoveryMgr.initializeSystem(tx);
-			tx.commit();
-        
-        // Set the flag indicating that the data is loaded
-        setFlagAsLoaded();
+                Connection.TRANSACTION_SERIALIZABLE, false);
+        RecoveryMgr.initializeSystem(tx);
+        tx.commit();
     }
 
-    private void setFlagAsLoaded() {
-		Page page = new Page();
-		page.setVal(LOADED_FLAG_POS, DATA_LOADED_VALUE);
-		page.write(FLAG_DATA_BLOCK);
-	}
 }
