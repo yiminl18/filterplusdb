@@ -241,10 +241,10 @@ public class FullTest {
         
         
         
-        String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
-        String tableName = "lineitem";
-        CSVReader csvReader = new CSVReader();
-        csvReader.loadTable(sql,tableName,csvFilePath);
+        // String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
+        // String tableName = "lineitem";
+        // CSVReader csvReader = new CSVReader();
+        // csvReader.loadTable(sql,tableName,csvFilePath);
     }
 
     
