@@ -350,11 +350,11 @@ public class FullTest {
     @Test
     public void main() {
         //logger.info("testing...======================");
-        //System.out.println("testing...--------");
-        HashMap<Integer, String> studentQueries = readStudentQueryTest();
-        //getProjection(studentQueries.get(11));
-        String dbname = "TESTDB2";
-        init(dbname);
+        System.out.println("testing...--------");
+        // HashMap<Integer, String> studentQueries = readStudentQueryTest();
+        // //getProjection(studentQueries.get(11));
+        // String dbname = "TESTDB2";
+        // init(dbname);
 
         //JoinKnob.enableFastLearning();
 
@@ -369,16 +369,16 @@ public class FullTest {
         //createIndexByCode("student","sid");
 
 
-        int queryID = 2;
-        System.out.println("start running query...");
-        long start = System.currentTimeMillis();
-        runStudentQueries(studentQueries.get(queryID));
-        long end = System.currentTimeMillis();
-        System.out.println("running time: " + (end-start));
-        System.out.println("Filters:");
-        filterPlan.printFilter();
-        filterPlan.filterStats();
-        explainQuery(studentQueries.get(queryID));
+        // int queryID = 2;
+        // System.out.println("start running query...");
+        // long start = System.currentTimeMillis();
+        // runStudentQueries(studentQueries.get(queryID));
+        // long end = System.currentTimeMillis();
+        // System.out.println("running time: " + (end-start));
+        // System.out.println("Filters:");
+        // filterPlan.printFilter();
+        // filterPlan.filterStats();
+        // explainQuery(studentQueries.get(queryID));
         
 
 
