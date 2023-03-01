@@ -101,14 +101,15 @@ public class GroupByScan implements Scan {
 				}
 				fn.processFirst(ss);
 			}
-			if(JoinKnob.fastLearning){
-				return false;
-			}
+			
 		}
 			
 				
 		
 		while (moreGroups = ss.next()) {
+			if(JoinKnob.fastLearning){
+				return false;
+			}
 			GroupValue gv = new GroupValue(ss, groupFlds);
 			
 			if (!groupVal.equals(gv)){

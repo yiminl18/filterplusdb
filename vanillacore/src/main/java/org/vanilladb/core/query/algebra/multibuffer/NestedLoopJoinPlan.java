@@ -41,11 +41,11 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 		schema = new Schema();
 		schema.addAll(lhs.schema());
 		schema.addAll(rhs.schema());
-		hist = joinHistogram(lhs.histogram(), rhs.histogram(), fldName1,
-				fldName2);
 		joinFields = findJoinFields(joinPredicate, lhs.schema(), rhs.schema());
 		fldName1 = joinFields.get(0);
 		fldName2 = joinFields.get(1);
+		hist = joinHistogram(lhs.histogram(), rhs.histogram(), fldName1,
+				fldName2);
 	}
 
 	@Override

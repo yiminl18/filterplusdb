@@ -52,6 +52,7 @@ public class NestedLoopJoinScan implements Scan {
 	public void beforeFirst() {
 		lhsScan.beforeFirst();
 		rhsScan.beforeFirst();
+		isLhsEmpty = !lhsScan.next();
 	}
 
 	/**
@@ -96,6 +97,7 @@ public class NestedLoopJoinScan implements Scan {
 	public Constant getVal(String fldname) {
 		//System.out.println("Print in NLJ: "+ fldname);
 		if (lhsScan.hasField(fldname)){
+			//System.out.println("Print in NLJ: "+ fldname);
 			return lhsScan.getVal(fldname);
 		}
 		else if(rhsScan.hasField(fldname)){

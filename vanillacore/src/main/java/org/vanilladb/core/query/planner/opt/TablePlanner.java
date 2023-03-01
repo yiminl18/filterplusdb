@@ -165,6 +165,12 @@ class TablePlanner {
 			if(JoinKnob.productJoin){
 				p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
 			}
+			if(p != null){
+				return p;
+			}
+			if(JoinKnob.nestedloop){
+				p = makeNestedLoopJoinPlan(trunk, joinPred);
+			}
 		}
 			
 		return p;

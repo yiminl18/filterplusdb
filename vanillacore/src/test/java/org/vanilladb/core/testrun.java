@@ -355,12 +355,13 @@ public class testrun {
         //filterPlan.enableMaxminFilter();
         //filterPlan.enableGroupFilter();
         //loadData();
-        //JoinKnob.disableIndexJoin();
-        //JoinKnob.disableHashJoin();
+        JoinKnob.disableIndexJoin();
+        JoinKnob.disableHashJoin();
+        JoinKnob.disableProductJoin();
         //createIndexByCode("student","sid");
 
 
-        int queryID = 2;
+        int queryID = 1;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(queryID));
@@ -369,7 +370,7 @@ public class testrun {
         System.out.println("Filters:");
         filterPlan.printFilter();
         filterPlan.filterStats();
-        //explainQuery(studentQueries.get(queryID));
+        explainQuery(studentQueries.get(queryID));
         
 
 
