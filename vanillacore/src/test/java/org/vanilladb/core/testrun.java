@@ -347,17 +347,20 @@ public class testrun {
         //getProjection(studentQueries.get(11));
         String dbname = "TESTDB2";
         init(dbname);
+
+        JoinKnob.enableFastLearning();
+
         //filterPlan.enableEqualJoinFilter();
         //filterPlan.enableThetaJoinFilter();
         //filterPlan.enableMaxminFilter();
         //filterPlan.enableGroupFilter();
         //loadData();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableHashJoin();
+        //JoinKnob.disableIndexJoin();
+        //JoinKnob.disableHashJoin();
         //createIndexByCode("student","sid");
 
 
-        int queryID = 13;
+        int queryID = 2;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(queryID));
@@ -366,7 +369,7 @@ public class testrun {
         System.out.println("Filters:");
         filterPlan.printFilter();
         filterPlan.filterStats();
-        explainQuery(studentQueries.get(queryID));
+        //explainQuery(studentQueries.get(queryID));
         
 
 

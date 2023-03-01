@@ -19,6 +19,7 @@ import java.util.Collection;
 
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
+import org.vanilladb.core.query.planner.JoinKnob;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
@@ -85,7 +86,7 @@ public class GroupByScan implements Scan {
 		if (!moreGroups)
 			return false;
 		groupVal = new GroupValue(ss, groupFlds);
-		if (aggFns != null)
+		if (aggFns != null){
 			for (AggregationFn fn : aggFns){
 				String agg = fn.fieldName().substring(0,3);
 				if(groupFlds.size() == 0){
@@ -97,21 +98,14 @@ public class GroupByScan implements Scan {
 						String attr = fn.fieldName().substring(5);
 						filterPlan.addFilter(attr, "min", null, null, new DoubleConstant(0), fn.value(), false, true, false, true);
 					}
-				}else{
-					//handle for group by max min
-					//System.out.println("in group by create: " + groupVal.getVal(gFld) + " " + fn.value());
-					if(agg.equals("max")){//filter should be attr >= fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.addFilter(attr, "groupmax", groupVal.getVal(gFld), gFld, fn.value(), new DoubleConstant(0), true, false, true, false);
-					}
-					else if(agg.equals("min")){//filter should be attr<=fn.value()
-						String attr = fn.fieldName().substring(5);
-						filterPlan.addFilter(attr, "groupmin", groupVal.getVal(gFld), gFld, new DoubleConstant(0), fn.value(), false, true, false, true);
-					}
 				}
-				
 				fn.processFirst(ss);
 			}
+			if(JoinKnob.fastLearning){
+				return false;
+			}
+		}
+			
 				
 		
 		while (moreGroups = ss.next()) {
@@ -134,17 +128,6 @@ public class GroupByScan implements Scan {
 						else if(agg.equals("min")){//filter should be attr<=fn.value()
 							String attr = fn.fieldName().substring(5);
 							filterPlan.updateFilter("min", attr, null, new IntegerConstant(0), fn.value());
-						}
-					}else{
-						//handle for group by 
-						//System.out.println("in group by update: " + gv.getVal(gFld) + " " +  fn.value());
-						if(agg.equals("max")){//filter should be attr >= fn.value()
-							String attr = fn.fieldName().substring(5);
-							filterPlan.updateFilter("groupmax", attr, gv.getVal(gFld), fn.value(), new IntegerConstant(0));
-						}
-						else if(agg.equals("min")){//filter should be attr<=fn.value()
-							String attr = fn.fieldName().substring(5);
-							filterPlan.updateFilter("groupmin", attr, gv.getVal(gFld), new IntegerConstant(0), fn.value());
 						}
 					}
 					

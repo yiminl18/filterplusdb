@@ -23,6 +23,7 @@ import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.aggfn.AggregationFn;
 import org.vanilladb.core.query.algebra.materialize.GroupValue;
+import org.vanilladb.core.query.planner.JoinKnob;
 
 /**
  * The Scan class for the <em>groupby</em> operator.
@@ -101,6 +102,10 @@ public class SimpleGroupByScan implements Scan {
 	@Override
 	public boolean next(){
 		processAggregation();
+		if(JoinKnob.fastLearning){
+			//in fast learning phase, stops when receiving first item
+			return false;
+		}
 		//iterate the computed aggFnsMap -- iterate each group 
 		while(this.iter.hasNext()){
 			Map.Entry<Constant, List<AggregationFn>> e = this.iter.next();
@@ -115,6 +120,9 @@ public class SimpleGroupByScan implements Scan {
 	public void processAggregation(){
 		if(!isProcessed){//make sure aggregation only happen one time 
 			while (moreGroups = ss.next()) {
+				if(JoinKnob.fastLearning){
+					break;
+				}
 				GroupValue gv = new GroupValue(ss, groupFlds);
 				gval = gv.getVal(gFld);
 				if(aggFns != null){
