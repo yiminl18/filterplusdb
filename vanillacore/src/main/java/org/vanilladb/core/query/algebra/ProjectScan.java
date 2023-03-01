@@ -17,6 +17,7 @@ package org.vanilladb.core.query.algebra;
 
 import java.util.Collection;
 
+import org.vanilladb.core.query.planner.JoinKnob;
 import org.vanilladb.core.sql.Constant;
 
 /**
@@ -27,6 +28,7 @@ import org.vanilladb.core.sql.Constant;
 public class ProjectScan implements Scan {
 	private Scan s;
 	private Collection<String> fieldList;
+	private boolean first = false;//used in fast learning phase which stops when first get next()
 
 	/**
 	 * Creates a project scan having the specified underlying scan and field
@@ -49,6 +51,12 @@ public class ProjectScan implements Scan {
 
 	@Override
 	public boolean next() {
+		if(first && JoinKnob.fastLearning){
+			return false;
+		}
+		if(JoinKnob.fastLearning){
+			first = true;
+		}
 		return s.next();
 	}
 

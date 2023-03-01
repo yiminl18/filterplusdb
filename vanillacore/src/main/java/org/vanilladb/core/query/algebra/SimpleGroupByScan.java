@@ -156,6 +156,7 @@ public class SimpleGroupByScan implements Scan {
 								String attr = fn.fieldName().substring(5);
 								filterPlan.updateFilter("groupmin", attr, gval, new IntegerConstant(0), fn.value());
 							}
+							//System.out.println("in group by scan: " + fn.value().toString() + " " + gval);
 						}
 					}
 					//refresh hashmap

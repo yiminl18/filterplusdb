@@ -116,6 +116,12 @@ class TablePlanner {
 	 * @return a join plan of the trunk and this table
 	 */
 	public Plan makeJoinPlan(Plan trunk) {
+		if(JoinKnob.fastLearning){
+			//fast learning only explores basic nested loop join
+			JoinKnob.disableHashJoin();
+			JoinKnob.disableIndexJoin();
+			JoinKnob.disableProductJoin();
+		}
 		Schema trunkSch = trunk.schema();
 		Predicate joinPred = pred.joinPredicate(sch, trunkSch);
 		if (joinPred == null)
@@ -140,6 +146,12 @@ class TablePlanner {
 			}
 			if(JoinKnob.productJoin){
 				p = makeProductJoinPlan(trunk, trunkSch);//ihe: do not use product join for now 
+			}
+			if(p != null){
+				return p;
+			}
+			if(JoinKnob.nestedloop){
+				p = makeNestedLoopJoinPlan(trunk, joinPred);
 			}
 		}
 		else{//make plan for theta join: prefer index join, otherwise block based NL join
@@ -180,9 +192,9 @@ class TablePlanner {
 		return new MultiBufferProductPlan(trunk, p, tx, joinPred);
 	}
 
-	public Plan makeNestedLoopJoinPlan(Plan trunk, String leftJoinField, String rightJoinField){
+	public Plan makeNestedLoopJoinPlan(Plan trunk, Predicate joinPredicate){
 		Plan p = makeSelectPlan();
-		return new NestedLoopJoinPlan(trunk, p, leftJoinField, rightJoinField);
+		return new NestedLoopJoinPlan(trunk, p, joinPredicate);
 	}
 
 	public Plan makeHashJoinPlan(Plan lhs, Predicate joinPredicate){
