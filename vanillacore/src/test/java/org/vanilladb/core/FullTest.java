@@ -2,10 +2,12 @@ package org.vanilladb.core;
 
 import java.sql.Connection;
 import java.util.*;
+import java.util.logging.Logger;
 import java.io.File;
 import java.io.*;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
+//import org.junit.Test;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.planner.*;
@@ -20,13 +22,16 @@ import org.vanilladb.core.storage.file.Page;
 import org.vanilladb.core.storage.index.IndexType;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.planner.JoinKnob;
+import org.junit.jupiter.api.Test;
 
-public class testrun {
+
+public class FullTest {
 
     // Flags
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
+    private static Logger logger = Logger.getLogger("FullTest.class.getName()");
 
     public static void init(String dbname){
         ServerInit.init(dbname);
@@ -342,26 +347,29 @@ public class testrun {
         s.close();
         tx.commit();
     }
-    public static void main(String[] args) {
+    @Test
+    public void main() {
+        //logger.info("testing...======================");
+        //System.out.println("testing...--------");
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
         //getProjection(studentQueries.get(11));
         String dbname = "TESTDB2";
         init(dbname);
 
-        JoinKnob.enableFastLearning();
+        //JoinKnob.enableFastLearning();
 
         //filterPlan.enableEqualJoinFilter();
         //filterPlan.enableThetaJoinFilter();
         //filterPlan.enableMaxminFilter();
         //filterPlan.enableGroupFilter();
         //loadData();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableHashJoin();
-        JoinKnob.disableProductJoin();
+        // JoinKnob.disableIndexJoin();
+        // JoinKnob.disableHashJoin();
+        // JoinKnob.disableProductJoin();
         //createIndexByCode("student","sid");
 
 
-        int queryID = 1;
+        int queryID = 2;
         System.out.println("start running query...");
         long start = System.currentTimeMillis();
         runStudentQueries(studentQueries.get(queryID));
