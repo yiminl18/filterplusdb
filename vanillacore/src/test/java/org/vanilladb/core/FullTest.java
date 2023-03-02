@@ -7,6 +7,7 @@ import java.io.*;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.query.parse.*;
+import org.vanilladb.core.filter.filter;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.planner.*;
@@ -351,7 +352,7 @@ public class FullTest {
     }
 
     public static void runStudentQueries(String query){
-        System.out.println(query);
+        //System.out.println(query);
         Transaction tx = VanillaDb.txMgr().newTransaction(
 				Connection.TRANSACTION_SERIALIZABLE, true);
         Planner planner = VanillaDb.newPlanner();
@@ -359,9 +360,9 @@ public class FullTest {
         Scan s = plan.open();
         s.beforeFirst();
         List<String> projection = getProjection(query);
-        for(int i=0;i<projection.size();i++){
-            System.out.println(projection.get(i) + " ");
-        }
+        // for(int i=0;i<projection.size();i++){
+        //     System.out.println(projection.get(i) + " ");
+        // }
         while(s.next()){
             for(int i=0;i<projection.size();i++){
                 System.out.print(s.getVal(projection.get(i)) + " ");
@@ -415,33 +416,51 @@ public class FullTest {
         System.out.println(data.pred().toString()); 
     }
 
-    public static void oneRun(String query, int queryID){
-        filterPlan.open();
-        JoinKnob.init();
-        //fast learning phase
-        long start = System.currentTimeMillis();
-        JoinKnob.enableFastLearning();
-        runStudentQueries(query);
-        long end = System.currentTimeMillis();
-        long learnTime = (end-start);
-        //query run phase
-        filterPlan.open();
-        start = System.currentTimeMillis();
-        JoinKnob.init();//close fast learning
-        runStudentQueries(query);
-        end = System.currentTimeMillis();
-        long runTime = (end-start);
-        String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
+    
 
+    public static void oneRun(String query, int queryID){
         //raw query run
         filterPlan.close();
         JoinKnob.init();
         JoinKnob.enableRawRun();
+        long start = System.currentTimeMillis();
+        JoinKnob.disableHashJoin();
+        JoinKnob.disableIndexJoin();
+        JoinKnob.disableNestLoopJoin();
+        runStudentQueries(query);
+        long end = System.currentTimeMillis();
+        long runTime = (end-start);
+        String out2 = "Raw query run: " + String.valueOf(runTime); 
+        System.out.println(runTime);
+
+        //run optimized query
+        filterPlan.init();
+        filterPlan.open();
+        JoinKnob.init();
+
+        //fast learning phase
         start = System.currentTimeMillis();
+        JoinKnob.enableFastLearning();
+        runStudentQueries(query);
+        end = System.currentTimeMillis();
+        long learnTime = (end-start);
+        filterPlan.printFilter();
+
+        //query run phase
+        filterPlan.open();
+        start = System.currentTimeMillis();
+        JoinKnob.init();//close fast learning
+        JoinKnob.disableHashJoin();
+        JoinKnob.disableIndexJoin();
+        JoinKnob.disableNestLoopJoin();
         runStudentQueries(query);
         end = System.currentTimeMillis();
         runTime = (end-start);
-        String out2 = "Raw query run: " + String.valueOf(runTime); 
+        String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
+        System.out.println(learnTime + " " + runTime);
+        explainQuery(query);
+        filterPlan.printFilter();
+
         writeFile(out1, out2, queryID);
     }
 
@@ -472,7 +491,7 @@ public class FullTest {
         //parseQuery();
         //loadData();
         //testReadCSV();
-        int queryID = 2;
+        int queryID = 3;
         oneRun(studentQueries.get(queryID), queryID);
 
     }

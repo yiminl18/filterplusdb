@@ -159,7 +159,7 @@ class TablePlanner {
 				p = makeIndexJoinPlan(trunk, trunkSch, joinPred);
 			}
 			if(p != null){
-				System.out.println("in table planner: index scan is used");
+				//System.out.println("in table planner: index scan is used");
 				return p;
 			}
 			if(JoinKnob.productJoin){
@@ -194,7 +194,7 @@ class TablePlanner {
 		Plan p = makeSelectPlan();
 		Schema trunkSch = trunk.schema();
 		Predicate joinPred = pred.joinPredicate(sch, trunkSch);
-		System.out.print("in TablePlanner: " + joinPred.toString());
+		//System.out.print("in TablePlanner: " + joinPred.toString());
 		return new MultiBufferProductPlan(trunk, p, tx, joinPred);
 	}
 

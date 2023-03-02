@@ -1,0 +1,15 @@
+
+Optimized query run: 9 418
+Raw query run: 445
+
+Optimized query run: 10 418
+Raw query run: 406
+
+Optimized query run: 9 422
+Raw query run: 440
+
+Optimized query run: 3 326
+Raw query run: 457
+
+Optimized query run: 3 330
+Raw query run: 426

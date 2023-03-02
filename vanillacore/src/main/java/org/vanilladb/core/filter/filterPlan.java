@@ -17,6 +17,13 @@ public class filterPlan{
     public static int numberOfDroppedTuplefromTheta = 0;
     public static int numberOfDroppedTuplefromGroup = 0;
 
+    public static void init(){
+        filters = new HashMap<>();
+        groupFilters = new HashMap<>();
+        groupPredAttr = new ArrayList<>();
+        close();
+    }
+
     public static void enableMaxminFilter(){
         enableMaxmin = true;
     }
