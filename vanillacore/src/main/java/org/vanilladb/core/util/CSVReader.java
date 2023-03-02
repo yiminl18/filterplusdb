@@ -6,11 +6,9 @@ import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.query.planner.*;
 import static org.vanilladb.core.sql.Type.INTEGER;
-import static org.vanilladb.core.sql.Type.VARCHAR;
 import static org.vanilladb.core.sql.Type.DOUBLE;
 import static org.vanilladb.core.sql.Type.BIGINT;
-
-
+import org.vanilladb.core.query.planner.index.*;
 import java.io.File;
 import org.vanilladb.core.storage.index.IndexType;
 import org.vanilladb.core.storage.metadata.CatalogMgr;
@@ -56,31 +54,6 @@ public class CSVReader {
         return sql;
     }
 
-    public void readCSV(String csvFile){
-        try {
-            String strs[] = csvFile.split(".");
-            String tableName = strs[0];
-            File file = new File(csvFile);
-            FileReader fr = new FileReader(file);
-            BufferedReader br = new BufferedReader(fr);
-            String line = "";
-            String delimiter = "\\|";
-            String[] values;
-            String[] schema;
-
-            line = br.readLine();
-            schema = line.split(delimiter);
-            while((line = br.readLine()) != null) {
-                values = line.split(delimiter);
-                String sql = makeInsertSQL(tableName, schema, values);
-                System.out.println(sql);
-                //insert(sql);
-            }
-            br.close();
-            } catch(IOException ioe) {
-               ioe.printStackTrace();
-            }
-    }
 
     public Map<String, Type> parseTable(String qry){
         // String qry = "create table Enro11(Eid int, StudentId int, "
@@ -104,7 +77,7 @@ public class CSVReader {
         return str.toLowerCase();
     }
 
-    public void loadTable(String createTableSQL, String tbName, String csvFilePath, String fieldName){
+    public void loadTable(String createTableSQL, String tbName, String csvFilePath, List<String> fieldNames){
         int limit = 10000;
         Map<String, Type> schema = parseTable(createTableSQL);
 
@@ -118,10 +91,11 @@ public class CSVReader {
         for (Map.Entry<String,Type> entry : schema.entrySet()){
             String field = entry.getKey();
             Type value = entry.getValue();
+            //System.out.println(value);
             sch.addField(field, value);
         }
         md.createTable(tbName, sch, tx);
-        TableInfo ti = md.getTableInfo(tbName, tx);
+        
 
         String idxName = "";
         List<String> indexedFlds = new LinkedList<String>();
@@ -129,12 +103,17 @@ public class CSVReader {
         List<Constant> vals = new ArrayList<>();
 
         //create index 
-        if(!idxName.equals("null")){
+        for(String fieldName : fieldNames){
             indexedFlds = new LinkedList<String>();
             indexedFlds.add(fieldName);
             idxName = "idx_" + fieldName;
             md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
         }
+        
+            
+        
+
+        TableInfo ti = md.getTableInfo(tbName, tx);
 
         //populate table 
         //read data from csv
@@ -157,7 +136,7 @@ public class CSVReader {
                 if(idx > limit){
                     break;
                 }
-                if(idx%100 == 0){
+                if(idx%1000 == 0){
                     System.out.println(idx);
                 }
                 values = line.split(delimiter);//values are a set of value in one tuple
@@ -170,6 +149,7 @@ public class CSVReader {
                         System.out.println("SCHEMA NOT MATCHED!");
                     }
                     Type type = schema.get(field);
+                    //System.out.println(type);
                     String rawValue = clean(values[i]);
                     fields.add(field);
                     //System.out.println(field + " " + rawValue);
@@ -189,17 +169,20 @@ public class CSVReader {
                             double value = Double.valueOf(rawValue);
                             val = new DoubleConstant(value);
                         }
-                    }else if(type == VARCHAR){
-                        val = new VarcharConstant(rawValue);
                     }else if(type == BIGINT){
                         if(rawValue == ""){
                             val =  new BigIntConstant(Long.valueOf(0));
                         }else{
                             val = new BigIntConstant(Long.valueOf(rawValue));
                         }
+                    }else{
+                        //varchar 
+                        val = new VarcharConstant(rawValue);
                     }
                     vals.add(val);
                 }
+                InsertData data = new InsertData(tbName, fields,vals);
+				new IndexUpdatePlanner().executeInsert(data, tx);
             }
             br.close();
             } catch(IOException ioe) {

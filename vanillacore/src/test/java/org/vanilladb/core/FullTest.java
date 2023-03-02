@@ -168,16 +168,16 @@ public class FullTest {
     }
 
     public static void testReadCSV(){
-        String sql = "CREATE TABLE PART (" + 
-            "P_PARTKEY		int," + 
-            "P_NAME			varchar(55)," + 
-            "P_MFGR			varchar(25)," + 
-            "P_BRAND			varchar(10)," + 
-            "P_TYPE			varchar(25)," + 
-            "P_SIZE			int," + 
-            "P_CONTAINER		varchar(10)," + 
-            "P_RETAILPRICE	double," + 
-            "P_COMMENT		varchar(23))" ;
+        // String sql = "CREATE TABLE PART (" + 
+        //     "P_PARTKEY		int," + 
+        //     "P_NAME			varchar(55)," + 
+        //     "P_MFGR			varchar(25)," + 
+        //     "P_BRAND			varchar(10)," + 
+        //     "P_TYPE			varchar(25)," + 
+        //     "P_SIZE			int," + 
+        //     "P_CONTAINER		varchar(10)," + 
+        //     "P_RETAILPRICE	double," + 
+        //     "P_COMMENT		varchar(23))" ;
         // String sql = "CREATE TABLE SUPPLIER (" + 
         // "S_SUPPKEY		int," + 
         // "S_NAME			varchar(25)," + 
@@ -186,12 +186,12 @@ public class FullTest {
         // "S_PHONE			varchar(15)," + 
         // "S_ACCTBAL		double," + 
         // "S_COMMENT		varchar(101))"; 
-        // String sql = "CREATE TABLE PARTSUPP (" + 
-        // "PS_PARTKEY		long  , " + 
-        // "PS_SUPPKEY		long  , " + 
-        // "PS_AVAILQTY		int," + 
-        // "PS_SUPPLYCOST	 double," + 
-        // "PS_COMMENT		varchar(199))";
+        String sql = "CREATE TABLE PARTSUPP (" + 
+        "PS_PARTKEY		long  , " + 
+        "PS_SUPPKEY		long  , " + 
+        "PS_AVAILQTY		int," + 
+        "PS_SUPPLYCOST	 double," + 
+        "PS_COMMENT		varchar(199))";
         // String sql = "CREATE TABLE CUSTOMER (" + 
         // "C_CUSTKEY		int," + 
         // "C_NAME			varchar(25)," + 
@@ -242,10 +242,10 @@ public class FullTest {
         
         
         String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
-        String tableName = "part";
-        String indexName = "P_PARTKEY";
+        String tableName = "PARTSUPP";
+        String indexName = "PS_PARTKEY";
         CSVReader csvReader = new CSVReader();
-        csvReader.loadTable(sql,tableName,csvFilePath,indexName);
+        csvReader.loadTable(sql,tableName.toLowerCase(),csvFilePath,indexName.toLowerCase());
     }
 
 
@@ -339,12 +339,12 @@ public class FullTest {
     }
     @Test
     public void main() {
-        //logger.info("testing...======================");
-        System.out.println("testing...--------");
         // HashMap<Integer, String> studentQueries = readStudentQueryTest();
-        // //getProjection(studentQueries.get(11));
-        // String dbname = "TESTDB2";
-        // init(dbname);
+        // getProjection(studentQueries.get(11));
+        String dbname = "TPCH";//TESTDB2
+        init(dbname);
+        //loadData();
+        testReadCSV();
 
         //JoinKnob.enableFastLearning();
 
@@ -352,11 +352,9 @@ public class FullTest {
         //filterPlan.enableThetaJoinFilter();
         //filterPlan.enableMaxminFilter();
         //filterPlan.enableGroupFilter();
-        //loadData();
         // JoinKnob.disableIndexJoin();
         // JoinKnob.disableHashJoin();
         // JoinKnob.disableProductJoin();
-        //createIndexByCode("student","sid");
 
 
         // int queryID = 2;
