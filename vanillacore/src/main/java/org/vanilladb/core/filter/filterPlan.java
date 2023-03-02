@@ -2,6 +2,7 @@ package org.vanilladb.core.filter;
 import java.util.*;
 import org.vanilladb.core.sql.*;
 import org.vanilladb.core.query.algebra.*;
+import org.vanilladb.core.query.planner.JoinKnob;
 
 public class filterPlan{
     public static boolean enableMaxmin = false, enableEqual = false, enableTheta = false, enableGroup = false;
@@ -32,27 +33,57 @@ public class filterPlan{
         enableGroup = true;
     }
 
+    public static void open(){//open all filters
+        enableMaxmin = true;
+        enableEqual = true;
+        enableTheta = true;
+        enableGroup = true;
+    }
+
+    public static void close(){//close all filters 
+        enableMaxmin = false;
+        enableEqual = false;
+        enableTheta = false;
+        enableGroup = false;
+    }
+
     public static void addFilter(String attr, String filterType, Constant groupVal, String groupField, Constant low, Constant high, Boolean low_include, Boolean high_include, Boolean is_low, Boolean is_high){
         
         filter f = new filter(attr, filterType, groupVal, groupField, low, high, low_include, high_include, is_low, is_high);
         //add group filter into groupFilters instead of filters, since the number of group filters might be large, and adding to filters will have efficiency problem 
+
+        
         if(filterType.equals("groupmax") || filterType.equals("groupmin")){
-            groupFld = groupField;
-            if(!groupPredAttr.contains(attr)){
-                groupPredAttr.add(attr);
-            }
-            List<filter> new_filters = new ArrayList<>();
-            new_filters.add(f);
-            if(groupVal != null && !groupFilters.containsKey(groupVal)){
-                groupFilters.put(groupVal, new_filters);
-            }
-        }else{
-            if(filters.containsKey(attr)){
-                filters.get(attr).add(f);
-            }else{
+            if(!JoinKnob.fastLearning){
+                groupFld = groupField;
+                if(!groupPredAttr.contains(attr)){
+                    groupPredAttr.add(attr);
+                }
                 List<filter> new_filters = new ArrayList<>();
                 new_filters.add(f);
-                filters.put(attr, new_filters);
+                if(groupVal != null && !groupFilters.containsKey(groupVal)){
+                    groupFilters.put(groupVal, new_filters);
+                }
+            }
+        }else{
+            if(JoinKnob.rawRun){
+                if(filters.containsKey(attr)){
+                    filters.get(attr).add(f);
+                }else{
+                    List<filter> new_filters = new ArrayList<>();
+                    new_filters.add(f);
+                    filters.put(attr, new_filters);
+                }
+            }else{
+                if(JoinKnob.fastLearning){//direcly use already learned filter, membership filter and theta join are optimal
+                    if(filters.containsKey(attr)){
+                        filters.get(attr).add(f);
+                    }else{
+                        List<filter> new_filters = new ArrayList<>();
+                        new_filters.add(f);
+                        filters.put(attr, new_filters);
+                    }
+                }
             }
         }
     }
@@ -313,6 +344,14 @@ public class filterPlan{
         }
         return true;
     }
+    /*
+     * Merge learned filters and add them to current query 
+     */
+    public static String mergePredicate(String query, List<filter> filters){
+        String newQ = "";
+        return newQ;
+    }
+
 
     public static void printFilter(){
         //HashMap<String, List<filter>> filters = new HashMap<>();

@@ -2,12 +2,11 @@ package org.vanilladb.core;
 
 import java.sql.Connection;
 import java.util.*;
-import java.util.logging.Logger;
 import java.io.File;
 import java.io.*;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.storage.tx.Transaction;
-//import org.junit.Test;
+import org.vanilladb.core.query.parse.*;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.planner.*;
@@ -23,7 +22,9 @@ import org.vanilladb.core.storage.index.IndexType;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.planner.JoinKnob;
 import org.junit.jupiter.api.Test;
-
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException; 
 
 public class FullTest {
 
@@ -31,7 +32,6 @@ public class FullTest {
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
-    private static Logger logger = Logger.getLogger("FullTest.class.getName()");
 
     public static void init(String dbname){
         ServerInit.init(dbname);
@@ -168,84 +168,150 @@ public class FullTest {
     }
 
     public static void testReadCSV(){
-        // String sql = "CREATE TABLE PART (" + 
-        //     "P_PARTKEY		int," + 
-        //     "P_NAME			varchar(55)," + 
-        //     "P_MFGR			varchar(25)," + 
-        //     "P_BRAND			varchar(10)," + 
-        //     "P_TYPE			varchar(25)," + 
-        //     "P_SIZE			int," + 
-        //     "P_CONTAINER		varchar(10)," + 
-        //     "P_RETAILPRICE	double," + 
-        //     "P_COMMENT		varchar(23))" ;
-        // String sql = "CREATE TABLE SUPPLIER (" + 
-        // "S_SUPPKEY		int," + 
-        // "S_NAME			varchar(25)," + 
-        // "S_ADDRESS		varchar(40)," + 
-        // "S_NATIONKEY		long, " + 
-        // "S_PHONE			varchar(15)," + 
-        // "S_ACCTBAL		double," + 
-        // "S_COMMENT		varchar(101))"; 
-        String sql = "CREATE TABLE PARTSUPP (" + 
+        String sqlPART = "CREATE TABLE PART (" + 
+            "P_PARTKEY		int," + 
+            "P_NAME			varchar(55)," + 
+            "P_MFGR			varchar(25)," + 
+            "P_BRAND			varchar(10)," + 
+            "P_TYPE			varchar(25)," + 
+            "P_SIZE			int," + 
+            "P_CONTAINER		varchar(10)," + 
+            "P_RETAILPRICE	double," + 
+            "P_COMMENT		varchar(23))" ;
+        String sqlSUPPLIER = "CREATE TABLE SUPPLIER (" + 
+        "S_SUPPKEY		int," + 
+        "S_NAME			varchar(25)," + 
+        "S_ADDRESS		varchar(40)," + 
+        "S_NATIONKEY		long, " + 
+        "S_PHONE			varchar(15)," + 
+        "S_ACCTBAL		double," + 
+        "S_COMMENT		varchar(101))"; 
+        String sqlPARTSUPP = "CREATE TABLE PARTSUPP (" + 
         "PS_PARTKEY		long  , " + 
         "PS_SUPPKEY		long  , " + 
         "PS_AVAILQTY		int," + 
         "PS_SUPPLYCOST	 double," + 
         "PS_COMMENT		varchar(199))";
-        // String sql = "CREATE TABLE CUSTOMER (" + 
-        // "C_CUSTKEY		int," + 
-        // "C_NAME			varchar(25)," + 
-        // "C_ADDRESS		varchar(40)," + 
-        // "C_NATIONKEY		long, " + 
-        // "C_PHONE			varchar(15)," + 
-        // "C_ACCTBAL		 double," + 
-        // "C_MKTSEGMENT	varchar(10)," + 
-        // "C_COMMENT		varchar(117))";
-        // String sql = "CREATE TABLE ORDERS (" +
-        // "O_ORDERKEY		int," +
-        // "O_CUSTKEY		long," +
-        // "O_ORDERSTATUS	varchar(1)," +
-        // "O_TOTALPRICE	 double," +
-        // "O_ORDERDATE		 varchar(50)," +
-        // "O_ORDERPRIORITY	varchar(15)," +
-        // "O_CLERK			varchar(15)," +
-        // "O_SHIPPRIORITY	int," +
-        // "O_COMMENT		varchar(79))";
-        // String sql = "CREATE TABLE LINEITEM (" +
-        // "L_ORDERKEY		long," +
-        // "L_PARTKEY		long, " +
-        // "L_SUPPKEY		long, " +
-        // "L_LINENUMBER	int," +
-        // "L_QUANTITY		 double," +
-        // "L_EXTENDEDPRICE	 double," +
-        // "L_DISCOUNT		 double," +
-        // "L_TAX			 double," +
-        // "L_RETURNFLAG	varchar(1)," +
-        // "L_LINESTATUS	varchar(1)," +
-        // "L_SHIPDATE		 varchar(50)," +
-        // "L_COMMITDATE	 varchar(50)," +
-        // "L_RECEIPTDATE	 varchar(50)," +
-        // "L_SHIPINSTRUCT	varchar(25)," +
-        // "L_SHIPMODE		varchar(10)," +
-        // "L_COMMENT		varchar(44))"; 
-        // String sql = "CREATE TABLE NATION (" +
-        // "N_NATIONKEY		int," +
-        // "N_NAME			varchar(25)," +
-        // "N_REGIONKEY		long,  " +
-        // "N_COMMENT		varchar(152))"; 
+        String sqlCUSTOMER = "CREATE TABLE CUSTOMER (" + 
+        "C_CUSTKEY		int," + 
+        "C_NAME			varchar(25)," + 
+        "C_ADDRESS		varchar(40)," + 
+        "C_NATIONKEY		long, " + 
+        "C_PHONE			varchar(15)," + 
+        "C_ACCTBAL		 double," + 
+        "C_MKTSEGMENT	varchar(10)," + 
+        "C_COMMENT		varchar(117))";
+        String sqlORDERS = "CREATE TABLE ORDERS (" +
+        "O_ORDERKEY		int," +
+        "O_CUSTKEY		long," +
+        "O_ORDERSTATUS	varchar(1)," +
+        "O_TOTALPRICE	 double," +
+        "O_ORDERDATE		 varchar(50)," +
+        "O_ORDERPRIORITY	varchar(15)," +
+        "O_CLERK			varchar(15)," +
+        "O_SHIPPRIORITY	int," +
+        "O_COMMENT		varchar(79))";
+        String sqlLINEITEM = "CREATE TABLE LINEITEM (" +
+        "L_ORDERKEY		long," +
+        "L_PARTKEY		long, " +
+        "L_SUPPKEY		long, " +
+        "L_LINENUMBER	int," +
+        "L_QUANTITY		 double," +
+        "L_EXTENDEDPRICE	 double," +
+        "L_DISCOUNT		 double," +
+        "L_TAX			 double," +
+        "L_RETURNFLAG	varchar(1)," +
+        "L_LINESTATUS	varchar(1)," +
+        "L_SHIPDATE		 varchar(50)," +
+        "L_COMMITDATE	 varchar(50)," +
+        "L_RECEIPTDATE	 varchar(50)," +
+        "L_SHIPINSTRUCT	varchar(25)," +
+        "L_SHIPMODE		varchar(10)," +
+        "L_COMMENT		varchar(44))"; 
+        String sqlNATION = "CREATE TABLE NATION (" +
+        "N_NATIONKEY		int," +
+        "N_NAME			varchar(25)," +
+        "N_REGIONKEY		long,  " +
+        "N_COMMENT		varchar(152))"; 
 
-        // String sql = "CREATE TABLE REGION (" +
-        // "R_REGIONKEY	int," +
-        // "R_NAME		varchar(25)," +
-        // "R_COMMENT	varchar(152))"; 
+        String sqlREGION = "CREATE TABLE REGION (" +
+        "R_REGIONKEY	int," +
+        "R_NAME		varchar(25)," +
+        "R_COMMENT	varchar(152))"; 
         
         
         
         String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
-        String tableName = "PARTSUPP";
-        String indexName = "PS_PARTKEY";
+
+        String tableName = "";
+        List<String> fldNames = new ArrayList<>();
+        String fldName = "";
+
+        //create PART
+        tableName = "PART";
+        fldNames = new ArrayList<>();
+        fldName = "P_PARTKEY";
+        fldNames.add(fldName.toLowerCase());
         CSVReader csvReader = new CSVReader();
-        csvReader.loadTable(sql,tableName.toLowerCase(),csvFilePath,indexName.toLowerCase());
+        csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create SUPPLIER
+        tableName = "SUPPLIER";
+        fldNames = new ArrayList<>();
+        fldName = "S_SUPPKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create PARTSUPP
+        tableName = "PARTSUPP";
+        fldNames = new ArrayList<>();
+        fldName = "PS_PARTKEY";
+        fldNames.add(fldName.toLowerCase());
+        fldName = "PS_SUPPKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create CUSTOMER
+        tableName = "CUSTOMER";
+        fldNames = new ArrayList<>();
+        fldName = "C_CUSTKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create ORDERS
+        tableName = "ORDERS";
+        fldNames = new ArrayList<>();
+        fldName = "O_ORDERKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlORDERS,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create LINEITEM
+        tableName = "LINEITEM";
+        fldNames = new ArrayList<>();
+        fldName = "L_ORDERKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlLINEITEM,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create NATION
+        tableName = "NATION";
+        fldNames = new ArrayList<>();
+        fldName = "N_NATIONKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create REGION
+        tableName = "REGION";
+        fldNames = new ArrayList<>();
+        fldName = "R_REGIONKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
     }
 
 
@@ -337,52 +403,77 @@ public class FullTest {
         s.close();
         tx.commit();
     }
+
+    public static void parseQuery(){
+        String qry = "select student_name, count(distinct score), avg(sname), "
+        + "sum(sid) from student, dept where sid=555 and sdid = did "
+        + "group by student_name order by sid asc";
+
+        Parser parser = new Parser(qry);
+        QueryData data = parser.queryCommand();
+        
+        System.out.println(data.pred().toString()); 
+    }
+
+    public static void oneRun(String query, int queryID){
+        filterPlan.open();
+        JoinKnob.init();
+        //fast learning phase
+        long start = System.currentTimeMillis();
+        JoinKnob.enableFastLearning();
+        runStudentQueries(query);
+        long end = System.currentTimeMillis();
+        long learnTime = (end-start);
+        //query run phase
+        filterPlan.open();
+        start = System.currentTimeMillis();
+        JoinKnob.init();//close fast learning
+        runStudentQueries(query);
+        end = System.currentTimeMillis();
+        long runTime = (end-start);
+        String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
+
+        //raw query run
+        filterPlan.close();
+        JoinKnob.init();
+        JoinKnob.enableRawRun();
+        start = System.currentTimeMillis();
+        runStudentQueries(query);
+        end = System.currentTimeMillis();
+        runTime = (end-start);
+        String out2 = "Raw query run: " + String.valueOf(runTime); 
+        writeFile(out1, out2, queryID);
+    }
+
+    public static void writeFile(String line1, String line2, int queryID){
+        File file = new File("output.txt"); 
+        try {
+            FileWriter out = new FileWriter(file, true);
+            BufferedWriter bw=new BufferedWriter(out);
+
+            bw.write(queryID);
+            bw.newLine();
+            bw.write(line1);
+            bw.newLine();
+            bw.write(line2);
+            bw.newLine();
+
+            bw.flush();
+            bw.close();
+            }catch (IOException e) {e.printStackTrace();}
+    }
+
     @Test
     public void main() {
-        // HashMap<Integer, String> studentQueries = readStudentQueryTest();
+        HashMap<Integer, String> studentQueries = readStudentQueryTest();
         // getProjection(studentQueries.get(11));
-        String dbname = "TPCH";//TESTDB2
+        String dbname = "TESTDB2";//TESTDB2
         init(dbname);
+        //parseQuery();
         //loadData();
-        testReadCSV();
-
-        //JoinKnob.enableFastLearning();
-
-        //filterPlan.enableEqualJoinFilter();
-        //filterPlan.enableThetaJoinFilter();
-        //filterPlan.enableMaxminFilter();
-        //filterPlan.enableGroupFilter();
-        // JoinKnob.disableIndexJoin();
-        // JoinKnob.disableHashJoin();
-        // JoinKnob.disableProductJoin();
-
-
-        // int queryID = 2;
-        // System.out.println("start running query...");
-        // long start = System.currentTimeMillis();
-        // runStudentQueries(studentQueries.get(queryID));
-        // long end = System.currentTimeMillis();
-        // System.out.println("running time: " + (end-start));
-        // System.out.println("Filters:");
-        // filterPlan.printFilter();
-        // filterPlan.filterStats();
-        // explainQuery(studentQueries.get(queryID));
-        
-
-
-
-
-        //test1();
         //testReadCSV();
-        //test();
-        //testCreateTable();
-        //testInsert();
-        //deleteIndex("idx_sid", "student", "sid");
-        //createIndex("student","sid");
-        //deleteIndex("idx_sid", "student", "sid");
-        //testJoinSQL();
-        //testTableSQL();
+        int queryID = 2;
+        oneRun(studentQueries.get(queryID), queryID);
 
-        //testCreateTableCode();
     }
 }

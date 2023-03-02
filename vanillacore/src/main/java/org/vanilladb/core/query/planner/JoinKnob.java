@@ -6,6 +6,19 @@ package org.vanilladb.core.query.planner;
 public class JoinKnob {
     static public boolean productJoin = true, nestedloop = true, hashjoin = true, indexjoin = true;
     static public boolean fastLearning = false;
+    static public boolean rawRun = false;
+
+    public static void init(){
+        productJoin = true;
+        nestedloop = true;
+        hashjoin = true;
+        indexjoin = true;
+        fastLearning = false;
+    }
+
+    public static void enableRawRun(){
+        rawRun = true;
+    }
 
     public static void enableFastLearning(){
         fastLearning = true;
