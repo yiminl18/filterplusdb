@@ -7,6 +7,8 @@ public class JoinKnob {
     static public boolean productJoin = true, nestedloop = true, hashjoin = true, indexjoin = true;
     static public boolean fastLearning = false;
     static public boolean rawRun = false;
+    static public int joinNumber = 0;
+    static public int completeScanNumber = 0;//used to denote how many joins in rhs scan has complete in fast learning phase
 
     public static void init(){
         productJoin = true;
@@ -14,6 +16,13 @@ public class JoinKnob {
         hashjoin = true;
         indexjoin = true;
         fastLearning = false;
+    }
+
+    public static boolean ready(){
+        if(joinNumber == completeScanNumber){
+            return true;
+        }
+        return false;
     }
 
     public static void enableRawRun(){

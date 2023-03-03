@@ -107,7 +107,7 @@ public class GroupByScan implements Scan {
 				
 		
 		while (moreGroups = ss.next()) {
-			if(JoinKnob.fastLearning){
+			if(JoinKnob.fastLearning && JoinKnob.ready()){
 				return false;
 			}
 			GroupValue gv = new GroupValue(ss, groupFlds);

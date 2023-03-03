@@ -18,6 +18,7 @@ package org.vanilladb.core.query.algebra.multibuffer;
 import org.vanilladb.core.query.algebra.AbstractJoinPlan;
 import org.vanilladb.core.query.algebra.Plan;
 import org.vanilladb.core.query.algebra.Scan;
+import org.vanilladb.core.query.planner.JoinKnob;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
 import org.vanilladb.core.sql.predicate.Term;
@@ -64,6 +65,7 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 	public Scan open() {
 		Scan leftScan = lhs.open();
 		Scan rightScan = rhs.open();
+		JoinKnob.joinNumber += 1;
 		//ensure the right side is the smaller one 
 		if(lhs.recordsOutput() < rhs.recordsOutput()){
 			return new NestedLoopJoinScan(rightScan, leftScan, fldName2, fldName1, reverse(op));

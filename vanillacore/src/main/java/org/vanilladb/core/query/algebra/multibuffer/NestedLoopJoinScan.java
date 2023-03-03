@@ -18,6 +18,7 @@ import java.util.*;
 
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
+import org.vanilladb.core.query.planner.JoinKnob;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.predicate.Term.Operator;
 import static org.vanilladb.core.sql.predicate.Term.OP_GT;
@@ -135,6 +136,7 @@ public class NestedLoopJoinScan implements Scan {
 				//create theta join filters 
 				createThetaJoinFilter();
 				first = false;
+				JoinKnob.completeScanNumber += 1;
 			}
 			rhsScan.beforeFirst();
 			return rhsScan.next();

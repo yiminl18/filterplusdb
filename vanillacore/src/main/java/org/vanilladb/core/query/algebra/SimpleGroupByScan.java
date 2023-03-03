@@ -102,7 +102,7 @@ public class SimpleGroupByScan implements Scan {
 	@Override
 	public boolean next(){
 		processAggregation();
-		if(JoinKnob.fastLearning){
+		if(JoinKnob.fastLearning && JoinKnob.ready()){
 			//in fast learning phase, stops when receiving first item
 			return false;
 		}

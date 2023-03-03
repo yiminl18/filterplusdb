@@ -448,7 +448,7 @@ public class FullTest {
         long learnTime = (end-start);
         filterPlan.printFilter();
         String newQ = filterPlan.mergePredicate(query);
-
+        explainQuery(query);
         System.out.println(newQ);
 
         //query run phase
