@@ -47,6 +47,31 @@ public class filter{
         this.memberships = memberships;
     }
 
+    /*
+     * Change range filter to string form
+     */
+    public String toString(){
+        String predicate = attr;
+        if(filterType.equals("range")){
+            if(!is_low){//< or <=
+                if(high_include){//<=
+                    predicate += "<=";
+                }else{//< 
+                    predicate += "<";
+                }
+                predicate += high.toString();
+            }else{// > or >= 
+                if(low_include){//>=
+                    predicate += ">=";
+                }else{
+                    predicate += ">";
+                }
+                predicate += low.toString();
+            }
+        }
+        return predicate;
+    }
+
     public void print(){
         System.out.println(filterType + " " + attr + " " + low + " " + high);
     }

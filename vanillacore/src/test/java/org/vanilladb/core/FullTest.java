@@ -416,7 +416,7 @@ public class FullTest {
         System.out.println(data.pred().toString()); 
     }
 
-    
+
 
     public static void oneRun(String query, int queryID){
         //raw query run
@@ -427,11 +427,13 @@ public class FullTest {
         JoinKnob.disableHashJoin();
         JoinKnob.disableIndexJoin();
         JoinKnob.disableNestLoopJoin();
-        runStudentQueries(query);
+        //runStudentQueries(query);
         long end = System.currentTimeMillis();
         long runTime = (end-start);
         String out2 = "Raw query run: " + String.valueOf(runTime); 
-        System.out.println(runTime);
+        //System.out.println(runTime);
+
+        System.out.println(query);
 
         //run optimized query
         filterPlan.init();
@@ -445,23 +447,26 @@ public class FullTest {
         end = System.currentTimeMillis();
         long learnTime = (end-start);
         filterPlan.printFilter();
+        String newQ = filterPlan.mergePredicate(query);
+
+        System.out.println(newQ);
 
         //query run phase
-        filterPlan.open();
-        start = System.currentTimeMillis();
-        JoinKnob.init();//close fast learning
-        JoinKnob.disableHashJoin();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableNestLoopJoin();
-        runStudentQueries(query);
-        end = System.currentTimeMillis();
-        runTime = (end-start);
-        String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
-        System.out.println(learnTime + " " + runTime);
-        explainQuery(query);
-        filterPlan.printFilter();
+        // filterPlan.open();
+        // start = System.currentTimeMillis();
+        // JoinKnob.init();//close fast learning
+        // JoinKnob.disableHashJoin();
+        // JoinKnob.disableIndexJoin();
+        // JoinKnob.disableNestLoopJoin();
+        // runStudentQueries(newQ);
+        // end = System.currentTimeMillis();
+        // runTime = (end-start);
+        // String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
+        // System.out.println(learnTime + " " + runTime);
+        // explainQuery(query);
+        // filterPlan.printFilter();
 
-        writeFile(out1, out2, queryID);
+        // writeFile(out1, out2, queryID);
     }
 
     public static void writeFile(String line1, String line2, int queryID){

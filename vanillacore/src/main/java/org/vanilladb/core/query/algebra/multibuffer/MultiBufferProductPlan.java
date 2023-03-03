@@ -89,7 +89,7 @@ public class MultiBufferProductPlan implements Plan {
 		if(exchange){
 			op = reverse(op);
 		}
-		System.out.println("in multibuffer scan: " +  fldName1 + " " + fldName2 + " " + op);
+		//System.out.println("in multibuffer scan: " +  fldName1 + " " + fldName2 + " " + op);
 	}
 
 	public Operator reverse(Operator op){

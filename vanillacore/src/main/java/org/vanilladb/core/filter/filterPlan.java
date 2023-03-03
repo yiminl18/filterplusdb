@@ -354,9 +354,26 @@ public class filterPlan{
     /*
      * Merge learned filters and add them to current query 
      */
-    public static String mergePredicate(String query, List<filter> filters){
+    public static String mergePredicate(String query){
         String newQ = "";
-        return newQ;
+        String postQ = " ";
+        if(!query.contains("groupby")){
+            newQ = query;
+        }else{
+            int p = query.indexOf("groupby");
+            newQ = query.substring(0, p);
+            postQ = query.substring(p, query.length()-1);
+        }
+        
+        for(Map.Entry<String, List<filter>> entry : filters.entrySet()){
+            for(filter f: entry.getValue()){
+                if(f.filterType.equals("range")){
+                    newQ += " and ";
+                    newQ += f.toString();
+                }
+            }
+        }
+        return newQ+postQ;
     }
 
 

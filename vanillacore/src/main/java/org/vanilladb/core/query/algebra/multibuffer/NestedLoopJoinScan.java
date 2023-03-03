@@ -25,6 +25,7 @@ import org.vanilladb.core.sql.Constant;
 public class NestedLoopJoinScan implements Scan {
 	private Scan lhsScan, rhsScan;
 	private boolean isLhsEmpty;
+	private boolean first; //used to denote if this is the first pass of rhs 
 
 	/**
 	 * Creates the scan class for the product of the LHS scan and a table.
@@ -53,6 +54,7 @@ public class NestedLoopJoinScan implements Scan {
 		lhsScan.beforeFirst();
 		rhsScan.beforeFirst();
 		isLhsEmpty = !lhsScan.next();
+		first = true;
 	}
 
 	/**

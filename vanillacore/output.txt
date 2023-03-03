@@ -13,3 +13,6 @@ Raw query run: 457
 
 Optimized query run: 3 330
 Raw query run: 426
+
+Optimized query run: 5 445
+Raw query run: 630
