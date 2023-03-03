@@ -24,6 +24,12 @@ import org.vanilladb.core.sql.predicate.Term;
 import org.vanilladb.core.sql.predicate.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+import org.vanilladb.core.sql.predicate.Term.Operator;
+import static org.vanilladb.core.sql.predicate.Term.OP_GT;
+import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
+import static org.vanilladb.core.sql.predicate.Term.OP_LT;
+import static org.vanilladb.core.sql.predicate.Term.OP_LTE;
+
 /**
  * Non-recursive implementation of the hashjoin algorithm that performs hashing
  * during the preprocessing stage and merging during the scanning stage.
@@ -34,6 +40,8 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 	private Histogram hist;
 	private String fldName1, fldName2;
 	private List<String> joinFields;
+	private boolean exchange = false;//denote the direction of theta join 
+	private Operator op;
 
 	public NestedLoopJoinPlan(Plan lhs, Plan rhs, Predicate joinPredicate) {
 		this.lhs = lhs;
@@ -46,6 +54,10 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 		fldName2 = joinFields.get(1);
 		hist = joinHistogram(lhs.histogram(), rhs.histogram(), fldName1,
 				fldName2);
+		op = joinPredicate.getOp();
+		if(exchange){
+			op = reverse(op);
+		}
 	}
 
 	@Override
@@ -54,10 +66,23 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 		Scan rightScan = rhs.open();
 		//ensure the right side is the smaller one 
 		if(lhs.recordsOutput() < rhs.recordsOutput()){
-			return new NestedLoopJoinScan(rightScan, leftScan);
+			return new NestedLoopJoinScan(rightScan, leftScan, fldName2, fldName1, reverse(op));
 		}else{
-			return new NestedLoopJoinScan(leftScan, rightScan);
+			return new NestedLoopJoinScan(leftScan, rightScan, fldName1, fldName2, op);
 		}
+	}
+
+	public Operator reverse(Operator op){
+		if(op == OP_GT){//> 
+			return OP_LT;
+		}else if(op == OP_GTE){//>= filter: rhs <= max_v
+			return OP_LTE;
+		}else if(op == OP_LT){//< filter: rhs > min_v
+			return OP_GT;
+		}else if(op == OP_LTE){//<= filter: rhs >= min_v
+			return OP_GTE;
+		}
+		return op;
 	}
 
 	/**
@@ -128,6 +153,7 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 			}else if(leftSchema.hasField(rightJoinField) && rightSchema.hasField(leftJoinField)){
 				joinFields.add(rightJoinField);
 				joinFields.add(leftJoinField);
+				exchange = true;
 			}
 		}
 		return joinFields;

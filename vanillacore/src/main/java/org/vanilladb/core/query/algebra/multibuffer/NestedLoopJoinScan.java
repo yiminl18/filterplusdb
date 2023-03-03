@@ -14,11 +14,17 @@
  * limitations under the License.
  *******************************************************************************/
 package org.vanilladb.core.query.algebra.multibuffer;
+import java.util.*;
 
+import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.Constant;
-
-
+import org.vanilladb.core.sql.predicate.Term.Operator;
+import static org.vanilladb.core.sql.predicate.Term.OP_GT;
+import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
+import static org.vanilladb.core.sql.predicate.Term.OP_LT;
+import static org.vanilladb.core.sql.predicate.Term.OP_LTE;
+import org.vanilladb.core.sql.IntegerConstant;
 /**
  * The Scan class for the muti-buffer version of the <em>product</em> operator.
  */
@@ -26,6 +32,11 @@ public class NestedLoopJoinScan implements Scan {
 	private Scan lhsScan, rhsScan;
 	private boolean isLhsEmpty;
 	private boolean first; //used to denote if this is the first pass of rhs 
+	private boolean isFirstItem; //used to denote if this is the first value from the first rhs scan  
+	private HashMap<Constant, Boolean> memberships = new HashMap<>();
+	private String fldName1, fldName2;
+	private Operator op;
+	Constant max_v = null, min_v = null;
 
 	/**
 	 * Creates the scan class for the product of the LHS scan and a table.
@@ -37,9 +48,12 @@ public class NestedLoopJoinScan implements Scan {
 	 * @param tx
 	 *            the current transaction
 	 */
-	public NestedLoopJoinScan(Scan lhsScan, Scan rhsScan) {
+	public NestedLoopJoinScan(Scan lhsScan, Scan rhsScan, String fldName1, String fldName2, Operator op) {
 		this.lhsScan = lhsScan;
 		this.rhsScan = rhsScan;
+		this.fldName1 = fldName1;
+		this.fldName2 = fldName2;
+		this.op = op;
 	}
 
 	/**
@@ -55,6 +69,39 @@ public class NestedLoopJoinScan implements Scan {
 		rhsScan.beforeFirst();
 		isLhsEmpty = !lhsScan.next();
 		first = true;
+		isFirstItem = true;
+	}
+
+	public void addItem(Constant val){
+		if(!memberships.containsKey(val)){
+			memberships.put(val, true);
+		}
+	}
+
+	public void updateThetaFilter(Constant value){
+		if(value.compareTo(max_v) > 0){
+			max_v = value;
+		}
+		if(value.compareTo(min_v) < 0){
+			min_v = value;
+		}
+	}
+
+	public void createMembershipFilter(){
+		filterPlan.addFilter(fldName1, "membership", memberships);
+		filterPlan.addFilter(fldName2, "membership", memberships);
+	}
+
+	public void createThetaJoinFilter(){
+		if(op == OP_GT){//> filter: lhs > min_v
+			filterPlan.addFilter(fldName1, "range", null, null, min_v, new IntegerConstant(0), false, false, true, false);
+		}else if(op == OP_GTE){//>= filter: lhs >= min_v
+			filterPlan.addFilter(fldName1, "range", null, null, min_v, new IntegerConstant(0), true, false, true, false);
+		}else if(op == OP_LT){//< filter: lhs < max_v
+			filterPlan.addFilter(fldName1, "range", null, null, new IntegerConstant(0), max_v, false, false, false, true);
+		}else if(op == OP_LTE){//<= filter: lhs <= max_v
+			filterPlan.addFilter(fldName1, "range", null, null, new IntegerConstant(0), max_v, false, true, false, true);
+		}
 	}
 
 	/**
@@ -68,9 +115,27 @@ public class NestedLoopJoinScan implements Scan {
 			return false;
 		// the old method
 		if (rhsScan.next()){
+			if(first){
+				Constant val = rhsScan.getVal(fldName2);
+				addItem(val);
+				if(isFirstItem){
+					max_v = val;
+					min_v = val;
+					isFirstItem = false;
+				}else{
+					updateThetaFilter(val);
+				}
+			}
 			return true;
 		}
 		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
+			if(first){
+				//create membership filters 
+				createMembershipFilter();
+				//create theta join filters 
+				createThetaJoinFilter();
+				first = false;
+			}
 			rhsScan.beforeFirst();
 			return rhsScan.next();
 		} else {
