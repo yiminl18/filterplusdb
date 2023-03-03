@@ -25,6 +25,7 @@ import static org.vanilladb.core.sql.predicate.Term.OP_GT;
 import static org.vanilladb.core.sql.predicate.Term.OP_GTE;
 import static org.vanilladb.core.sql.predicate.Term.OP_LT;
 import static org.vanilladb.core.sql.predicate.Term.OP_LTE;
+import static org.vanilladb.core.sql.predicate.Term.OP_EQ;
 import org.vanilladb.core.sql.IntegerConstant;
 /**
  * The Scan class for the muti-buffer version of the <em>product</em> operator.
@@ -34,9 +35,10 @@ public class NestedLoopJoinScan implements Scan {
 	private boolean isLhsEmpty;
 	private boolean first; //used to denote if this is the first pass of rhs 
 	private boolean isFirstItem; //used to denote if this is the first value from the first rhs scan  
-	private HashMap<Constant, Boolean> memberships = new HashMap<>();
+	private HashMap<Constant, Boolean> memberships;
 	private String fldName1, fldName2;
 	private Operator op;
+	private boolean isThetaJoin; 
 	Constant max_v = null, min_v = null;
 
 	/**
@@ -55,6 +57,13 @@ public class NestedLoopJoinScan implements Scan {
 		this.fldName1 = fldName1;
 		this.fldName2 = fldName2;
 		this.op = op;
+		memberships = new HashMap<>();
+		if(op == OP_EQ){
+			isThetaJoin = false;
+		}else{
+			isThetaJoin = true;
+		}
+		//System.out.println("in NLJ: " + fldName1 + " " + fldName2);
 	}
 
 	/**
@@ -90,6 +99,7 @@ public class NestedLoopJoinScan implements Scan {
 
 	public void createMembershipFilter(){
 		filterPlan.addFilter(fldName1, "membership", memberships);
+		//System.out.println("in NLJ: " + memberships.size());
 		filterPlan.addFilter(fldName2, "membership", memberships);
 	}
 
@@ -114,27 +124,31 @@ public class NestedLoopJoinScan implements Scan {
 	public boolean next() {
 		if (isLhsEmpty)
 			return false;
-		// the old method
 		if (rhsScan.next()){
 			if(first){
 				Constant val = rhsScan.getVal(fldName2);
-				addItem(val);
-				if(isFirstItem){
-					max_v = val;
-					min_v = val;
-					isFirstItem = false;
+				if(!isThetaJoin){
+					addItem(val);
 				}else{
-					updateThetaFilter(val);
+					if(isFirstItem){
+						max_v = val;
+						min_v = val;
+						isFirstItem = false;
+					}else{
+						updateThetaFilter(val);
+					}
 				}
+				
 			}
 			return true;
 		}
 		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
 			if(first){
-				//create membership filters 
-				createMembershipFilter();
-				//create theta join filters 
-				createThetaJoinFilter();
+				if(!isThetaJoin){
+					createMembershipFilter();
+				}else{
+					createThetaJoinFilter();
+				}
 				first = false;
 				JoinKnob.completeScanNumber += 1;
 			}
