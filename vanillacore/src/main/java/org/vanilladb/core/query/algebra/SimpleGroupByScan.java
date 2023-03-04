@@ -120,7 +120,7 @@ public class SimpleGroupByScan implements Scan {
 	public void processAggregation(){
 		if(!isProcessed){//make sure aggregation only happen one time 
 			while (moreGroups = ss.next()) {
-				if(JoinKnob.fastLearning){
+				if(JoinKnob.fastLearning && JoinKnob.ready()){
 					break;
 				}
 				GroupValue gv = new GroupValue(ss, groupFlds);

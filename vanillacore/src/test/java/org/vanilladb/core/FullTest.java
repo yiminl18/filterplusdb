@@ -421,53 +421,61 @@ public class FullTest {
 
     public static void oneRun(String query, int queryID){
         //raw query run
-        filterPlan.close();
+        filterPlan.open();
+        filterPlan.enableGroup = false;
         JoinKnob.init();
         JoinKnob.enableRawRun();
         long start = System.currentTimeMillis();
+
         JoinKnob.disableHashJoin();
         JoinKnob.disableIndexJoin();
         JoinKnob.disableNestLoopJoin();
+
         runStudentQueries(query);
         long end = System.currentTimeMillis();
         long runTime = (end-start);
         String out2 = "Raw query run: " + String.valueOf(runTime); 
-        System.out.println(runTime);
+        System.out.println("Raw query run: " + runTime);
+        System.out.println(query);
 
-        // System.out.println(query);
+        //filterPlan.printFilter();
 
         // //run optimized query
-        filterPlan.init();
-        filterPlan.open();
-        JoinKnob.init();
+        // filterPlan.init();
+        // filterPlan.open();
+        // JoinKnob.init();
 
-        // //fast learning phase
-        start = System.currentTimeMillis();
-        JoinKnob.enableFastLearning();
-        runStudentQueries(query);
-        end = System.currentTimeMillis();
-        long learnTime = (end-start);
-        filterPlan.printFilter();
-        String newQ = filterPlan.mergePredicate(query);
-        //explainQuery(query);
-        System.out.println(newQ);
+        // // fast learning phase
+        // start = System.currentTimeMillis();
+        // JoinKnob.enableFastLearning();
+        // runStudentQueries(query);
+        // end = System.currentTimeMillis();
+        // long learnTime = (end-start);
+        // filterPlan.printFilter();
+        // String newQ = filterPlan.mergePredicate(query);
+        // //explainQuery(query);
+        // System.out.println(newQ);
 
-        //query run phase
-        filterPlan.open();
-        start = System.currentTimeMillis();
-        JoinKnob.init();//close fast learning
-        JoinKnob.disableHashJoin();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableNestLoopJoin();
-        runStudentQueries(newQ);
-        end = System.currentTimeMillis();
-        runTime = (end-start);
-        String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
-        System.out.println(learnTime + " " + runTime);
-        explainQuery(newQ);
-        filterPlan.printFilter();
+        // //query run phase
+        // filterPlan.open();
+        // start = System.currentTimeMillis();
 
-        writeFile(out1, out2, queryID);
+        // JoinKnob.init();//close fast learning
+        // JoinKnob.disableHashJoin();
+        // JoinKnob.disableIndexJoin();
+        // JoinKnob.disableNestLoopJoin();
+
+        // runStudentQueries(newQ);
+
+        // end = System.currentTimeMillis();
+        // runTime = (end-start);
+        // String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
+        // System.out.println(learnTime + " " + runTime);
+        // filterPlan.printFilter();
+        // //explainQuery(newQ);
+        
+
+        // writeFile(out1, out2, queryID);
     }
 
     public static void writeFile(String line1, String line2, int queryID){

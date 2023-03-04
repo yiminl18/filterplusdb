@@ -10,7 +10,6 @@ public class filterPlan{
     public static HashMap<Constant, List<filter>> groupFilters = new HashMap<>(); //store a set of group filters, one group val could have multiple range filters  
     public static String groupFld;//groupFld is the attribute that group by is applied on
     public static List<String> groupPredAttr = new ArrayList<>();//groupPredAttr is the attribute that the group filter (max or in) is applied on 
-    //public static List<S>
 
     public static int numberOfDroppedTuplefromMAXMIN = 0;
     public static int numberOfDroppedTuplefromEqual = 0;
@@ -82,7 +81,19 @@ public class filterPlan{
                     filters.put(attr, new_filters);
                 }
             }else{
-                if(JoinKnob.fastLearning){//direcly use already learned filter, membership filter and theta join are optimal
+                if(!JoinKnob.fastLearning){//direcly use already learned filter, membership filter and theta join are optimal
+                    if(filters.containsKey(attr)){
+                        //System.out.println("in filterplan: " + f.filterType);
+                        if(f.filterType.equals("range") || f.filterType.equals("max") || f.filterType.equals("min")){
+                        }else{
+                            filters.get(attr).add(f);
+                        }
+                    }else{
+                        List<filter> new_filters = new ArrayList<>();
+                        new_filters.add(f);
+                        filters.put(attr, new_filters);
+                    }
+                }else{//during fast learning
                     if(filters.containsKey(attr)){
                         filters.get(attr).add(f);
                     }else{
@@ -97,12 +108,15 @@ public class filterPlan{
 
     public static void addFilter(String attr, String filterType, HashMap<Constant, Boolean> memberships){
         filter f = new filter(attr, filterType, memberships);
-        if(filters.containsKey(attr)){
-            filters.get(attr).add(f);
-        }else{
-            List<filter> new_filters = new ArrayList<>();
-            new_filters.add(f);
-            filters.put(attr, new_filters);
+        //do not add membership filter in normal phase, since membership filter learned in fast-learning stage in optimal 
+        if(JoinKnob.rawRun || JoinKnob.fastLearning){
+            if(filters.containsKey(attr)){
+                filters.get(attr).add(f);
+            }else{
+                List<filter> new_filters = new ArrayList<>();
+                new_filters.add(f);
+                filters.put(attr, new_filters);
+            }
         }
     }
 
@@ -357,10 +371,10 @@ public class filterPlan{
     public static String mergePredicate(String query){
         String newQ = "";
         String postQ = " ";
-        if(!query.contains("groupby")){
+        if(!query.contains("group by")){
             newQ = query;
         }else{
-            int p = query.indexOf("groupby");
+            int p = query.indexOf("group by");
             newQ = query.substring(0, p);
             postQ = query.substring(p, query.length()-1);
         }
@@ -373,6 +387,7 @@ public class filterPlan{
                 }
             }
         }
+        newQ += " ";
         return newQ+postQ;
     }
 

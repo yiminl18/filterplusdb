@@ -34,3 +34,30 @@ Raw query run: 1654
 
 Optimized query run: 12 675
 Raw query run: 1521
+
+Optimized query run: 11 667
+Raw query run: 1739
+
+Optimized query run: 13 673
+Raw query run: 1689
+
+Optimized query run: 12 678
+Raw query run: 1661
+
+Optimized query run: 12 661
+Raw query run: 1493
+
+Optimized query run: 13 698
+Raw query run: 1765
+
+Optimized query run: 13 704
+Raw query run: 1568
+
+Optimized query run: 11 671
+Raw query run: 1475
+
+Optimized query run: 3 2252
+Raw query run: 1673
+
+Optimized query run: 12 2321
+Raw query run: 1634

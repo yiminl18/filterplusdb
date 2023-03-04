@@ -16,6 +16,7 @@ public class JoinKnob {
         hashjoin = true;
         indexjoin = true;
         fastLearning = false;
+        rawRun = false;
     }
 
     public static boolean ready(){
