@@ -63,6 +63,9 @@ public class NestedLoopJoinScan implements Scan {
 		}else{
 			isThetaJoin = true;
 		}
+		
+		first = true;
+		isFirstItem = true;
 		//System.out.println("in NLJ: " + fldName1 + " " + fldName2);
 	}
 
@@ -78,8 +81,6 @@ public class NestedLoopJoinScan implements Scan {
 		lhsScan.beforeFirst();
 		rhsScan.beforeFirst();
 		isLhsEmpty = !lhsScan.next();
-		first = true;
-		isFirstItem = true;
 	}
 
 	public void addItem(Constant val){
@@ -144,6 +145,7 @@ public class NestedLoopJoinScan implements Scan {
 		}
 		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
 			if(first){
+				System.out.println("in NLJ scan: right scan ends! " + fldName1 + " " + fldName2);
 				if(!isThetaJoin){
 					createMembershipFilter();
 				}else{

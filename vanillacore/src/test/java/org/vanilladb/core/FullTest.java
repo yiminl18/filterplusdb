@@ -620,9 +620,9 @@ public class FullTest {
         //parseQuery();
         //loadData();
         //testReadCSV();
-        writeKnob = true;
+        writeKnob = false;
         for(int queryID = 6; queryID <=6; queryID ++ ){
-            timeChecker(10,studentQueries.get(queryID), queryID);
+            timeChecker(20000,studentQueries.get(queryID), queryID);
         }
     }
 }
