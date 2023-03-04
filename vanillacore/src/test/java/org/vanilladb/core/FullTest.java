@@ -360,9 +360,6 @@ public class FullTest {
         Scan s = plan.open();
         s.beforeFirst();
         List<String> projection = getProjection(query);
-        // for(int i=0;i<projection.size();i++){
-        //     System.out.println(projection.get(i) + " ");
-        // }
         System.out.println("query answer ====: ");
         while(s.next()){
             for(int i=0;i<projection.size();i++){
@@ -417,9 +414,7 @@ public class FullTest {
         System.out.println(data.pred().toString()); 
     }
 
-
-
-    public static void oneRun(String query, int queryID){
+    public static long rawRun(String query, int queryID){
         //raw query run
         filterPlan.open();
         filterPlan.enableGroup = false;
@@ -434,61 +429,85 @@ public class FullTest {
         runStudentQueries(query);
         long end = System.currentTimeMillis();
         long runTime = (end-start);
-        String out2 = "Raw query run: " + String.valueOf(runTime); 
+        String out = "Raw query run: " + String.valueOf(runTime); 
+        writeFile(out);
         System.out.println("Raw query run: " + runTime);
         System.out.println(query);
 
-        //filterPlan.printFilter();
-
-        // //run optimized query
-        // filterPlan.init();
-        // filterPlan.open();
-        // JoinKnob.init();
-
-        // // fast learning phase
-        // start = System.currentTimeMillis();
-        // JoinKnob.enableFastLearning();
-        // runStudentQueries(query);
-        // end = System.currentTimeMillis();
-        // long learnTime = (end-start);
-        // filterPlan.printFilter();
-        // String newQ = filterPlan.mergePredicate(query);
-        // //explainQuery(query);
-        // System.out.println(newQ);
-
-        // //query run phase
-        // filterPlan.open();
-        // start = System.currentTimeMillis();
-
-        // JoinKnob.init();//close fast learning
-        // JoinKnob.disableHashJoin();
-        // JoinKnob.disableIndexJoin();
-        // JoinKnob.disableNestLoopJoin();
-
-        // runStudentQueries(newQ);
-
-        // end = System.currentTimeMillis();
-        // runTime = (end-start);
-        // String out1 = "Optimized query run: " + String.valueOf(learnTime) + " " + String.valueOf(runTime);
-        // System.out.println(learnTime + " " + runTime);
-        // filterPlan.printFilter();
-        // //explainQuery(newQ);
-        
-
-        // writeFile(out1, out2, queryID);
+        return runTime;
     }
 
-    public static void writeFile(String line1, String line2, int queryID){
+    private static long learnTime;
+
+    public static long optimizedRun(String query, int queryID, boolean groupFilter){
+        long start, end, runTime;
+        //run optimized query
+        filterPlan.init();
+        filterPlan.open();
+        JoinKnob.init();
+
+        // fast learning phase
+        start = System.currentTimeMillis();
+        JoinKnob.enableFastLearning();
+        runStudentQueries(query);
+        end = System.currentTimeMillis();
+        learnTime = (end-start);
+        filterPlan.printFilter();
+        String newQ = filterPlan.mergePredicate(query);
+        //explainQuery(query);
+        System.out.println(newQ);
+
+        //query run phase
+        filterPlan.open();
+        start = System.currentTimeMillis();
+
+        JoinKnob.init();//close fast learning
+        JoinKnob.disableHashJoin();
+        JoinKnob.disableIndexJoin();
+        JoinKnob.disableNestLoopJoin();
+
+        filterPlan.enableGroup = groupFilter;
+
+        runStudentQueries(newQ);
+
+        end = System.currentTimeMillis();
+        runTime = (end-start);
+        String out = "Optimized query run: ";
+        writeFile(out);
+        System.out.println(learnTime + " " + runTime);
+        filterPlan.printFilter();
+        //explainQuery(newQ);
+
+        return runTime;
+    }
+
+    public static void oneRun(String query, int queryID){
+        long rawRunTime = rawRun(query, queryID);
+        long opTime;
+        if(query.contains("group by")){
+            long optimizedRunTime = optimizedRun(query, queryID, true);
+            long optimizedRunTimeNoGroup = optimizedRun(query, queryID, false);
+            if(optimizedRunTime < optimizedRunTimeNoGroup){
+                opTime = optimizedRunTime;
+            }else{
+                opTime = optimizedRunTimeNoGroup;
+            }
+        }else{
+            opTime = optimizedRun(query, queryID, true);
+        }
+        String out1 = "learn time: " + String.valueOf(learnTime);
+        writeFile(out1);
+        String out2 = "run time: " + String.valueOf(opTime);
+        writeFile(out2);
+    }
+
+    public static void writeFile(String line){
         File file = new File("output.txt"); 
         try {
             FileWriter out = new FileWriter(file, true);
             BufferedWriter bw=new BufferedWriter(out);
 
-            bw.write(queryID);
-            bw.newLine();
-            bw.write(line1);
-            bw.newLine();
-            bw.write(line2);
+            bw.write(line);
             bw.newLine();
 
             bw.flush();
