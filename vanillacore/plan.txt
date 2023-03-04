@@ -1,0 +1,131 @@
+Query 1
+
+->ProjectPlan  (#blks=841, #recs=0)
+	->GroupByPlan: (#blks=841, #recs=0)
+		->SelectPlan pred:(sid=studentid) (#blks=841, #recs=0)
+			->IndexJoinPlan (#blks=841, #recs=0)
+				->TablePlan on (student) (#blks=495, #recs=40000)
+				->HashJoinPipelinePlan (#blks=841, #recs=0)
+					->TablePlan on (enroll) (#blks=643, #recs=100000)
+					->HashJoinPipelinePlan (#blks=198, #recs=0)
+						->TablePlan on (section) (#blks=132, #recs=12000)
+						->SelectPlan pred:(did=deptid) (#blks=66, #recs=0)
+							->IndexJoinPlan (#blks=66, #recs=24)
+								->TablePlan on (dept) (#blks=2, #recs=40)
+								->SelectPlan pred:(cid<20.0) (#blks=22, #recs=20)
+									->IndexSelectPlan cond:{cid=(-Infinity, 20.0)} (#blks=22, #recs=20)
+										->TablePlan on (course) (#blks=96, #recs=5000)
+
+Actual #recs: 0
+
+
+->ProjectPlan  (#blks=841, #recs=0)
+	->GroupByPlan: (#blks=841, #recs=0)
+		->SelectPlan pred:(sid=studentid) (#blks=841, #recs=0)
+			->IndexJoinPlan (#blks=841, #recs=0)
+				->TablePlan on (student) (#blks=495, #recs=40000)
+				->HashJoinPipelinePlan (#blks=841, #recs=0)
+					->TablePlan on (enroll) (#blks=643, #recs=100000)
+					->HashJoinPipelinePlan (#blks=198, #recs=0)
+						->TablePlan on (section) (#blks=132, #recs=12000)
+						->SelectPlan pred:(did=deptid) (#blks=66, #recs=0)
+							->IndexJoinPlan (#blks=66, #recs=24)
+								->TablePlan on (dept) (#blks=2, #recs=40)
+								->SelectPlan pred:(cid<20.0) (#blks=22, #recs=20)
+									->IndexSelectPlan cond:{cid=(-Infinity, 20.0)} (#blks=22, #recs=20)
+										->TablePlan on (course) (#blks=96, #recs=5000)
+
+Actual #recs: 1
+
+Query 2
+
+->ProjectPlan  (#blks=5663, #recs=1)
+	->GroupByPlan: (#blks=5663, #recs=1)
+		->HashJoinPipelinePlan (#blks=5663, #recs=499900000)
+			->TablePlan on (enroll) (#blks=643, #recs=100000)
+			->SelectPlan pred:(sid>30000.0 and sid>35000.0) (#blks=5020, #recs=4999)
+				->IndexSelectPlan cond:{sid=(35000.0, Infinity)} (#blks=5020, #recs=4999)
+					->TablePlan on (student) (#blks=495, #recs=40000)
+
+Actual #recs: 1
+
+
+->ProjectPlan  (#blks=5663, #recs=1)
+	->GroupByPlan: (#blks=5663, #recs=1)
+		->HashJoinPipelinePlan (#blks=5663, #recs=499900000)
+			->TablePlan on (enroll) (#blks=643, #recs=100000)
+			->SelectPlan pred:(sid>30000.0 and sid>35000.0) (#blks=5020, #recs=4999)
+				->IndexSelectPlan cond:{sid=(35000.0, Infinity)} (#blks=5020, #recs=4999)
+					->TablePlan on (student) (#blks=495, #recs=40000)
+
+Actual #recs: 1
+
+Query 3
+
+->ProjectPlan  (#blks=686, #recs=1)
+	->GroupByPlan: (#blks=686, #recs=1)
+		->SelectPlan pred:(sid>studentid) (#blks=686, #recs=1)
+			->SelectPlan pred:(sid>3999.0) (#blks=686, #recs=6)
+				->IndexJoinPlan (#blks=686, #recs=27)
+					->TablePlan on (student) (#blks=495, #recs=40000)
+					->SelectPlan pred:(sectionid>=11999.0) (#blks=643, #recs=8)
+						->TablePlan on (enroll) (#blks=643, #recs=100000)
+
+Actual #recs: 0
+
+
+->ProjectPlan  (#blks=686, #recs=0)
+	->GroupByPlan: (#blks=686, #recs=0)
+		->SelectPlan pred:(sid>studentid) (#blks=686, #recs=0)
+			->IndexJoinPlan (#blks=686, #recs=27)
+				->TablePlan on (student) (#blks=495, #recs=40000)
+				->SelectPlan pred:(sectionid>=11999.0) (#blks=643, #recs=8)
+					->TablePlan on (enroll) (#blks=643, #recs=100000)
+
+Actual #recs: 0
+
+Query 4
+
+->ProjectPlan  (#blks=752, #recs=0)
+	->GroupByPlan: (#blks=752, #recs=0)
+		->SelectPlan pred:(sectionid>sectid) (#blks=752, #recs=0)
+			->SelectPlan pred:(sectid<8009.0) (#blks=752, #recs=38)
+				->IndexJoinPlan (#blks=752, #recs=49)
+					->TablePlan on (section) (#blks=132, #recs=12000)
+					->SelectPlan pred:(studentid<10.0) (#blks=643, #recs=30)
+						->TablePlan on (enroll) (#blks=643, #recs=100000)
+
+Actual #recs: 1
+
+
+->ProjectPlan  (#blks=752, #recs=0)
+	->GroupByPlan: (#blks=752, #recs=0)
+		->SelectPlan pred:(sectionid>sectid) (#blks=752, #recs=0)
+			->IndexJoinPlan (#blks=752, #recs=49)
+				->TablePlan on (section) (#blks=132, #recs=12000)
+				->SelectPlan pred:(studentid<10.0) (#blks=643, #recs=30)
+					->TablePlan on (enroll) (#blks=643, #recs=100000)
+
+Actual #recs: 1
+
+Query 5
+
+->ProjectPlan  (#blks=10040, #recs=1)
+	->GroupByPlan: (#blks=10040, #recs=1)
+		->SelectPlan pred:(sid>30000.0) (#blks=10040, #recs=9999)
+			->IndexSelectPlan cond:{sid=(30000.0, Infinity)} (#blks=10040, #recs=9999)
+				->TablePlan on (student) (#blks=495, #recs=40000)
+
+Actual #recs: 1
+
+
+->ProjectPlan  (#blks=10040, #recs=1)
+	->GroupByPlan: (#blks=10040, #recs=1)
+		->SelectPlan pred:(sid>30000.0) (#blks=10040, #recs=9999)
+			->IndexSelectPlan cond:{sid=(30000.0, Infinity)} (#blks=10040, #recs=9999)
+				->TablePlan on (student) (#blks=495, #recs=40000)
+
+Actual #recs: 1
+
+Query 6
+Query 6

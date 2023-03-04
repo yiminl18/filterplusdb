@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException; 
+import java.util.concurrent.*;
 
 public class FullTest {
 
@@ -33,6 +34,9 @@ public class FullTest {
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
+    private static String dataOut = "time.txt";
+    private static String planOut = "plan.txt";
+    private static boolean writeKnob = true;
 
     public static void init(String dbname){
         ServerInit.init(dbname);
@@ -360,7 +364,7 @@ public class FullTest {
         Scan s = plan.open();
         s.beforeFirst();
         List<String> projection = getProjection(query);
-        System.out.println("query answer ====: ");
+        System.out.println("Query answer: ");
         while(s.next()){
             for(int i=0;i<projection.size();i++){
                 System.out.print(s.getVal(projection.get(i)) + " ");
@@ -387,20 +391,23 @@ public class FullTest {
         return output;
     }
 
-    public static void explainQuery(String query){
+    public static String explainQuery(String query){
         query = "explain " + query;
         Transaction tx = VanillaDb.txMgr().newTransaction(
 				Connection.TRANSACTION_SERIALIZABLE, true);
         Planner planner = VanillaDb.newPlanner();
         Plan plan = planner.createQueryPlan(query, tx);
-        
+        String queryPlan = "";
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            System.out.println(s.getVal("query-plan"));
+            //System.out.println(s.getVal("query-plan"));
+            queryPlan += s.getVal("query-plan");
+            queryPlan += "\n";
         }
         s.close();
         tx.commit();
+        return queryPlan;
     }
 
     public static void parseQuery(){
@@ -416,24 +423,18 @@ public class FullTest {
 
     public static long rawRun(String query, int queryID){
         //raw query run
-        filterPlan.open();
+        System.out.println(query);
+        filterPlan.close();
         filterPlan.enableGroup = false;
         JoinKnob.init();
         JoinKnob.enableRawRun();
         long start = System.currentTimeMillis();
 
-        JoinKnob.disableHashJoin();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableNestLoopJoin();
-
         runStudentQueries(query);
         long end = System.currentTimeMillis();
         long runTime = (end-start);
-        String out = "Raw query run: " + String.valueOf(runTime); 
-        writeFile(out);
+        
         System.out.println("Raw query run: " + runTime);
-        System.out.println(query);
-
         return runTime;
     }
 
@@ -462,47 +463,112 @@ public class FullTest {
         start = System.currentTimeMillis();
 
         JoinKnob.init();//close fast learning
-        JoinKnob.disableHashJoin();
-        JoinKnob.disableIndexJoin();
-        JoinKnob.disableNestLoopJoin();
+
+        // JoinKnob.disableHashJoin();
+        // JoinKnob.disableIndexJoin();
+        // JoinKnob.disableNestLoopJoin();
 
         filterPlan.enableGroup = groupFilter;
-
         runStudentQueries(newQ);
 
         end = System.currentTimeMillis();
         runTime = (end-start);
-        String out = "Optimized query run: ";
-        writeFile(out);
+        
         System.out.println(learnTime + " " + runTime);
         filterPlan.printFilter();
-        //explainQuery(newQ);
+        filterPlan.filterStats();
+
+        if(groupFilter){
+            String p = explainQuery(newQ);
+            writeFile(p, planOut);
+        }
+        
 
         return runTime;
     }
 
-    public static void oneRun(String query, int queryID){
+    public static long OptimizeRunNoLearning(String query, int queryID, boolean groupFilter){
+        long start, end, runTime;
+        filterPlan.init();
+        filterPlan.open();
+        JoinKnob.init();
+        JoinKnob.rawRun = true;
+        start = System.currentTimeMillis();
+        filterPlan.enableGroup = groupFilter;
+
+        runStudentQueries(query);
+
+        end = System.currentTimeMillis();
+        runTime = (end-start);
+
+        filterPlan.filterStats();
+        filterPlan.printFilter();
+
+        if(groupFilter){
+            String p = explainQuery(query);
+            writeFile(p, planOut);
+        }
+
+        return runTime;
+    }
+
+    public static String oneRun(String query, int queryID){
+        System.out.println("Query " + String.valueOf(queryID));
+        writeFile("Query " + String.valueOf(queryID), planOut);
+
         long rawRunTime = rawRun(query, queryID);
-        long opTime;
+        long opTime = 0;
+        long opTimeNoLearning = 0;
+
         if(query.contains("group by")){
             long optimizedRunTime = optimizedRun(query, queryID, true);
             long optimizedRunTimeNoGroup = optimizedRun(query, queryID, false);
-            if(optimizedRunTime < optimizedRunTimeNoGroup){
+            
+            if(optimizedRunTime < optimizedRunTimeNoGroup){//with group filter is better
                 opTime = optimizedRunTime;
-            }else{
+                opTimeNoLearning = OptimizeRunNoLearning(query, queryID, true);
+            }else{//without group filter is better 
                 opTime = optimizedRunTimeNoGroup;
+                opTimeNoLearning = OptimizeRunNoLearning(query, queryID, false);
             }
         }else{
             opTime = optimizedRun(query, queryID, true);
+            opTimeNoLearning = OptimizeRunNoLearning(query, queryID, true);
         }
-        String out1 = "learn time: " + String.valueOf(learnTime);
-        writeFile(out1);
+
+        writeFile("Query " + String.valueOf(queryID), dataOut);
+        
+
+        String out = "Raw query run: "; 
+        writeFile(out, dataOut);
+        String out1 = "run time: " + String.valueOf(rawRunTime);
+        writeFile(out1, dataOut);
+
+        System.out.println(out + " " + out1);
+
+        out = "Optimized query run: ";
+        writeFile(out, dataOut);
+        out1 = "learn time: " + String.valueOf(learnTime);
+        writeFile(out1, dataOut);
         String out2 = "run time: " + String.valueOf(opTime);
-        writeFile(out2);
+        writeFile(out2, dataOut);
+
+        System.out.println(out + " " + out1 + " " + out2);
+
+        out = "Optimized query run without learning: ";
+        writeFile(out, dataOut);
+        out1 = "run time: " + String.valueOf(opTimeNoLearning);
+        writeFile(out1, dataOut);
+
+        System.out.println(out + " " + out1);
+        return "";
     }
 
-    public static void writeFile(String line){
-        File file = new File("output.txt"); 
+    public static void writeFile(String line, String fileName){
+        if(!writeKnob){
+            return;
+        }
+        File file = new File(fileName); 
         try {
             FileWriter out = new FileWriter(file, true);
             BufferedWriter bw=new BufferedWriter(out);
@@ -515,6 +581,36 @@ public class FullTest {
             }catch (IOException e) {e.printStackTrace();}
     }
 
+    public static String check(){
+        try{
+            Thread.sleep(3000);
+        }catch(InterruptedException e){};
+        return "6";
+    }
+
+    public static void timeChecker(long time, String query, int queryID){
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<String> future = executor.submit(()->{
+            String result = oneRun(query, queryID);
+            return result;
+        });
+
+        try{
+            String result = future.get(time, TimeUnit.SECONDS);
+            //System.out.println(result);
+        }catch(TimeoutException e){
+            System.out.println("Timeout!");
+            writeFile("Timeout for " + String.valueOf(time) + " seconds limit", dataOut);
+            writeFile("Timeout for " + String.valueOf(time) + " seconds limit", planOut);
+        }catch(ExecutionException e){
+        }catch(InterruptedException e){
+        }
+
+        executor.shutdown();
+    }
+
+
+
     @Test
     public void main() {
         HashMap<Integer, String> studentQueries = readStudentQueryTest();
@@ -524,8 +620,9 @@ public class FullTest {
         //parseQuery();
         //loadData();
         //testReadCSV();
-        int queryID = 3;
-        oneRun(studentQueries.get(queryID), queryID);
-
+        writeKnob = true;
+        for(int queryID = 6; queryID <=6; queryID ++ ){
+            timeChecker(10,studentQueries.get(queryID), queryID);
+        }
     }
 }

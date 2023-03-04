@@ -6,10 +6,11 @@ import org.vanilladb.core.sql.Constant;
 
 public class filter{
     /*
-     * This class implements new filters discovered at query runtime
+     * This class implements new filters discovered at query runtime.
+     * Equalrange is the range filter generated from equal join, and only generated in fast learning phase, will not be generated in query run phase. 
      */
     public String attr;
-    public String filterType;//"max", "min", "membership", "range", "groupmax", "groupmin"
+    public String filterType;//"max", "min", "membership", "range", "groupmax", "groupmin", "equalrange"
     //range filters
     public Constant low, high;
     public boolean low_include, high_include, is_low, is_high;//is low: low side valid or not, low include, low side include (>=) or not (>)

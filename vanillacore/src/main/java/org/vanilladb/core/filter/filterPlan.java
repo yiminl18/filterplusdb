@@ -5,7 +5,7 @@ import org.vanilladb.core.query.algebra.*;
 import org.vanilladb.core.query.planner.JoinKnob;
 
 public class filterPlan{
-    public static boolean enableMaxmin = false, enableEqual = false, enableTheta = false, enableGroup = false;
+    public static boolean enableMaxmin = false, enableEqual = false, enableTheta = false, enableGroup = false, enableEqualRange = false;
     public static HashMap<String, List<filter>> filters = new HashMap<>();//store attr to a set of filters that are applicable on it
     public static HashMap<Constant, List<filter>> groupFilters = new HashMap<>(); //store a set of group filters, one group val could have multiple range filters  
     public static String groupFld;//groupFld is the attribute that group by is applied on
@@ -44,6 +44,7 @@ public class filterPlan{
         enableEqual = true;
         enableTheta = true;
         enableGroup = true;
+        enableEqualRange = true;
     }
 
     public static void close(){//close all filters 
@@ -51,6 +52,7 @@ public class filterPlan{
         enableEqual = false;
         enableTheta = false;
         enableGroup = false;
+        enableEqualRange = false;
     }
 
     public static void addFilter(String attr, String filterType, Constant groupVal, String groupField, Constant low, Constant high, Boolean low_include, Boolean high_include, Boolean is_low, Boolean is_high){
@@ -85,6 +87,7 @@ public class filterPlan{
                     if(filters.containsKey(attr)){
                         //System.out.println("in filterplan: " + f.filterType);
                         if(f.filterType.equals("range") || f.filterType.equals("max") || f.filterType.equals("min")){
+                            //filters.get(attr).add(f);
                         }else{
                             filters.get(attr).add(f);
                         }

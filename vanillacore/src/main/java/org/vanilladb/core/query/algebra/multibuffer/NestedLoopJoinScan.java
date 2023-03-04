@@ -101,6 +101,8 @@ public class NestedLoopJoinScan implements Scan {
 		filterPlan.addFilter(fldName1, "membership", memberships);
 		//System.out.println("in NLJ: " + memberships.size());
 		filterPlan.addFilter(fldName2, "membership", memberships);
+		//also create range filter from equal join for fldName1 only 
+		filterPlan.addFilter(fldName1, "equalrange", null, null, min_v, max_v, true, true, true, true);
 	}
 
 	public void createThetaJoinFilter(){
@@ -129,16 +131,14 @@ public class NestedLoopJoinScan implements Scan {
 				Constant val = rhsScan.getVal(fldName2);
 				if(!isThetaJoin){
 					addItem(val);
-				}else{
-					if(isFirstItem){
-						max_v = val;
-						min_v = val;
-						isFirstItem = false;
-					}else{
-						updateThetaFilter(val);
-					}
 				}
-				
+				if(isFirstItem){
+					max_v = val;
+					min_v = val;
+					isFirstItem = false;
+				}else{
+					updateThetaFilter(val);
+				}
 			}
 			return true;
 		}
