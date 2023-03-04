@@ -129,3 +129,30 @@ Actual #recs: 1
 
 Query 6
 Query 6
+Query 7
+Timeout for 10 seconds limit
+Query 8
+Timeout for 10 seconds limit
+Query 9
+
+->ProjectPlan  (#blks=530112, #recs=1)
+	->GroupByPlan: (#blks=530112, #recs=1)
+		->NestedLoopJoinPlan (#blks=530112, #recs=2160)
+			->SelectPlan pred:(cid>1000.0 and cid>41.0) (#blks=4016, #recs=3999)
+				->IndexSelectPlan cond:{cid=(1000.0, Infinity)} (#blks=4016, #recs=3999)
+					->TablePlan on (course) (#blks=96, #recs=5000)
+			->SelectPlan pred:(yearoffered>2000.0) (#blks=132, #recs=2160)
+				->TablePlan on (section) (#blks=132, #recs=12000)
+
+Actual #recs: 1
+
+Timeout for 10 seconds limit
+Query 10
+
+->ProjectPlan  (#blks=643, #recs=5)
+	->GroupByPlan: (#blks=643, #recs=5)
+		->SelectPlan pred:(studentid<12000.0) (#blks=643, #recs=36000)
+			->TablePlan on (enroll) (#blks=643, #recs=100000)
+
+Actual #recs: 5
+

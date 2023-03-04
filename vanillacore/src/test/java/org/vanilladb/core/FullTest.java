@@ -516,36 +516,58 @@ public class FullTest {
         System.out.println("Query " + String.valueOf(queryID));
         writeFile("Query " + String.valueOf(queryID), planOut);
 
+        //Raw query run
         long rawRunTime = rawRun(query, queryID);
-        long opTime = 0;
-        long opTimeNoLearning = 0;
 
-        if(query.contains("group by")){
-            long optimizedRunTime = optimizedRun(query, queryID, true);
-            long optimizedRunTimeNoGroup = optimizedRun(query, queryID, false);
-            
-            if(optimizedRunTime < optimizedRunTimeNoGroup){//with group filter is better
-                opTime = optimizedRunTime;
-                opTimeNoLearning = OptimizeRunNoLearning(query, queryID, true);
-            }else{//without group filter is better 
-                opTime = optimizedRunTimeNoGroup;
-                opTimeNoLearning = OptimizeRunNoLearning(query, queryID, false);
-            }
-        }else{
-            opTime = optimizedRun(query, queryID, true);
-            opTimeNoLearning = OptimizeRunNoLearning(query, queryID, true);
-        }
-
-        writeFile("Query " + String.valueOf(queryID), dataOut);
-        
-
+        writeFile("Query " + String.valueOf(queryID), dataOut); 
         String out = "Raw query run: "; 
         writeFile(out, dataOut);
         String out1 = "run time: " + String.valueOf(rawRunTime);
         writeFile(out1, dataOut);
 
-        System.out.println(out + " " + out1);
+        //Optimized query run without learning
 
+        //System.out.println(out + " " + out1);        
+        long opTime = 0;
+        long opTimeNoLearningbest = 0;
+        long opTimeNoLearning = 0;
+        long opTimeNoLearningNoGroup = 0;
+
+        if(query.contains("group by")){
+            opTimeNoLearning = OptimizeRunNoLearning(query, queryID, true);
+            opTimeNoLearningNoGroup = OptimizeRunNoLearning(query, queryID, false);
+            
+            if(opTimeNoLearning < opTimeNoLearningNoGroup){//with group filter is better
+                //opTime = optimizedRun(query, queryID, true);
+                opTimeNoLearningbest = opTimeNoLearning;
+            }else{//without group filter is better 
+                //opTime = optimizedRun(query, queryID, false);
+                opTimeNoLearningbest = opTimeNoLearningNoGroup;
+            }
+        }else{
+            opTimeNoLearningbest = OptimizeRunNoLearning(query, queryID, true);
+            //opTime = optimizedRun(query, queryID, true);
+        }
+
+        out = "Optimized query run without learning: ";
+        writeFile(out, dataOut);
+        out1 = "run time: " + String.valueOf(opTimeNoLearningbest);
+        writeFile(out1, dataOut);
+
+        //System.out.println(out + " " + out1);
+        
+        //Optimized query run with learning
+        if(query.contains("group by")){
+            if(opTimeNoLearning < opTimeNoLearningNoGroup){//with group filter is better
+                opTime = optimizedRun(query, queryID, true);
+            }else{//without group filter is better 
+                opTime = optimizedRun(query, queryID, false);
+            }
+        }else{
+            opTimeNoLearningbest = OptimizeRunNoLearning(query, queryID, true);
+            opTime = optimizedRun(query, queryID, true);
+        }
+        
         out = "Optimized query run: ";
         writeFile(out, dataOut);
         out1 = "learn time: " + String.valueOf(learnTime);
@@ -553,14 +575,7 @@ public class FullTest {
         String out2 = "run time: " + String.valueOf(opTime);
         writeFile(out2, dataOut);
 
-        System.out.println(out + " " + out1 + " " + out2);
-
-        out = "Optimized query run without learning: ";
-        writeFile(out, dataOut);
-        out1 = "run time: " + String.valueOf(opTimeNoLearning);
-        writeFile(out1, dataOut);
-
-        System.out.println(out + " " + out1);
+        //System.out.println(out + " " + out1 + " " + out2);
         return "";
     }
 
@@ -620,9 +635,9 @@ public class FullTest {
         //parseQuery();
         //loadData();
         //testReadCSV();
-        writeKnob = false;
-        for(int queryID = 6; queryID <=6; queryID ++ ){
-            timeChecker(20000,studentQueries.get(queryID), queryID);
+        writeKnob = true;
+        for(int queryID = 1; queryID <=5; queryID ++ ){
+            timeChecker(30,studentQueries.get(queryID), queryID);
         }
     }
 }

@@ -38,3 +38,14 @@ learn time: 0
 run time: 7
 Optimized query run without learning: 
 run time: 7
+Timeout for 10 seconds limit
+Timeout for 10 seconds limit
+Timeout for 10 seconds limit
+Query 10
+Raw query run: 
+run time: 30
+Optimized query run: 
+learn time: 28
+run time: 28
+Optimized query run without learning: 
+run time: 24
