@@ -54,22 +54,32 @@ public class filter{
     public String toString(){
         String predicate = attr;
         if(filterType.equals("range") || filterType.equals("equalrange")){
-            if(!is_low){//< or <=
+            if(is_high){//< or <=
                 if(high_include){//<=
                     predicate += "<=";
                 }else{//< 
                     predicate += "<";
                 }
                 predicate += high.toString();
-            }else{// > or >= 
+            }
+            if(is_low){// > or >= 
+                String p2 = attr; 
                 if(low_include){//>=
-                    predicate += ">=";
+                    p2 += ">=";
                 }else{
-                    predicate += ">";
+                    p2 += ">";
                 }
-                predicate += low.toString();
+                if(is_high){
+                    p2 += low.toString();
+                    predicate += " and " + p2;
+                }else{
+                    predicate = p2;
+                }
+                
             }
         }
+
+        System.out.println("in filter " + predicate);
         return predicate;
     }
 

@@ -34,8 +34,9 @@ public class FullTest {
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
-    private static String dataOut = "time2.txt";
+    private static String dataOut = "time1.txt";
     private static String planOut = "plan.txt";
+    private static String queryIn = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -320,16 +321,16 @@ public class FullTest {
     }
 
 
-    public static HashMap<Integer, String> readStudentQueryTest(){
-        String csvFile = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
-        HashMap<Integer, String> queries = new HashMap<>();
+    public static HashMap<String, String> readQueryTest(){
+        String csvFile = queryIn;
+        HashMap<String, String> queries = new HashMap<>();
         try{
             File file = new File(csvFile);
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line = "";
             String sql = "";
-            int queryID = 0;
+            String queryID = "";
             while((line = br.readLine()) != null) {
                 //System.out.println(line);
                 if(line.charAt(0) == '#'){//end of a query
@@ -338,7 +339,7 @@ public class FullTest {
                     sql = "";
                 }else if(line.charAt(0) == 'Q'){//start of a new query
                     //System.out.println(line.charAt(1));
-                    queryID = Integer.valueOf(line.substring(1, line.length()));
+                    queryID = line.substring(1, line.length());
                 }else{
                     sql += line;
                     sql += " ";
@@ -421,7 +422,7 @@ public class FullTest {
         System.out.println(data.pred().toString()); 
     }
 
-    public static long rawRun(String query, int queryID){
+    public static long rawRun(String query, String queryID){
         //raw query run
         System.out.println(query);
         filterPlan.close();
@@ -440,8 +441,8 @@ public class FullTest {
 
     private static long learnTime;
 
-    public static long optimizedRun(String query, int queryID, boolean groupFilter){
-        long start, end, runTime;
+    public static long optimizedRun(String query, String queryID, boolean groupFilter){
+        long start, end, runTime=0;
         //run optimized query
         filterPlan.init();
         filterPlan.open();
@@ -455,39 +456,35 @@ public class FullTest {
         learnTime = (end-start);
         filterPlan.printFilter();
         String newQ = filterPlan.mergePredicate(query);
-        explainQuery(query);
         System.out.println(newQ);
+        explainQuery(query);
 
         //query run phase
-        filterPlan.open();
-        start = System.currentTimeMillis();
+        // filterPlan.open();
+        // start = System.currentTimeMillis();
 
-        JoinKnob.init();//close fast learning
+        // JoinKnob.init();//close fast learning
 
-        // JoinKnob.disableHashJoin();
-        // JoinKnob.disableIndexJoin();
-        // JoinKnob.disableNestLoopJoin();
+        // filterPlan.enableGroup = groupFilter;
+        // runStudentQueries(newQ);
 
-        filterPlan.enableGroup = groupFilter;
-        runStudentQueries(newQ);
-
-        end = System.currentTimeMillis();
-        runTime = (end-start);
+        // end = System.currentTimeMillis();
+        // runTime = (end-start);
         
-        System.out.println(learnTime + " " + runTime);
-        filterPlan.printFilter();
-        filterPlan.filterStats();
+        // System.out.println(learnTime + " " + runTime);
+        // filterPlan.printFilter();
+        // filterPlan.filterStats();
 
-        if(groupFilter){
-            String p = explainQuery(newQ);
-            writeFile(p, planOut);
-        }
+        // if(groupFilter){
+        //     String p = explainQuery(newQ);
+        //     writeFile(p, planOut);
+        // }
         
 
         return runTime;
     }
 
-    public static long OptimizeRunNoLearning(String query, int queryID, boolean groupFilter){
+    public static long OptimizeRunNoLearning(String query, String queryID, boolean groupFilter){
         long start, end, runTime;
         filterPlan.init();
         filterPlan.open();
@@ -512,12 +509,13 @@ public class FullTest {
         return runTime;
     }
 
-    public static String oneRun(String query, int queryID){
+    public static String oneRun(String query, String queryID){
         System.out.println("Query " + String.valueOf(queryID));
-        writeFile("Query " + String.valueOf(queryID), planOut);
+        writeFile("Query " + queryID, planOut);
 
         //Raw query run
-        long rawRunTime = rawRun(query, queryID);
+        long rawRunTime = 0;
+        rawRunTime = rawRun(query, queryID);
 
         writeFile("Query " + String.valueOf(queryID), dataOut); 
         String out = "Raw query run: "; 
@@ -527,8 +525,7 @@ public class FullTest {
 
         //Optimized query run without learning
 
-        //System.out.println(out + " " + out1);        
-        long opTime = 0;
+        //System.out.println(out + " " + out1); 
         long opTimeNoLearningbest = 0;
         long opTimeNoLearning = 0;
         long opTimeNoLearningNoGroup = 0;
@@ -538,15 +535,12 @@ public class FullTest {
             opTimeNoLearningNoGroup = OptimizeRunNoLearning(query, queryID, false);
             
             if(opTimeNoLearning < opTimeNoLearningNoGroup){//with group filter is better
-                //opTime = optimizedRun(query, queryID, true);
                 opTimeNoLearningbest = opTimeNoLearning;
             }else{//without group filter is better 
-                //opTime = optimizedRun(query, queryID, false);
                 opTimeNoLearningbest = opTimeNoLearningNoGroup;
             }
         }else{
             opTimeNoLearningbest = OptimizeRunNoLearning(query, queryID, true);
-            //opTime = optimizedRun(query, queryID, true);
         }
 
         out = "Optimized query run without learning: ";
@@ -556,23 +550,23 @@ public class FullTest {
 
         //System.out.println(out + " " + out1);
         
-        //Optimized query run with learning
-        if(query.contains("group by")){
-            if(opTimeNoLearning < opTimeNoLearningNoGroup){//with group filter is better
-                opTime = optimizedRun(query, queryID, true);
-            }else{//without group filter is better 
-                opTime = optimizedRun(query, queryID, false);
-            }
-        }else{
-            opTime = optimizedRun(query, queryID, true);
-        }
+        // //Optimized query run with learning
+        // if(query.contains("group by")){
+        //     if(opTimeNoLearning < opTimeNoLearningNoGroup){//with group filter is better
+        //         opTime = optimizedRun(query, queryID, true);
+        //     }else{//without group filter is better 
+        //         opTime = optimizedRun(query, queryID, false);
+        //     }
+        // }else{
+        //     opTime = optimizedRun(query, queryID, true);
+        // }
         
-        out = "Optimized query run: ";
-        writeFile(out, dataOut);
-        out1 = "learn time: " + String.valueOf(learnTime);
-        writeFile(out1, dataOut);
-        String out2 = "run time: " + String.valueOf(opTime);
-        writeFile(out2, dataOut);
+        // out = "Optimized query run: ";
+        // writeFile(out, dataOut);
+        // out1 = "learn time: " + String.valueOf(learnTime);
+        // writeFile(out1, dataOut);
+        // String out2 = "run time: " + String.valueOf(opTime);
+        // writeFile(out2, dataOut);
 
         //System.out.println(out + " " + out1 + " " + out2);
         return "";
@@ -602,7 +596,7 @@ public class FullTest {
         return "6";
     }
 
-    public static void timeChecker(long time, String query, int queryID){
+    public static void timeChecker(long time, String query, String queryID){
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> future = executor.submit(()->{
             String result = oneRun(query, queryID);
@@ -627,16 +621,18 @@ public class FullTest {
 
     @Test
     public void main() {
-        HashMap<Integer, String> studentQueries = readStudentQueryTest();
+        HashMap<String, String> Queries = readQueryTest();
         // getProjection(studentQueries.get(11));
         String dbname = "TESTDB2";//TESTDB2
         init(dbname);
         //parseQuery();
         //loadData();
         //testReadCSV();
-        writeKnob = false;
-        for(int queryID = 2; queryID <=2; queryID ++ ){
-            timeChecker(10,studentQueries.get(queryID), queryID);
+        writeKnob = true;
+
+        for (Map.Entry<String, String> entry : Queries.entrySet()) {
+            String queryID = entry.getKey();
+            timeChecker(10,entry.getValue(), queryID);
         }
     }
 }

@@ -27,7 +27,7 @@ import org.vanilladb.core.query.planner.Planner;
 import org.vanilladb.core.query.planner.QueryPlanner;
 import org.vanilladb.core.query.planner.UpdatePlanner;
 import org.vanilladb.core.query.planner.index.IndexUpdatePlanner;
-//import org.vanilladb.core.query.planner.opt.HeuristicQueryPlanner;
+import org.vanilladb.core.query.planner.opt.HeuristicQueryPlanner;
 import org.vanilladb.core.query.planner.opt.SelingerLikeQueryPlanner;
 import org.vanilladb.core.server.task.TaskMgr;
 import org.vanilladb.core.sql.storedprocedure.SampleStoredProcedureFactory;
@@ -110,10 +110,10 @@ public class VanillaDb {
 		 */
 
 		// read classes
-		// queryPlannerCls = CoreProperties.getLoader().getPropertyAsClass(VanillaDb.class.getName() + ".QUERYPLANNER",
-		// 		HeuristicQueryPlanner.class, QueryPlanner.class);
 		queryPlannerCls = CoreProperties.getLoader().getPropertyAsClass(VanillaDb.class.getName() + ".QUERYPLANNER",
-		SelingerLikeQueryPlanner.class, QueryPlanner.class);//ihe: change to SelingerLikeQueryPlanner
+				HeuristicQueryPlanner.class, QueryPlanner.class);
+		// queryPlannerCls = CoreProperties.getLoader().getPropertyAsClass(VanillaDb.class.getName() + ".QUERYPLANNER",
+		// SelingerLikeQueryPlanner.class, QueryPlanner.class);//ihe: change to SelingerLikeQueryPlanner
 		updatePlannerCls = CoreProperties.getLoader().getPropertyAsClass(VanillaDb.class.getName() + ".UPDATEPLANNER",
 				IndexUpdatePlanner.class, UpdatePlanner.class);
 

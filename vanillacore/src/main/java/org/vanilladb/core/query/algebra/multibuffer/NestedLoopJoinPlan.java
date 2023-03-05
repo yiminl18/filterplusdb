@@ -53,8 +53,15 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 		joinFields = findJoinFields(joinPredicate, lhs.schema(), rhs.schema());
 		fldName1 = joinFields.get(0);
 		fldName2 = joinFields.get(1);
-		hist = joinHistogram(lhs.histogram(), rhs.histogram(), fldName1,
-				fldName2);
+
+		if(lhs.recordsOutput() < rhs.recordsOutput()){
+			hist = joinHistogram(rhs.histogram(), lhs.histogram(), fldName2,
+				fldName1);
+		}else{
+			hist = joinHistogram(lhs.histogram(), rhs.histogram(), fldName1,
+			fldName2);
+		}
+		
 		op = joinPredicate.getOp();
 		if(exchange){
 			op = reverse(op);
@@ -70,13 +77,13 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 		JoinKnob.joinNumber += 1;
 		
 		//ensure the right side is the smaller one 
-		if(lhs.recordsOutput() < rhs.recordsOutput()){
-			//System.out.println("in NLJ: " + fldName2 + " " + fldName1 + " " + rhs.recordsOutput() + " " + lhs.recordsOutput());
-			return new NestedLoopJoinScan(rightScan, leftScan, fldName2, fldName1, reverse(op));
-		}else{
-			//System.out.println("in NLJ: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
+		// if(lhs.recordsOutput() < rhs.recordsOutput()){
+		// 	System.out.println("in NLJ: " + fldName2 + " " + fldName1 + " " + rhs.recordsOutput() + " " + lhs.recordsOutput());
+		// 	return new NestedLoopJoinScan(rightScan, leftScan, fldName2, fldName1, reverse(op));
+		// }else{
+			System.out.println("in NLJ: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
 			return new NestedLoopJoinScan(leftScan, rightScan, fldName1, fldName2, op);
-		}
+		//}
 	}
 
 	public Operator reverse(Operator op){

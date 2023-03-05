@@ -33,8 +33,8 @@ import org.vanilladb.core.sql.IntegerConstant;
 public class NestedLoopJoinScan implements Scan {
 	private Scan lhsScan, rhsScan;
 	private boolean isLhsEmpty;
-	private boolean first = true; //used to denote if this is the first pass of rhs 
-	private boolean isFirstItem = true; //used to denote if this is the first value from the first rhs scan  
+	private boolean first; //used to denote if this is the first pass of rhs 
+	private boolean isFirstItem; //used to denote if this is the first value from the first rhs scan  
 	private HashMap<Constant, Boolean> memberships;
 	private String fldName1, fldName2;
 	private Operator op;
@@ -81,7 +81,8 @@ public class NestedLoopJoinScan implements Scan {
 		lhsScan.beforeFirst();
 		rhsScan.beforeFirst();
 		isLhsEmpty = !lhsScan.next();
-		
+		first = true;
+		isFirstItem = true;
 	}
 
 	public void addItem(Constant val){
@@ -101,7 +102,7 @@ public class NestedLoopJoinScan implements Scan {
 
 	public void createMembershipFilter(){
 		filterPlan.addFilter(fldName1, "membership", memberships);
-		System.out.println("in NLJ: " + fldName1);
+		System.out.println("CREATE  membership in NLJ: " + fldName1);
 		filterPlan.addFilter(fldName2, "membership", memberships);
 		//also create range filter from equal join for fldName1 only 
 		filterPlan.addFilter(fldName1, "equalrange", null, null, min_v, max_v, true, true, true, true);
@@ -125,10 +126,53 @@ public class NestedLoopJoinScan implements Scan {
 	 * @see Scan#next()
 	 */
 	@Override
+	// public boolean next() {
+	// 	if (isLhsEmpty)
+	// 		return false;
+	// 	if (rhsScan.next()){
+	// 		if(first){
+	// 			Constant val = rhsScan.getVal(fldName2);
+	// 			if(!isThetaJoin){
+	// 				addItem(val);
+	// 			}
+	// 			if(isFirstItem){
+	// 				max_v = val;
+	// 				min_v = val;
+	// 				isFirstItem = false;
+	// 			}else{
+	// 				updateThetaFilter(val);
+	// 			}
+	// 		}
+	// 		return true;
+	// 	}
+	// 	else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
+	// 		if(first){
+	// 			//System.out.println("in NLJ scan: right scan ends! " + fldName1 + " " + fldName2);
+	// 			if(!isThetaJoin){
+	// 				createMembershipFilter();
+	// 			}else{
+	// 				createThetaJoinFilter();
+	// 			}
+	// 			first = false;
+	// 			JoinKnob.completeScanNumber += 1;
+	// 		}
+	// 		rhsScan.beforeFirst();
+	// 		return rhsScan.next();
+	// 	} else {
+	// 		return false;
+	// 	}
+	// }
+
 	public boolean next() {
 		if (isLhsEmpty)
 			return false;
-		if (rhsScan.next()){
+		if(!first){
+			if(!lhsScan.next()){
+				return false;
+			}
+			return true;
+		}
+		while(rhsScan.next()){
 			if(first){
 				Constant val = rhsScan.getVal(fldName2);
 				if(!isThetaJoin){
@@ -142,9 +186,8 @@ public class NestedLoopJoinScan implements Scan {
 					updateThetaFilter(val);
 				}
 			}
-			return true;
 		}
-		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
+		if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
 			if(first){
 				//System.out.println("in NLJ scan: right scan ends! " + fldName1 + " " + fldName2);
 				if(!isThetaJoin){
@@ -155,8 +198,7 @@ public class NestedLoopJoinScan implements Scan {
 				first = false;
 				JoinKnob.completeScanNumber += 1;
 			}
-			rhsScan.beforeFirst();
-			return rhsScan.next();
+			return true;
 		} else {
 			return false;
 		}

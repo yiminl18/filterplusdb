@@ -151,7 +151,7 @@ class TablePlanner {
 				return p;
 			}
 			if(JoinKnob.nestedloop){
-				p = makeNestedLoopJoinPlan(trunk, joinPred, trunkSch);
+				p = makeNestedLoopJoinPlan(trunk, joinPred);
 			}
 		}
 		else{//make plan for theta join: prefer index join, otherwise block based NL join
@@ -169,7 +169,7 @@ class TablePlanner {
 				return p;
 			}
 			if(JoinKnob.nestedloop){
-				p = makeNestedLoopJoinPlan(trunk, joinPred, trunkSch);
+				p = makeNestedLoopJoinPlan(trunk, joinPred);
 			}
 		}
 			
@@ -198,19 +198,9 @@ class TablePlanner {
 		return new MultiBufferProductPlan(trunk, p, tx, joinPred);
 	}
 
-	private Plan makeProductJoinPlan(Plan current, Schema currSch) {
-		Plan p = makeProductPlan(current);
-		return addJoinPredicate(p, currSch);
-	}
-
-	public Plan makeNestedLoopPlan(Plan trunk, Predicate joinPredicate){
+	public Plan makeNestedLoopJoinPlan(Plan trunk, Predicate joinPredicate){
 		Plan p = makeSelectPlan();
 		return new NestedLoopJoinPlan(trunk, p, joinPredicate);
-	}
-
-	public Plan makeNestedLoopJoinPlan(Plan trunk, Predicate joinPredicate, Schema currSch){
-		Plan p = makeNestedLoopPlan(trunk, joinPredicate);
-		return addJoinPredicate(p, currSch);
 	}
 
 	public Plan makeHashJoinPlan(Plan lhs, Predicate joinPredicate){
@@ -300,7 +290,10 @@ class TablePlanner {
 		return null;
 	}
 
-	
+	private Plan makeProductJoinPlan(Plan current, Schema currSch) {
+		Plan p = makeProductPlan(current);
+		return addJoinPredicate(p, currSch);
+	}
 
 	private Plan addSelectPredicate(Plan p) {//push down select predicate under the join 
 		Predicate selectPred = pred.selectPredicate(sch);
