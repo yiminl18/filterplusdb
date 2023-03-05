@@ -40,7 +40,7 @@ public class HashJoinPipelineScan implements Scan {
 			this.hashField = fldname2;
 			this.probeField = fldname1;
 		}
-		System.out.println("In hashscan: " + hashField + " " + probeField + " " + probSch.toString());
+		//System.out.println("In hashscan: " + hashField + " " + probeField + " " + probSch.toString());
 		//print debug info 
 		//System.out.println("In HashJoinPipelineScan: " + build + " " + hashField + " " + HashTables.hashTables.containsKey(hashField));
 	}

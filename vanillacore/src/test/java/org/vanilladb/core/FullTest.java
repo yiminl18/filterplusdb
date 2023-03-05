@@ -34,7 +34,7 @@ public class FullTest {
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
-    private static String dataOut = "time.txt";
+    private static String dataOut = "time2.txt";
     private static String planOut = "plan.txt";
     private static boolean writeKnob = true;
 
@@ -401,7 +401,7 @@ public class FullTest {
         Scan s = plan.open();
         s.beforeFirst();
         while(s.next()){
-            //System.out.println(s.getVal("query-plan"));
+            System.out.println(s.getVal("query-plan"));
             queryPlan += s.getVal("query-plan");
             queryPlan += "\n";
         }
@@ -434,7 +434,7 @@ public class FullTest {
         long end = System.currentTimeMillis();
         long runTime = (end-start);
         
-        System.out.println("Raw query run: " + runTime);
+        //System.out.println("Raw query run: " + runTime);
         return runTime;
     }
 
@@ -455,7 +455,7 @@ public class FullTest {
         learnTime = (end-start);
         filterPlan.printFilter();
         String newQ = filterPlan.mergePredicate(query);
-        //explainQuery(query);
+        explainQuery(query);
         System.out.println(newQ);
 
         //query run phase
@@ -564,7 +564,6 @@ public class FullTest {
                 opTime = optimizedRun(query, queryID, false);
             }
         }else{
-            opTimeNoLearningbest = OptimizeRunNoLearning(query, queryID, true);
             opTime = optimizedRun(query, queryID, true);
         }
         
@@ -635,9 +634,9 @@ public class FullTest {
         //parseQuery();
         //loadData();
         //testReadCSV();
-        writeKnob = true;
-        for(int queryID = 1; queryID <=5; queryID ++ ){
-            timeChecker(30,studentQueries.get(queryID), queryID);
+        writeKnob = false;
+        for(int queryID = 2; queryID <=2; queryID ++ ){
+            timeChecker(10,studentQueries.get(queryID), queryID);
         }
     }
 }

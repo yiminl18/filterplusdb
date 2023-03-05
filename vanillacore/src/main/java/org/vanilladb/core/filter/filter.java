@@ -53,7 +53,7 @@ public class filter{
      */
     public String toString(){
         String predicate = attr;
-        if(filterType.equals("range")){
+        if(filterType.equals("range") || filterType.equals("equalrange")){
             if(!is_low){//< or <=
                 if(high_include){//<=
                     predicate += "<=";

@@ -33,8 +33,8 @@ import org.vanilladb.core.sql.IntegerConstant;
 public class NestedLoopJoinScan implements Scan {
 	private Scan lhsScan, rhsScan;
 	private boolean isLhsEmpty;
-	private boolean first; //used to denote if this is the first pass of rhs 
-	private boolean isFirstItem; //used to denote if this is the first value from the first rhs scan  
+	private boolean first = true; //used to denote if this is the first pass of rhs 
+	private boolean isFirstItem = true; //used to denote if this is the first value from the first rhs scan  
 	private HashMap<Constant, Boolean> memberships;
 	private String fldName1, fldName2;
 	private Operator op;
@@ -64,9 +64,8 @@ public class NestedLoopJoinScan implements Scan {
 			isThetaJoin = true;
 		}
 		
-		first = true;
-		isFirstItem = true;
-		//System.out.println("in NLJ: " + fldName1 + " " + fldName2);
+		
+		System.out.println("in NLJ: " + fldName1 + " " + fldName2);
 	}
 
 	/**
@@ -78,9 +77,11 @@ public class NestedLoopJoinScan implements Scan {
 	 */
 	@Override
 	public void beforeFirst() {
+		//System.out.println("======== " + fldName1 + " " + fldName2);
 		lhsScan.beforeFirst();
 		rhsScan.beforeFirst();
 		isLhsEmpty = !lhsScan.next();
+		
 	}
 
 	public void addItem(Constant val){
@@ -100,7 +101,7 @@ public class NestedLoopJoinScan implements Scan {
 
 	public void createMembershipFilter(){
 		filterPlan.addFilter(fldName1, "membership", memberships);
-		//System.out.println("in NLJ: " + memberships.size());
+		System.out.println("in NLJ: " + fldName1);
 		filterPlan.addFilter(fldName2, "membership", memberships);
 		//also create range filter from equal join for fldName1 only 
 		filterPlan.addFilter(fldName1, "equalrange", null, null, min_v, max_v, true, true, true, true);
@@ -145,7 +146,7 @@ public class NestedLoopJoinScan implements Scan {
 		}
 		else if (!(isLhsEmpty = !lhsScan.next())) {//rhs is empty but but Lhs is not empty
 			if(first){
-				System.out.println("in NLJ scan: right scan ends! " + fldName1 + " " + fldName2);
+				//System.out.println("in NLJ scan: right scan ends! " + fldName1 + " " + fldName2);
 				if(!isThetaJoin){
 					createMembershipFilter();
 				}else{

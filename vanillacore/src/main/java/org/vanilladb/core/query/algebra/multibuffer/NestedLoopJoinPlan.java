@@ -71,10 +71,10 @@ public class NestedLoopJoinPlan extends AbstractJoinPlan {
 		
 		//ensure the right side is the smaller one 
 		if(lhs.recordsOutput() < rhs.recordsOutput()){
-			System.out.println("in NLJ: " + fldName2 + " " + fldName1 + " " + rhs.recordsOutput() + " " + lhs.recordsOutput());
+			//System.out.println("in NLJ: " + fldName2 + " " + fldName1 + " " + rhs.recordsOutput() + " " + lhs.recordsOutput());
 			return new NestedLoopJoinScan(rightScan, leftScan, fldName2, fldName1, reverse(op));
 		}else{
-			System.out.println("in NLJ: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
+			//System.out.println("in NLJ: " + fldName1 + " " + fldName2 + " " + lhs.recordsOutput() + " " + rhs.recordsOutput());
 			return new NestedLoopJoinScan(leftScan, rightScan, fldName1, fldName2, op);
 		}
 	}

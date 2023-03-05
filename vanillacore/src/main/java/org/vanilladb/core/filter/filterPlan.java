@@ -384,7 +384,7 @@ public class filterPlan{
         
         for(Map.Entry<String, List<filter>> entry : filters.entrySet()){
             for(filter f: entry.getValue()){
-                if(f.filterType.equals("range")){
+                if(f.filterType.equals("range") || f.filterType.equals("equalrange")){//
                     newQ += " and ";
                     newQ += f.toString();
                 }

@@ -1,0 +1,64 @@
+Query 1
+Raw query run: 
+run time: 76
+Optimized query run without learning: 
+run time: 11
+Query 2
+Raw query run: 
+run time: 80
+Optimized query run without learning: 
+run time: 64
+Query 3
+Raw query run: 
+run time: 196
+Optimized query run without learning: 
+run time: 117
+Optimized query run: 
+learn time: 10
+run time: 22
+Query 4
+Raw query run: 
+run time: 128
+Optimized query run without learning: 
+run time: 18
+Optimized query run: 
+learn time: 7
+run time: 20
+Query 5
+Raw query run: 
+run time: 8
+Optimized query run without learning: 
+run time: 7
+Optimized query run: 
+learn time: 1
+run time: 8
+Query 6
+Raw query run: 
+run time: 527
+Optimized query run without learning: 
+run time: 16
+Timeout for 10 seconds limit
+Query 7
+Raw query run: 
+run time: 1871
+Optimized query run without learning: 
+run time: 26
+Timeout for 10 seconds limit
+Query 8
+Raw query run: 
+run time: 4367
+Timeout for 10 seconds limit
+Query 9
+Raw query run: 
+run time: 12
+Optimized query run without learning: 
+run time: 10
+Timeout for 10 seconds limit
+Query 10
+Raw query run: 
+run time: 27
+Optimized query run without learning: 
+run time: 17
+Optimized query run: 
+learn time: 22
+run time: 18
