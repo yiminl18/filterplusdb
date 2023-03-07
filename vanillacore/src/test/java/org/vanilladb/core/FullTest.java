@@ -32,8 +32,8 @@ import java.util.concurrent.*;
 public class FullTest {
 
     // Flags
-	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
-	private static final int LOADED_FLAG_POS = 0;
+	//private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
+	//private static final int LOADED_FLAG_POS = 0;
     private static final String TPCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch.txt";
     private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch/tpch.txt";
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
@@ -44,7 +44,8 @@ public class FullTest {
     private static String resultOut = "tpc_result_server.txt";
     private static String planOut = "tpc_plan_server.txt";
     
-    private static String queryIn = TPCHQUERYSERVER;
+    private static String queryIn = TPCHQUERY;
+    private static String dataIn = TPCHDATA;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -59,11 +60,11 @@ public class FullTest {
         ServerInit.resetDb(dbname);
     }
 
-    public static void setFlagAsLoaded() {
-		Page page = new Page();
-		page.setVal(LOADED_FLAG_POS, DATA_LOADED_VALUE);
-		page.write(FLAG_DATA_BLOCK);
-	}
+    // public static void setFlagAsLoaded() {
+	// 	Page page = new Page();
+	// 	page.setVal(LOADED_FLAG_POS, DATA_LOADED_VALUE);
+	// 	page.write(FLAG_DATA_BLOCK);
+	// }
 
 
     public static void testTableAPI(){
@@ -151,7 +152,7 @@ public class FullTest {
 			RecoveryMgr.initializeSystem(tx);
 			tx.commit();
         // Set the flag indicating that the data is loaded
-		setFlagAsLoaded();
+		//setFlagAsLoaded();
     }
 
     public static void test(){
@@ -182,16 +183,16 @@ public class FullTest {
     }
 
     public static void createTPCH(){
-        // String sqlPART = "CREATE TABLE PART (" + 
-        //     "P_PARTKEY		int," + 
-        //     "P_NAME			varchar(55)," + 
-        //     "P_MFGR			varchar(25)," + 
-        //     "P_BRAND			varchar(10)," + 
-        //     "P_TYPE			varchar(25)," + 
-        //     "P_SIZE			int," + 
-        //     "P_CONTAINER		varchar(10)," + 
-        //     "P_RETAILPRICE	double," + 
-        //     "P_COMMENT		varchar(23))" ;
+        String sqlPART = "CREATE TABLE PART (" + 
+            "P_PARTKEY		int," + 
+            "P_NAME			varchar(55)," + 
+            "P_MFGR			varchar(25)," + 
+            "P_BRAND			varchar(10)," + 
+            "P_TYPE			varchar(25)," + 
+            "P_SIZE			int," + 
+            "P_CONTAINER		varchar(10)," + 
+            "P_RETAILPRICE	double," + 
+            "P_COMMENT		varchar(23))" ;
         String sqlSUPPLIER = "CREATE TABLE SUPPLIER (" + 
         "S_SUPPKEY		int," + 
         "S_NAME			varchar(25)," + 
@@ -255,19 +256,19 @@ public class FullTest {
         
         
         
-        String csvFilePath = TPCHDATASERVER;
+        String csvFilePath = dataIn;
 
         String tableName = "";
         List<String> fldNames = new ArrayList<>();
         String fldName = "";
 
         //create PART
-        // tableName = "PART";
-        // fldNames = new ArrayList<>();
-        // fldName = "P_PARTKEY";
-        // fldNames.add(fldName.toLowerCase());
+        tableName = "PART";
+        fldNames = new ArrayList<>();
+        fldName = "P_PARTKEY";
+        fldNames.add(fldName.toLowerCase());
         CSVReader csvReader = new CSVReader();
-        // csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create SUPPLIER
         tableName = "SUPPLIER";
@@ -275,7 +276,7 @@ public class FullTest {
         fldName = "S_SUPPKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create PARTSUPP
         tableName = "PARTSUPP";
@@ -285,7 +286,7 @@ public class FullTest {
         fldName = "PS_SUPPKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create CUSTOMER
         tableName = "CUSTOMER";
@@ -293,7 +294,7 @@ public class FullTest {
         fldName = "C_CUSTKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create ORDERS
         tableName = "ORDERS";
@@ -309,7 +310,7 @@ public class FullTest {
         fldName = "L_ORDERKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlLINEITEM,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlLINEITEM,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create NATION
         tableName = "NATION";
@@ -317,7 +318,7 @@ public class FullTest {
         fldName = "N_NATIONKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create REGION
         tableName = "REGION";
@@ -325,7 +326,7 @@ public class FullTest {
         fldName = "R_REGIONKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
     }
 
 
@@ -655,7 +656,7 @@ public class FullTest {
     public void main() {
         HashMap<String, String> Queries = readQueryTest();
         // getProjection(studentQueries.get(11));
-        String dbname = "TPCH";//TESTDB2
+        String dbname = "TPCHtest";//TESTDB2
         init(dbname);
         //parseQuery();
         createTPCH();

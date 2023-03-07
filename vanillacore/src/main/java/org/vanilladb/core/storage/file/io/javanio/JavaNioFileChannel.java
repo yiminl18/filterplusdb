@@ -52,6 +52,9 @@ public class JavaNioFileChannel implements IoChannel {
 
 	@Override
 	public int write(IoBuffer buffer, long position) throws IOException {
+		if(position < 0 ){
+			return 0;
+		}
 		lock.writeLock().lock();
 		try {
 			JavaNioByteBuffer javaBuffer = (JavaNioByteBuffer) buffer;

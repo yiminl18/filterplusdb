@@ -57,12 +57,12 @@ public class RecoveryMgr implements TransactionLifecycleListener {
 	 *            the context of executing transaction
 	 */
 	public static void initializeSystem(Transaction tx) {
-		tx.recoveryMgr().recoverSystem(tx);
+		//tx.recoveryMgr().recoverSystem(tx);
 		tx.bufferMgr().flushAll();
-		VanillaDb.logMgr().removeAndCreateNewLog();
+		//VanillaDb.logMgr().removeAndCreateNewLog();
 		
 		// Add a start record for this transaction
-		new StartRecord(tx.getTransactionNumber()).writeToLog();
+		//new StartRecord(tx.getTransactionNumber()).writeToLog();
 	}
 
 	private Map<Long, LogSeqNum> txUnDoNextLSN = new HashMap<Long, LogSeqNum>();

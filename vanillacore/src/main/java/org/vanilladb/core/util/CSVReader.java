@@ -62,11 +62,6 @@ public class CSVReader {
 		Parser parser = new Parser(qry);
 		CreateTableData ctd = (CreateTableData) parser.updateCommand();
 		Map<String, Type> schema = ctd.newSchema().getSchema();
-        // System.out.println(ctd.tableName());
-        // for (Map.Entry<String,Type> entry : schema.entrySet()){
-        //     System.out.println("Key = " + entry.getKey() +
-        //                      ", Value = " + entry.getValue());
-        // }
         return schema;
     }
 
@@ -78,7 +73,7 @@ public class CSVReader {
     }
 
     public void loadTable(String createTableSQL, String tbName, String csvFilePath, List<String> fieldNames){
-        int limit = 1000000000;
+        int limit = 1000;//1000000000;
         Map<String, Type> schema = parseTable(createTableSQL);
 
         CatalogMgr md = VanillaDb.catalogMgr();
@@ -91,7 +86,6 @@ public class CSVReader {
         for (Map.Entry<String,Type> entry : schema.entrySet()){
             String field = entry.getKey();
             Type value = entry.getValue();
-            //System.out.println(value);
             sch.addField(field, value);
         }
         md.createTable(tbName, sch, tx);
@@ -111,7 +105,7 @@ public class CSVReader {
         }
         
             
-        
+        int skipline = 0;
 
         TableInfo ti = md.getTableInfo(tbName, tx);
 
@@ -127,63 +121,70 @@ public class CSVReader {
             String[] values;
             line = br.readLine();
             String[] header = line.split(delimiter);
-            //System.out.println(line);
-            //System.out.println(header);
             int idx = 0;
             while((line = br.readLine()) != null) {
-                //System.out.println(line);
                 idx += 1;
                 if(idx > limit){
                     break;
                 }
+                
                 if(idx%1000 == 0){
                     System.out.println(idx);
                 }
-                values = line.split(delimiter);//values are a set of value in one tuple
-                //scan each value in a tuple
-                fields = new ArrayList<>();
-                vals = new ArrayList<>();
-                for(int i=0;i<values.length;i++){
-                    String field = header[i];
-                    if(!schema.containsKey(field)){
-                        System.out.println("SCHEMA NOT MATCHED!");
+                
+                    values = line.split(delimiter);//values are a set of value in one tuple
+                    //scan each value in a tuple
+                    fields = new ArrayList<>();
+                    vals = new ArrayList<>();
+                    for(int i=0;i<values.length;i++){
+
+                        
+                        String field = header[i];
+                        if(!schema.containsKey(field)){
+                            System.out.println("SCHEMA NOT MATCHED!");
+                        }
+                        
+                        Type type = schema.get(field);
+                        String rawValue = clean(values[i]);
+                        fields.add(field);
+                        Constant val= null;
+                        if(type == INTEGER){
+                            if(rawValue == ""){//missing value 
+                                //rf.setVal(field, new IntegerConstant(0));
+                                val = new IntegerConstant(0);
+                            }else{
+                                int value = Integer.valueOf(rawValue);
+                                val = new IntegerConstant(value);
+                            }
+                        }else if(type == DOUBLE){
+                            if(rawValue == ""){
+                                val =  new DoubleConstant(0);
+                            }else{
+                                double value = Double.valueOf(rawValue);
+                                val = new DoubleConstant(value);
+                            }
+                        }else if(type == BIGINT){
+                            if(rawValue == ""){
+                                val =  new BigIntConstant(Long.valueOf(0));
+                            }else{
+                                val = new BigIntConstant(Long.valueOf(rawValue));
+                            }
+                        }else{
+                            //varchar 
+                            val = new VarcharConstant(rawValue);
+                        }
+                        vals.add(val);
+                        
                     }
-                    Type type = schema.get(field);
-                    //System.out.println(type);
-                    String rawValue = clean(values[i]);
-                    fields.add(field);
-                    //System.out.println(field + " " + rawValue);
-                    Constant val= null;
-                    if(type == INTEGER){
-                        if(rawValue == ""){//missing value 
-                            //rf.setVal(field, new IntegerConstant(0));
-                            val = new IntegerConstant(0);
-                        }else{
-                            int value = Integer.valueOf(rawValue);
-                            val = new IntegerConstant(value);
-                        }
-                    }else if(type == DOUBLE){
-                        if(rawValue == ""){
-                            val =  new DoubleConstant(0);
-                        }else{
-                            double value = Double.valueOf(rawValue);
-                            val = new DoubleConstant(value);
-                        }
-                    }else if(type == BIGINT){
-                        if(rawValue == ""){
-                            val =  new BigIntConstant(Long.valueOf(0));
-                        }else{
-                            val = new BigIntConstant(Long.valueOf(rawValue));
-                        }
-                    }else{
-                        //varchar 
-                        val = new VarcharConstant(rawValue);
-                    }
-                    vals.add(val);
-                }
-                InsertData data = new InsertData(tbName, fields,vals);
-				new IndexUpdatePlanner().executeInsert(data, tx);
+                    InsertData data = new InsertData(tbName, fields,vals);
+                    new IndexUpdatePlanner().executeInsert(data, tx);
+                // }catch(IllegalArgumentException e){
+                //     skipline +=1;
+                //     System.out.println(skipline);
+                //     continue;
+                // }
             }
+            
             br.close();
             } catch(IOException ioe) {
                ioe.printStackTrace();
@@ -195,6 +196,8 @@ public class CSVReader {
                 Connection.TRANSACTION_SERIALIZABLE, false);
         RecoveryMgr.initializeSystem(tx);
         tx.commit();
+
+        // System.out.println("Number of skipped line due to java.lang.IllegalArgumentException: " + skipline);
     }
 
 }

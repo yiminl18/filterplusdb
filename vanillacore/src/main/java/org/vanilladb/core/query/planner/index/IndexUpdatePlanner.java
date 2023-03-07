@@ -81,7 +81,7 @@ public class IndexUpdatePlanner implements UpdatePlanner {
 		
 		for (IndexInfo ii : indexes) {
 			Index idx = ii.open(tx);
-			idx.insert(new SearchKey(ii.fieldNames(), fldValMap), rid, true);
+			idx.insert(new SearchKey(ii.fieldNames(), fldValMap), rid, false);
 			idx.close();
 		}
 		
