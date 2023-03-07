@@ -44,8 +44,8 @@ public class FullTest {
     private static String resultOut = "tpc_result_server.txt";
     private static String planOut = "tpc_plan_server.txt";
     
-    private static String queryIn = TPCHQUERY;
-    private static String dataIn = TPCHDATA;
+    private static String queryIn = TPCHQUERYSERVER;
+    private static String dataIn = TPCHDATASERVER;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -666,9 +666,9 @@ public class FullTest {
 
     @Test
     public void main() {
-        HashMap<String, String> Queries = readQueryTest();
+        //HashMap<String, String> Queries = readQueryTest();
         // getProjection(studentQueries.get(11));
-        String dbname = "TPCHtest";//TESTDB2
+        String dbname = "TPCHSF1";//TESTDB2
         init(dbname);
         //parseQuery();
         createTPCH();
