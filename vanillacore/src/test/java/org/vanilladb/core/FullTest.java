@@ -182,16 +182,16 @@ public class FullTest {
     }
 
     public static void createTPCH(){
-        String sqlPART = "CREATE TABLE PART (" + 
-            "P_PARTKEY		int," + 
-            "P_NAME			varchar(55)," + 
-            "P_MFGR			varchar(25)," + 
-            "P_BRAND			varchar(10)," + 
-            "P_TYPE			varchar(25)," + 
-            "P_SIZE			int," + 
-            "P_CONTAINER		varchar(10)," + 
-            "P_RETAILPRICE	double," + 
-            "P_COMMENT		varchar(23))" ;
+        // String sqlPART = "CREATE TABLE PART (" + 
+        //     "P_PARTKEY		int," + 
+        //     "P_NAME			varchar(55)," + 
+        //     "P_MFGR			varchar(25)," + 
+        //     "P_BRAND			varchar(10)," + 
+        //     "P_TYPE			varchar(25)," + 
+        //     "P_SIZE			int," + 
+        //     "P_CONTAINER		varchar(10)," + 
+        //     "P_RETAILPRICE	double," + 
+        //     "P_COMMENT		varchar(23))" ;
         String sqlSUPPLIER = "CREATE TABLE SUPPLIER (" + 
         "S_SUPPKEY		int," + 
         "S_NAME			varchar(25)," + 
@@ -262,12 +262,12 @@ public class FullTest {
         String fldName = "";
 
         //create PART
-        tableName = "PART";
-        fldNames = new ArrayList<>();
-        fldName = "P_PARTKEY";
-        fldNames.add(fldName.toLowerCase());
+        // tableName = "PART";
+        // fldNames = new ArrayList<>();
+        // fldName = "P_PARTKEY";
+        // fldNames.add(fldName.toLowerCase());
         CSVReader csvReader = new CSVReader();
-        csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
+        // csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create SUPPLIER
         tableName = "SUPPLIER";
