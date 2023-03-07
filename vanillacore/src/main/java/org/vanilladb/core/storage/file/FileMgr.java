@@ -148,6 +148,11 @@ public class FileMgr {
 			// clear the buffer
 			buffer.clear();
 
+			if(blk.number() < 0){
+				System.out.println("negative position!");
+				return;
+			}
+
 			// read a block from file
 			fileChannel.read(buffer, blk.number() * BLOCK_SIZE);
 			
