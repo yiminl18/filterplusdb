@@ -255,7 +255,7 @@ public class FullTest {
         
         
         
-        String csvFilePath = TPCHDATA;
+        String csvFilePath = TPCHDATASERVER;
 
         String tableName = "";
         List<String> fldNames = new ArrayList<>();
