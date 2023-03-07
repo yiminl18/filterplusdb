@@ -1,0 +1,40 @@
+Query Q3
+Raw query run: 
+run time: 72
+Optimized query run: 
+run time: 40
+Query Q2
+Raw query run: 
+run time: 20
+Optimized query run: 
+run time: 5
+Query Q3
+Raw query run: 
+run time: 55
+Optimized query run: 
+run time: 43
+Query Q9
+Raw query run: 
+run time: 219
+Optimized query run: 
+run time: 67
+Query Q2-min
+Raw query run: 
+run time: 4
+Optimized query run: 
+run time: 3
+Query Q9-max
+Raw query run: 
+run time: 112
+Optimized query run: 
+run time: 53
+Query Q2-max
+Raw query run: 
+run time: 4
+Optimized query run: 
+run time: 3
+Query Q9-min
+Raw query run: 
+run time: 136
+Optimized query run: 
+run time: 35

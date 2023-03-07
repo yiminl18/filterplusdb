@@ -263,6 +263,7 @@ public class FullTest {
         String fldName = "";
 
         //create PART
+        System.out.println("Populating PART...");
         tableName = "PART";
         fldNames = new ArrayList<>();
         fldName = "P_PARTKEY";
@@ -271,6 +272,7 @@ public class FullTest {
         //csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create SUPPLIER
+        System.out.println("Populating SUPPLIER...");
         tableName = "SUPPLIER";
         fldNames = new ArrayList<>();
         fldName = "S_SUPPKEY";
@@ -279,6 +281,7 @@ public class FullTest {
         //csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create PARTSUPP
+        System.out.println("Populating PARTSUPP...");
         tableName = "PARTSUPP";
         fldNames = new ArrayList<>();
         fldName = "PS_PARTKEY";
@@ -289,6 +292,7 @@ public class FullTest {
         //csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create CUSTOMER
+        System.out.println("Populating CUSTOMER...");
         tableName = "CUSTOMER";
         fldNames = new ArrayList<>();
         fldName = "C_CUSTKEY";
@@ -297,6 +301,7 @@ public class FullTest {
         //csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create ORDERS
+        System.out.println("Populating ORDERS...");
         tableName = "ORDERS";
         fldNames = new ArrayList<>();
         fldName = "O_ORDERKEY";
@@ -305,6 +310,7 @@ public class FullTest {
         csvReader.loadTable(sqlORDERS,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create LINEITEM
+        System.out.println("Populating LINEITEM...");
         tableName = "LINEITEM";
         fldNames = new ArrayList<>();
         fldName = "L_ORDERKEY";
@@ -313,20 +319,22 @@ public class FullTest {
         //csvReader.loadTable(sqlLINEITEM,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create NATION
+        System.out.println("Populating Nation...");
         tableName = "NATION";
         fldNames = new ArrayList<>();
         fldName = "N_NATIONKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create REGION
+        System.out.println("Populating REGION...");
         tableName = "REGION";
         fldNames = new ArrayList<>();
         fldName = "R_REGIONKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
     }
 
 
@@ -454,6 +462,7 @@ public class FullTest {
         
         System.out.println("Raw query run: " + runTime);
         //explainQuery(query);
+        writeFile("Query " + queryID, resultOut);
         writeFile(result, resultOut);
         return runTime;
     }
@@ -523,6 +532,7 @@ public class FullTest {
         filterPlan.printFilter();
 
         if(groupFilter){
+            writeFile("Query " + queryID, resultOut);
             writeFile(result, resultOut);
         }
 
@@ -665,7 +675,7 @@ public class FullTest {
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
-        //     timeChecker(1000,entry.getValue(), queryID);
+        //     timeChecker(5,entry.getValue(), queryID);
         // }
 
         // String queryID = "Q3";

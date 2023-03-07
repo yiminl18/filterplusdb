@@ -73,7 +73,7 @@ public class CSVReader {
     }
 
     public void loadTable(String createTableSQL, String tbName, String csvFilePath, List<String> fieldNames){
-        int limit = 1000;//1000000000;
+        int limit = 1000000000;
         Map<String, Type> schema = parseTable(createTableSQL);
 
         CatalogMgr md = VanillaDb.catalogMgr();
