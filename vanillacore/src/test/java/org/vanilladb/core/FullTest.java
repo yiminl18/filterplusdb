@@ -34,13 +34,17 @@ public class FullTest {
     // Flags
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
-    private static final String TPCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch.txt";
+    private static final String TPCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch.txt";
+    private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch";
+    private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch";
+    private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTDATA = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
     private static String dataOut = "tpc_time.txt";
+    private static String resultOut = "tpc_result.txt";
     private static String planOut = "tpc_plan.txt";
     
-    private static String queryIn = TPCHDATA;
+    private static String queryIn = TPCHQUERYSERVER;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -251,7 +255,7 @@ public class FullTest {
         
         
         
-        String csvFilePath = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
+        String csvFilePath = TPCHDATA;
 
         String tableName = "";
         List<String> fldNames = new ArrayList<>();
@@ -360,7 +364,7 @@ public class FullTest {
         return queries;
     }
 
-    public static void runStudentQueries(String query){
+    public static String runQueries(String query){
         //System.out.println(query);
         Transaction tx = VanillaDb.txMgr().newTransaction(
 				Connection.TRANSACTION_SERIALIZABLE, true);
@@ -370,14 +374,18 @@ public class FullTest {
         s.beforeFirst();
         List<String> projection = getProjection(query);
         System.out.println("Query answer: ");
+        String out = "";
         while(s.next()){
             for(int i=0;i<projection.size();i++){
                 System.out.print(s.getVal(projection.get(i)) + " ");
+                out += s.getVal(projection.get(i)) + " ";
             }
+            out += "\n";
             System.out.println("");
         }
         s.close();
         tx.commit();
+        return out;
     }
 
     public static List<String> getProjection(String query){
@@ -394,9 +402,9 @@ public class FullTest {
                 output.add(attrs[i]);
             }
         }
-        for(int i=0;i<output.size();i++){
-            System.out.println(output.get(i));
-        }
+        // for(int i=0;i<output.size();i++){
+        //     System.out.println(output.get(i));
+        // }
         return output;
     }
 
@@ -439,12 +447,13 @@ public class FullTest {
         JoinKnob.init();
         JoinKnob.enableRawRun();
         long start = System.currentTimeMillis();
-        runStudentQueries(query);
+        String result = runQueries(query);
         long end = System.currentTimeMillis();
         long runTime = (end-start);
         
         System.out.println("Raw query run: " + runTime);
         //explainQuery(query);
+        writeFile(result, resultOut);
         return runTime;
     }
 
@@ -461,7 +470,7 @@ public class FullTest {
         // fast learning phase
         start = System.currentTimeMillis();
         JoinKnob.enableFastLearning();
-        runStudentQueries(query);
+        runQueries(query);
         end = System.currentTimeMillis();
         learnTime = (end-start);
         filterPlan.printFilter();
@@ -476,7 +485,7 @@ public class FullTest {
         // JoinKnob.init();//close fast learning
 
         // filterPlan.enableGroup = groupFilter;
-        // runStudentQueries(newQ);
+        // runQueries(newQ);
 
         // end = System.currentTimeMillis();
         // runTime = (end-start);
@@ -504,13 +513,17 @@ public class FullTest {
         start = System.currentTimeMillis();
         filterPlan.enableGroup = groupFilter;
 
-        runStudentQueries(query);
+        String result = runQueries(query);
 
         end = System.currentTimeMillis();
         runTime = (end-start);
 
         filterPlan.filterStats();
         filterPlan.printFilter();
+
+        if(groupFilter){
+            writeFile(result, resultOut);
+        }
 
         // if(groupFilter){
         //     filterPlan.init();
@@ -645,17 +658,17 @@ public class FullTest {
         String dbname = "TPCH";//TESTDB2
         init(dbname);
         //parseQuery();
-        //createTPCH();
+        createTPCH();
         //testReadCSV();
-        writeKnob = true;
+        // writeKnob = true;
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
-        //     timeChecker(20,entry.getValue(), queryID);
+        //     timeChecker(1000,entry.getValue(), queryID);
         // }
 
-        String queryID = "Q3";
+        // String queryID = "Q3";
 
-        oneRun(Queries.get(queryID), queryID);
+        // oneRun(Queries.get(queryID), queryID);
     }
 }
