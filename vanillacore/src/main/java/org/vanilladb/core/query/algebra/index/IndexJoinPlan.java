@@ -95,6 +95,7 @@ public class IndexJoinPlan extends AbstractJoinPlan {
 		// throws an exception if p2 is not a tableplan
 		TableScan ts = (TableScan) tp2.open();
 		Index idx = ii.open(tx);
+		//System.out.println("in index scan: " + p1.schema().toString() + " " + tp2.schema().toString());
 		return new IndexJoinScan(s, idx, joinFields, joinPreds, p1.schema(), tp2.schema(), ts);
 	}
 	

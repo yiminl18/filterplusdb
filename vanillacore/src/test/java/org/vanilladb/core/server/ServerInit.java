@@ -414,7 +414,7 @@ public class ServerInit {
 			tx.commit();
 			
 			// // Set the flag indicating that the data is loaded
-			// setFlagAsLoaded();
+			setFlagAsLoaded();
 		}
 	}
 

@@ -13,6 +13,10 @@ public class HashTable {
     public String fieldName;
     public HashMap<Constant, VirtualScan> hashMap;
 
+    public void init(){
+        hashMap.clear();
+    }
+
     public HashTable(String fName){
         fieldName = fName;
         hashMap = new HashMap<>();

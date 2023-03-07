@@ -128,6 +128,7 @@ public class GroupByScan implements Scan {
 							
 						}
 						else if(agg.equals("min")){//filter should be attr<=fn.value()
+							//System.out.print("in group by scan: " + fn.value().toString());
 							String attr = fn.fieldName().substring(5);
 							filterPlan.updateFilter("min", attr, null, new IntegerConstant(0), fn.value());
 						}

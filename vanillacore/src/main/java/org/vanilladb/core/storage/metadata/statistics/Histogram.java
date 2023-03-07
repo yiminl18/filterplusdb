@@ -112,7 +112,7 @@ public class Histogram {
 	 */
 	public double recordsOutput() {
 		String fld = dists.keySet().iterator().next();
-		double sum = 0.0;
+		double sum = 1.0;
 		for (Bucket bkt : buckets(fld))
 			sum += bkt.frequency();
 		return sum;

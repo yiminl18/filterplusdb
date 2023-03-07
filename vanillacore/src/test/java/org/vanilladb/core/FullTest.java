@@ -10,6 +10,7 @@ import org.vanilladb.core.query.parse.*;
 import org.vanilladb.core.filter.filter;
 import org.vanilladb.core.filter.filterPlan;
 import org.vanilladb.core.query.algebra.*;
+import org.vanilladb.core.query.algebra.multibuffer.HashTables;
 import org.vanilladb.core.query.planner.*;
 import org.vanilladb.core.server.ServerInit;
 import org.vanilladb.core.util.CSVReader;
@@ -33,10 +34,13 @@ public class FullTest {
     // Flags
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
+    private static final String TPCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch.txt";
+    private static final String STUDENTDATA = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
-    private static String dataOut = "time1.txt";
-    private static String planOut = "plan.txt";
-    private static String queryIn = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
+    private static String dataOut = "tpc_time.txt";
+    private static String planOut = "tpc_plan.txt";
+    
+    private static String queryIn = TPCHDATA;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -173,7 +177,7 @@ public class FullTest {
         tx.commit();
     }
 
-    public static void testReadCSV(){
+    public static void createTPCH(){
         String sqlPART = "CREATE TABLE PART (" + 
             "P_PARTKEY		int," + 
             "P_NAME			varchar(55)," + 
@@ -339,7 +343,7 @@ public class FullTest {
                     sql = "";
                 }else if(line.charAt(0) == 'Q'){//start of a new query
                     //System.out.println(line.charAt(1));
-                    queryID = line.substring(1, line.length());
+                    queryID = line;
                 }else{
                     sql += line;
                     sql += " ";
@@ -382,13 +386,17 @@ public class FullTest {
         //work for aggregate for now
         String[] attrs = word.split(",");
         List<String> output = new ArrayList<>();
-        output.add(attrs[0].substring(0,attrs[0].length()-1).replace("(", "of"));
-        for(int i=1;i<attrs.length;i++){
-            output.add(attrs[i]);
+        
+        for(int i=0;i<attrs.length;i++){
+            if(attrs[i].contains("(")){
+                output.add(attrs[0].substring(0,attrs[i].length()-1).replace("(", "of"));
+            }else{
+                output.add(attrs[i]);
+            }
         }
-        // for(int i=0;i<output.size();i++){
-        //     System.out.println(output.get(i));
-        // }
+        for(int i=0;i<output.size();i++){
+            System.out.println(output.get(i));
+        }
         return output;
     }
 
@@ -424,18 +432,19 @@ public class FullTest {
 
     public static long rawRun(String query, String queryID){
         //raw query run
-        System.out.println(query);
+        //System.out.println(query);
+        HashTables.init();
         filterPlan.close();
         filterPlan.enableGroup = false;
         JoinKnob.init();
         JoinKnob.enableRawRun();
         long start = System.currentTimeMillis();
-
         runStudentQueries(query);
         long end = System.currentTimeMillis();
         long runTime = (end-start);
         
-        //System.out.println("Raw query run: " + runTime);
+        System.out.println("Raw query run: " + runTime);
+        //explainQuery(query);
         return runTime;
     }
 
@@ -444,6 +453,7 @@ public class FullTest {
     public static long optimizedRun(String query, String queryID, boolean groupFilter){
         long start, end, runTime=0;
         //run optimized query
+        HashTables.init();
         filterPlan.init();
         filterPlan.open();
         JoinKnob.init();
@@ -488,6 +498,7 @@ public class FullTest {
         long start, end, runTime;
         filterPlan.init();
         filterPlan.open();
+        HashTables.init();
         JoinKnob.init();
         JoinKnob.rawRun = true;
         start = System.currentTimeMillis();
@@ -501,23 +512,31 @@ public class FullTest {
         filterPlan.filterStats();
         filterPlan.printFilter();
 
-        if(groupFilter){
-            String p = explainQuery(query);
-            writeFile(p, planOut);
-        }
+        // if(groupFilter){
+        //     filterPlan.init();
+        //     filterPlan.open();
+        //     HashTables.init();
+        //     JoinKnob.init();
+        //     JoinKnob.rawRun = true;
+        //     String p = explainQuery(query);
+        //     writeFile(p, planOut);
+        // }
+
+        System.out.println(runTime);
 
         return runTime;
     }
 
     public static String oneRun(String query, String queryID){
-        System.out.println("Query " + String.valueOf(queryID));
+        System.out.println("Query " + queryID);
+        System.out.println(query);
         writeFile("Query " + queryID, planOut);
 
         //Raw query run
         long rawRunTime = 0;
         rawRunTime = rawRun(query, queryID);
 
-        writeFile("Query " + String.valueOf(queryID), dataOut); 
+        writeFile("Query " + queryID, dataOut); 
         String out = "Raw query run: "; 
         writeFile(out, dataOut);
         String out1 = "run time: " + String.valueOf(rawRunTime);
@@ -543,7 +562,7 @@ public class FullTest {
             opTimeNoLearningbest = OptimizeRunNoLearning(query, queryID, true);
         }
 
-        out = "Optimized query run without learning: ";
+        out = "Optimized query run: ";
         writeFile(out, dataOut);
         out1 = "run time: " + String.valueOf(opTimeNoLearningbest);
         writeFile(out1, dataOut);
@@ -623,16 +642,20 @@ public class FullTest {
     public void main() {
         HashMap<String, String> Queries = readQueryTest();
         // getProjection(studentQueries.get(11));
-        String dbname = "TESTDB2";//TESTDB2
+        String dbname = "TPCH";//TESTDB2
         init(dbname);
         //parseQuery();
-        //loadData();
+        //createTPCH();
         //testReadCSV();
         writeKnob = true;
 
-        for (Map.Entry<String, String> entry : Queries.entrySet()) {
-            String queryID = entry.getKey();
-            timeChecker(10,entry.getValue(), queryID);
-        }
+        // for (Map.Entry<String, String> entry : Queries.entrySet()) {
+        //     String queryID = entry.getKey();
+        //     timeChecker(20,entry.getValue(), queryID);
+        // }
+
+        String queryID = "Q3";
+
+        oneRun(Queries.get(queryID), queryID);
     }
 }

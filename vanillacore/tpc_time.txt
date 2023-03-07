@@ -1,0 +1,46 @@
+Query Q2
+Raw query run: 
+run time: 27
+Optimized query run: 
+run time: 6
+Query Q3
+Raw query run: 
+run time: 43
+Optimized query run: 
+run time: 37
+Timeout for 20 seconds limit
+Query Q2-theta
+Raw query run: 
+run time: 6
+Optimized query run: 
+run time: 4
+Timeout for 20 seconds limit
+Query Q2-min
+Raw query run: 
+run time: 9
+Optimized query run: 
+run time: 5
+Timeout for 20 seconds limit
+Timeout for 20 seconds limit
+Timeout for 20 seconds limit
+Timeout for 20 seconds limit
+Query Q3
+Raw query run: 
+run time: 68
+Optimized query run: 
+run time: 41
+Query Q3-test
+Raw query run: 
+run time: 26
+Optimized query run: 
+run time: 12
+Query Q3-test
+Raw query run: 
+run time: 29
+Optimized query run: 
+run time: 13
+Query Q3
+Raw query run: 
+run time: 65
+Optimized query run: 
+run time: 40

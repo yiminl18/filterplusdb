@@ -8,6 +8,10 @@ import org.vanilladb.core.sql.Schema;
 public class HashTables {
         public static HashMap<String, HashTable> hashTables = new HashMap<>();
 
+        public static void init(){
+            hashTables.clear();
+        }
+
         public static void updateHashTable(String fieldName, Constant key, Scan r, Schema sch){
             if(hashTables.containsKey(fieldName)){
                 hashTables.get(fieldName).updateHashTable(key, r, sch);

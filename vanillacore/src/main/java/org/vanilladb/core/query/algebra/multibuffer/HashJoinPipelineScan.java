@@ -80,10 +80,11 @@ public class HashJoinPipelineScan implements Scan {
 			return false;
 		}
 		if(current != null && current.next()){//move to the next matched tuple 
+			//System.out.println("In hashscan: 1");
 			return true;
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
-			// System.out.println("In hashscan: "+ probe.getVal("eid"));
+			
 			// filterPlan.printFilter();
 			//move to next valid probe
 			while(!filterPlan.checkFilter(probe)){
@@ -99,6 +100,7 @@ public class HashJoinPipelineScan implements Scan {
 			// }
 			//System.out.println("In HashJoinScan: " + probSch.toString());
 			Constant value = probe.getVal(probeField);
+			//System.out.println("In hashscan: " + value.toString());
 			Scan matched = HashTables.Probe(hashField, value);
 			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
 				current = null;
