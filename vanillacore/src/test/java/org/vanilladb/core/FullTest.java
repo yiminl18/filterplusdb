@@ -35,8 +35,8 @@ public class FullTest {
 	private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	private static final int LOADED_FLAG_POS = 0;
     private static final String TPCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch.txt";
-    private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch";
-    private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch";
+    private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch/tpch.txt";
+    private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTDATA = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
