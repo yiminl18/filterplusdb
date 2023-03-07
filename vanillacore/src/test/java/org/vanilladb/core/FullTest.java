@@ -40,9 +40,9 @@ public class FullTest {
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTDATA = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
-    private static String dataOut = "tpc_time.txt";
-    private static String resultOut = "tpc_result.txt";
-    private static String planOut = "tpc_plan.txt";
+    private static String dataOut = "tpc_time_server.txt";
+    private static String resultOut = "tpc_result_server.txt";
+    private static String planOut = "tpc_plan_server.txt";
     
     private static String queryIn = TPCHQUERYSERVER;
     private static boolean writeKnob = true;
