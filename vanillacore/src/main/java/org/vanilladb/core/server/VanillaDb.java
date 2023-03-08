@@ -145,7 +145,7 @@ public class VanillaDb {
 
 		// initialize the statistics manager to build the histogram
 		//ihe: close for now
-		//initStatMgr(initTx);
+		initStatMgr(initTx);
 		//System.out.println("Finish statistics building!");
 
 		// create a checkpoint
