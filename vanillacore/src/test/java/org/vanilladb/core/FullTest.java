@@ -668,7 +668,7 @@ public class FullTest {
     public void main() {
         //HashMap<String, String> Queries = readQueryTest();
         // getProjection(studentQueries.get(11));
-        String dbname = "TPCHtest";//TESTDB2
+        String dbname = "TPCHSF1";//TESTDB2
         init(dbname);
         //parseQuery();
         createTPCH();
