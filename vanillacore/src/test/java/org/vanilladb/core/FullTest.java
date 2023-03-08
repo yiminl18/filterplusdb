@@ -16,6 +16,7 @@ import org.vanilladb.core.server.ServerInit;
 import org.vanilladb.core.util.CSVReader;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 import org.vanilladb.core.storage.metadata.CatalogMgr;
+import org.vanilladb.core.storage.metadata.GlobalInfo;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.storage.file.BlockId;
@@ -45,7 +46,7 @@ public class FullTest {
     private static String planOut = "tpc_plan_server.txt";
     
     private static String queryIn = TPCHQUERY;
-    private static String dataIn = TPCHDATASERVER;
+    private static String dataIn = TPCHDATA;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -661,16 +662,25 @@ public class FullTest {
         executor.shutdown();
     }
 
-
+    public static void getAllQueriedAttrs(HashMap<String, String> Queries){
+        for (Map.Entry<String, String> entry : Queries.entrySet()) {
+            String query = entry.getValue();
+            Parser parser = new Parser(query);
+            QueryData data = parser.queryCommand();
+            GlobalInfo.getqueriedAttrAll(data);
+        }
+        GlobalInfo.print();
+    }
 
     @Test
     public void main() {
-        //HashMap<String, String> Queries = readQueryTest();
+        HashMap<String, String> Queries = readQueryTest();
+        getAllQueriedAttrs(Queries);
         // getProjection(studentQueries.get(11));
-        String dbname = "TPCHSF1";//TESTDB2
-        init(dbname);
+        // String dbname = "TPCHSF1";//TESTDB2
+        // init(dbname);
         //parseQuery();
-        createTPCH();
+        //createTPCH();
         //testReadCSV();
         // writeKnob = true;
 

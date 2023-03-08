@@ -186,9 +186,9 @@ public class StatMgr {
 		while (tcatfile.next()) {
 			String tblName = (String) tcatfile.getVal(TCAT_TBLNAME).asJavaVal();
 			System.out.println(tblName);
-			if(!tblName.equals("nation")){
-				continue;
-			}
+			// if(!tblName.equals("nation")){
+			// 	continue;
+			// }
 			refreshStatistics(tblName, tx);
 		}
 		tcatfile.close();

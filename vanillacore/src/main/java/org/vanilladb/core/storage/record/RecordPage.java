@@ -351,8 +351,8 @@ public class RecordPage implements Record {
 	}
 
 	private Constant getVal(int offset, Type type) {//ihe
-		// if (!isTempTable())
-		// 	tx.concurrencyMgr().readRecord(new RecordId(blk, currentSlot));
+		if (!isTempTable())
+			tx.concurrencyMgr().readRecord(new RecordId(blk, currentSlot));
 		return currentBuff.getVal(offset, type);
 	}
 

@@ -43,6 +43,11 @@ public class Schema implements Serializable {
 	public Schema() {
 	}
 
+	public Schema(SortedSet<String> FieldSet, Map<String, Type> fields){
+		this.fields = fields;
+		myFieldSet = FieldSet;
+	}
+
 	/**
 	 * Adds a field to this schema having a specified name and type.
 	 * 
