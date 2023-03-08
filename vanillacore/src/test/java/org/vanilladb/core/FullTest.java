@@ -287,7 +287,7 @@ public class FullTest {
         fldName = "P_PARTKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create SUPPLIER
         System.out.println("Populating SUPPLIER...");
@@ -296,7 +296,7 @@ public class FullTest {
         fldName = "S_SUPPKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create PARTSUPP
         System.out.println("Populating PARTSUPP...");
@@ -307,7 +307,7 @@ public class FullTest {
         fldName = "PS_SUPPKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create CUSTOMER
         System.out.println("Populating CUSTOMER...");
@@ -316,7 +316,7 @@ public class FullTest {
         fldName = "C_CUSTKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create ORDERS
         System.out.println("Populating ORDERS...");
