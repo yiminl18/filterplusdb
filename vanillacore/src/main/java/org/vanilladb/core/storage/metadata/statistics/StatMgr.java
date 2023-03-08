@@ -15,21 +15,24 @@
  *******************************************************************************/
 package org.vanilladb.core.storage.metadata.statistics;
 
+import java.io.*;
 import static org.vanilladb.core.storage.metadata.TableMgr.TCAT;
 import static org.vanilladb.core.storage.metadata.TableMgr.TCAT_TBLNAME;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import org.vanilladb.core.sql.Type;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.Schema;
+import org.vanilladb.core.storage.metadata.GlobalInfo;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.record.RecordFile;
 import org.vanilladb.core.storage.tx.Transaction;
 import org.vanilladb.core.util.CoreProperties;
-
+import java.util.Collection;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -169,7 +172,7 @@ public class StatMgr {
 		return this.isRefreshStatOn;
 	}
 
-	protected synchronized void refreshStatistics(String tblName, Transaction tx) {
+	public void refreshStatistics(String tblName, Transaction tx) {
 		updateCounts.put(tblName, 0);
 		TableInfo ti = VanillaDb.catalogMgr().getTableInfo(tblName, tx);
 		TableStatInfo si = calcTableStats(ti, tx);
@@ -177,7 +180,7 @@ public class StatMgr {
 		tableStats.put(tblName, si);
 	}
 
-	private synchronized void initStatistics(Transaction tx) {
+	public void initStatistics(Transaction tx) {
 		updateCounts = new HashMap<String, Integer>();
 		tableStats = new HashMap<String, TableStatInfo>();
 		TableInfo tcatmd = VanillaDb.catalogMgr().getTableInfo(TCAT, tx);
@@ -194,14 +197,26 @@ public class StatMgr {
 		tcatfile.close();
 	}
 
-	private synchronized TableStatInfo calcTableStats(TableInfo ti,
+	public TableStatInfo calcTableStats(TableInfo ti,
 			Transaction tx) {
 
 		long numblocks = 0;
+		
+		numblocks = readNumOfBlocks(ti.tableName());
+		if(numblocks != -1){//the histogram exists
+			System.out.println("in sTatMgr: " + ti.tableName() + " Histogram exists! " + numblocks);
+			Histogram hist = readHistFromDisk(ti.tableName());
+			return new TableStatInfo(numblocks, hist);
+		}
+
+		numblocks = 0;
 		Schema schema = ti.schema();//ihe: shrim to query-related attrs
+		//Schema schema = reduceSchema(sch, GlobalInfo.queriedAttrAll);
+		//schema.print();
+
 		SampledHistogramBuilder hb = new SampledHistogramBuilder(schema);
 
-		RecordFile rf = ti.open(tx, true);
+		RecordFile rf = ti.open(tx, false);
 		rf.beforeFirst();
 		while (rf.next()) {
 			numblocks = rf.currentRecordId().block().number() + 1;
@@ -210,6 +225,74 @@ public class StatMgr {
 		rf.close();
 		
 		Histogram h = hb.newMaxDiffHistogram(NUM_BUCKETS, NUM_PERCENTILES);
+		System.out.println("in StatMgr: saving histograms for " + ti.tableName());
+		h.save(ti.tableName());
+		String out = ti.tableName() + "|" + String.valueOf(numblocks);
+		writeFile(out, "numblocks.txt");
 		return new TableStatInfo(numblocks, h);
+	}
+
+	public static void writeFile(String line, String fileName){
+        File file = new File(fileName); 
+        try {
+            FileWriter out = new FileWriter(file, true);
+            BufferedWriter bw=new BufferedWriter(out);
+
+            bw.write(line);
+            bw.newLine();
+
+            bw.flush();
+            bw.close();
+            }catch (IOException e) {e.printStackTrace();}
+    }
+
+	public static int readNumOfBlocks(String tblName){
+		int numOfBlock = -1;
+		try {
+			File myObj = new File("numblocks.txt");
+			Scanner myReader = new Scanner(myObj);
+			while (myReader.hasNextLine()) {
+			  String data = myReader.nextLine();
+			  String[] words = data.split("\\|");
+			  if(words[0].equals(tblName)){
+				return Integer.valueOf(words[1]); 
+			  }
+			}
+			myReader.close();
+		  } catch (FileNotFoundException e) {
+			return -1;
+		  }
+		return numOfBlock;
+	}
+
+	public Histogram readHistFromDisk(String tblName){
+		String saveFile = tblName + ".ser";
+		Map<String, Collection<Bucket>> hist = null;
+		try {
+			FileInputStream fileIn = new FileInputStream(saveFile);
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			hist = (Map<String, Collection<Bucket>>) in.readObject();
+			in.close();
+			fileIn.close();
+		} catch (IOException i) {
+			return null;
+		} catch (ClassNotFoundException c) {
+			System.out.println("MyObject class not found");
+			return null;
+		}
+		return new Histogram(hist);
+	}
+
+	public Schema reduceSchema(Schema sch, List<String> attrs){
+        Map<String, Type> fields = sch.getSchema();
+        Map<String, Type> newFields = new HashMap<>();
+		for(Map.Entry<String, Type> entry : fields.entrySet()){
+			if(attrs.contains(entry.getKey())){
+				newFields.put(entry.getKey(), entry.getValue());
+			}
+		}
+        SortedSet<String> myFieldSet = new TreeSet<String>(newFields.keySet());
+        Schema newSch = new Schema(myFieldSet, newFields);
+		return newSch;
 	}
 }

@@ -16,12 +16,12 @@
 package org.vanilladb.core.storage.metadata.statistics;
 
 import org.vanilladb.core.sql.ConstantRange;
-
+import java.io.*;
 /**
  * A bucket in a histogram that holds the record frequency and other statistics
  * of a range of values in a specific field. Instances are immutable.
  */
-public class Bucket {
+public class Bucket implements Serializable{
 	private ConstantRange valRange;
 	private double freq;
 	private double distVals;

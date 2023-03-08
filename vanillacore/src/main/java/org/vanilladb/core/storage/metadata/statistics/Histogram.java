@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-
+import java.io.*;
 /**
  * A histogram that, for each field of a table, approximates the distribution of
  * values using {@link Bucket buckets}.
@@ -32,7 +32,7 @@ import java.util.TreeSet;
  * <li>Sets of values in different buckets are disjoint.</li>
  * </ul>
  */
-public class Histogram {
+public class Histogram implements Serializable{
 	private Map<String, Collection<Bucket>> dists;
 
 	public Histogram() {
@@ -51,6 +51,20 @@ public class Histogram {
 
 	public Map<String, Collection<Bucket>> getHist(){
 		return dists;
+	}
+
+	public void save(String tblName){
+		String saveFile = tblName + ".ser";
+		try {
+            FileOutputStream fileOut = new FileOutputStream(saveFile);
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(dists);
+            out.close();
+            fileOut.close();
+            //System.out.println("Serialized data is saved in myObject.ser");
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
 	}
 
 	public void print(){

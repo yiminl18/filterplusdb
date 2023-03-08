@@ -19,11 +19,11 @@ import static java.sql.Types.BIGINT;
 import static java.sql.Types.DOUBLE;
 import static java.sql.Types.INTEGER;
 import static java.sql.Types.VARCHAR;
-
+import java.io.*;
 /**
  * An abstract class that denotes a value of a supported {@link Type type}.
  */
-public abstract class Constant implements Comparable<Constant> {
+public abstract class Constant implements Comparable<Constant>, Serializable {
 	// Optimization: Materialize the each type of constant with defual value
 	private static final Constant defaultInteger = new IntegerConstant(0);
 	private static final Constant defaultBigInt = new BigIntConstant(0);

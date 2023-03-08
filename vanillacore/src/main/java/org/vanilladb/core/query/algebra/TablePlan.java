@@ -14,9 +14,12 @@
  * limitations under the License.
  *******************************************************************************/
 package org.vanilladb.core.query.algebra;
-
+import org.vanilladb.core.sql.Type;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.Schema;
+import java.util.*;
+
+import org.vanilladb.core.storage.metadata.GlobalInfo;
 import org.vanilladb.core.storage.metadata.TableInfo;
 import org.vanilladb.core.storage.metadata.TableNotFoundException;
 import org.vanilladb.core.storage.metadata.statistics.Histogram;
@@ -78,7 +81,22 @@ public class TablePlan implements Plan {
 	 */
 	@Override
 	public Schema schema() {
-		return ti.schema();
+		Schema sch = ti.schema();
+		return reduceSchema(sch, GlobalInfo.queriedAttrAll);
+		//return sch;
+	}
+
+	public Schema reduceSchema(Schema sch, List<String> attrs){
+        Map<String, Type> fields = sch.getSchema();
+        Map<String, Type> newFields = new HashMap<>();
+		for(Map.Entry<String, Type> entry : fields.entrySet()){
+			if(attrs.contains(entry.getKey())){
+				newFields.put(entry.getKey(), entry.getValue());
+			}
+		}
+        SortedSet<String> myFieldSet = new TreeSet<String>(newFields.keySet());
+        Schema newSch = new Schema(myFieldSet, newFields);
+		return newSch;
 	}
 
 	/**

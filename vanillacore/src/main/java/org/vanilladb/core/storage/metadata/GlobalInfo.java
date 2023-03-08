@@ -14,6 +14,10 @@ public class GlobalInfo {
     public static List<String> queriedAttr; //stores projected attrs and attrs in query
     public static List<String> queriedAttrAll = new ArrayList<>();
 
+    public List<String> getQueriedAttrAllValue(){
+        return queriedAttrAll;
+    }
+
     public static void getqueriedAttr(QueryData data){
         queriedAttr = new ArrayList<>();
         //add projected attrs

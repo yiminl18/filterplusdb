@@ -17,11 +17,11 @@ package org.vanilladb.core.sql;
 
 import static org.vanilladb.core.sql.Type.DOUBLE;
 import static org.vanilladb.core.sql.Type.VARCHAR;
-
+import java.io.*;
 /**
  * A range of {@link Constant constants}. Instance are immutable.
  */
-public abstract class ConstantRange {
+public abstract class ConstantRange implements Serializable{
 	/**
 	 * Constructs a new instance. If the bounds are numeric, they will be
 	 * converted to {@link DoubleConstant}s and an instance of

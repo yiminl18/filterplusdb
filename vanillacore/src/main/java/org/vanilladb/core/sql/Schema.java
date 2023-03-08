@@ -48,6 +48,13 @@ public class Schema implements Serializable {
 		myFieldSet = FieldSet;
 	}
 
+	public void print(){
+		for(Map.Entry<String, Type> entry : fields.entrySet()){
+			System.out.print(entry.getKey() + " ");
+		}
+		System.out.println("");
+	}
+
 	/**
 	 * Adds a field to this schema having a specified name and type.
 	 * 

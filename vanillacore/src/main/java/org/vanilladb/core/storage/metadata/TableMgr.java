@@ -157,6 +157,16 @@ public class TableMgr {
 		fcatfile.close();
 	}
 
+	/*
+	 * Update table with new schema
+	 */
+
+	public void updateTable(String tblName, Schema sch){
+		if(tiMap.containsKey(tblName)){
+			tiMap.put(tblName, new TableInfo(tblName, sch));
+		}
+	}
+
 	/**
 	 * Remove a table with the specified name.
 	 * 

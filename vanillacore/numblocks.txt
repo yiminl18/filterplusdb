@@ -1,0 +1,10 @@
+tblcat|2
+fldcat|3
+viewcat|0
+idxcat|2
+idxkeycat|2
+course|96
+dept|2
+section|132
+enroll|643
+student|495

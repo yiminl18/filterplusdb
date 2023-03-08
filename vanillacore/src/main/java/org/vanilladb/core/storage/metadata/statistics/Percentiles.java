@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
+import java.io.*;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.ConstantRange;
 
@@ -28,7 +28,7 @@ import org.vanilladb.core.sql.ConstantRange;
  * value v and percentage p% means there are at least p% of values which are
  * less than or equal to v in this bucket. Instances are immutable.
  */
-public class Percentiles {
+public class Percentiles implements Serializable{
 	private Map<Constant, Double> pcts;
 
 	/**

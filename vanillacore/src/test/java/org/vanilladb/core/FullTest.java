@@ -39,13 +39,13 @@ public class FullTest {
     private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch/tpch.txt";
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
-    private static final String STUDENTDATA = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
+    private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
 	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
     private static String dataOut = "tpc_time_server.txt";
     private static String resultOut = "tpc_result_server.txt";
     private static String planOut = "tpc_plan_server.txt";
     
-    private static String queryIn = TPCHQUERY;
+    private static String queryIn = STUDENTQUERY;
     private static String dataIn = TPCHDATA;
     private static boolean writeKnob = true;
 
@@ -56,16 +56,6 @@ public class FullTest {
     public static void loadData(){
         ServerInit.loadTestbed();
     }
-
-    public static void resetDb(String dbname){
-        ServerInit.resetDb(dbname);
-    }
-
-    // public static void setFlagAsLoaded() {
-	// 	Page page = new Page();
-	// 	page.setVal(LOADED_FLAG_POS, DATA_LOADED_VALUE);
-	// 	page.write(FLAG_DATA_BLOCK);
-	// }
 
 
     public static void testTableAPI(){
@@ -465,7 +455,7 @@ public class FullTest {
         System.out.println("Raw query run: " + runTime);
         //explainQuery(query);
         writeFile("Query " + queryID, resultOut);
-        writeFile(result, resultOut);
+        //writeFile(result, resultOut);
         return runTime;
     }
 
@@ -672,25 +662,34 @@ public class FullTest {
         GlobalInfo.print();
     }
 
+    public void testSplit(){
+        String a = "xxx|35";
+        String[] words = a.split("\\|");
+        System.out.println(words[0] + " " + words[1]);
+    }
+
     @Test
     public void main() {
+        //testSplit();
         HashMap<String, String> Queries = readQueryTest();
         getAllQueriedAttrs(Queries);
-        // getProjection(studentQueries.get(11));
-        // String dbname = "TPCHSF1";//TESTDB2
-        // init(dbname);
+        String dbname = "TESTDB2";//TESTDB2
+        long start = System.currentTimeMillis();
+        init(dbname);
+        long end = System.currentTimeMillis();
+        System.out.println(end-start);
         //parseQuery();
         //createTPCH();
         //testReadCSV();
-        // writeKnob = true;
+        writeKnob = false;
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
         //     timeChecker(5,entry.getValue(), queryID);
         // }
 
-        // String queryID = "Q3";
+        String queryID = "Q2";
 
-        // oneRun(Queries.get(queryID), queryID);
+        oneRun(Queries.get(queryID), queryID);
     }
 }
