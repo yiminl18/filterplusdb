@@ -78,7 +78,7 @@ public class StatMgr {
 		if (logger.isLoggable(Level.INFO)) 
 			logger.info("building statistics...");
 		
-		//initStatistics(tx);
+		initStatistics(tx);
 		// Check refresh_threshold value to turn on/off the statistics
 		isRefreshStatOn = !(REFRESH_THRESHOLD == REFRESH_STAT_OFF);
 		
