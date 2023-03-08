@@ -189,7 +189,7 @@ public class CSVReader {
             } catch(IOException ioe) {
                ioe.printStackTrace();
             }
-        stat.getTableStatInfo(ti, tx);
+        //stat.getTableStatInfo(ti, tx);
         tx.commit();
         //add a checkpoint record to limit rollback
         tx = VanillaDb.txMgr().newTransaction(
