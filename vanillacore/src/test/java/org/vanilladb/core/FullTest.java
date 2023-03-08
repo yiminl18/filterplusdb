@@ -44,7 +44,7 @@ public class FullTest {
     private static String resultOut = "tpc_result_server.txt";
     private static String planOut = "tpc_plan_server.txt";
     
-    private static String queryIn = TPCHQUERYSERVER;
+    private static String queryIn = TPCHQUERY;
     private static String dataIn = TPCHDATASERVER;
     private static boolean writeKnob = true;
 
@@ -269,7 +269,7 @@ public class FullTest {
         fldName = "N_NATIONKEY";
         fldNames.add(fldName.toLowerCase());
         CSVReader csvReader = new CSVReader();
-        csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create REGION
         System.out.println("Populating REGION...");
@@ -278,7 +278,7 @@ public class FullTest {
         fldName = "R_REGIONKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create PART
         System.out.println("Populating PART...");
@@ -325,7 +325,7 @@ public class FullTest {
         fldName = "O_ORDERKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        csvReader.loadTable(sqlORDERS,tableName.toLowerCase(),csvFilePath,fldNames);
+        //csvReader.loadTable(sqlORDERS,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create LINEITEM
         System.out.println("Populating LINEITEM...");
@@ -335,7 +335,6 @@ public class FullTest {
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
         csvReader.loadTable(sqlLINEITEM,tableName.toLowerCase(),csvFilePath,fldNames);
-
         
     }
 

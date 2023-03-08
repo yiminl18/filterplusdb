@@ -186,6 +186,9 @@ public class StatMgr {
 		while (tcatfile.next()) {
 			String tblName = (String) tcatfile.getVal(TCAT_TBLNAME).asJavaVal();
 			System.out.println(tblName);
+			if(!tblName.equals("nation")){
+				continue;
+			}
 			refreshStatistics(tblName, tx);
 		}
 		tcatfile.close();
@@ -195,7 +198,7 @@ public class StatMgr {
 			Transaction tx) {
 
 		long numblocks = 0;
-		Schema schema = ti.schema();
+		Schema schema = ti.schema();//ihe: shrim to query-related attrs
 		SampledHistogramBuilder hb = new SampledHistogramBuilder(schema);
 
 		RecordFile rf = ti.open(tx, true);

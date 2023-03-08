@@ -62,6 +62,8 @@ public class Schema implements Serializable {
 		return this.fields;
 	}
 
+	
+
 	/**
 	 * Adds a field in another schema having the specified name to this schema.
 	 * 

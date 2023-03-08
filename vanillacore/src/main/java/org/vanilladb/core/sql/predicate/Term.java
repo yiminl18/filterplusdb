@@ -29,6 +29,8 @@ public class Term {
 		abstract boolean isSatisfied(Expression lhs, Expression rhs, Record rec);
 	}
 
+	
+
 	public static final Operator OP_EQ = new Operator() {
 		@Override
 		Operator complement() {
@@ -117,6 +119,20 @@ public class Term {
 	private Operator op;
 	private Expression lhs, rhs;
 	private boolean isJoin, isThetaJoin;
+
+	public String getLhsField(){
+		if(lhs.isFieldName()){
+			return lhs.asFieldName();
+		}
+		return "null";
+	}
+
+	public String getRhsField(){
+		if(rhs.isFieldName()){
+			return rhs.asFieldName();
+		}
+		return "null";
+	}
 
 	public Operator getOp(){
 		return op;

@@ -123,6 +123,7 @@ class TablePlanner {
 			JoinKnob.disableProductJoin();
 		}
 		Schema trunkSch = trunk.schema();
+		//this is the place to do projection push down 
 		Predicate joinPred = pred.joinPredicate(sch, trunkSch);
 		if (joinPred == null)
 			return null;
