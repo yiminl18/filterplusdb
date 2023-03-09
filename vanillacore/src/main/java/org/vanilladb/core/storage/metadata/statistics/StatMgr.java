@@ -53,7 +53,7 @@ public class StatMgr {
 	private static final int NUM_BUCKETS;
 	private static final int NUM_PERCENTILES;
 	private static final int REFRESH_STAT_OFF = 0;
-	private static final String PATH;
+	private String prePath = GlobalInfo.histogramPath;
 
 	private boolean isRefreshStatOn;
 	private Map<String, TableStatInfo> tableStats;
@@ -66,8 +66,6 @@ public class StatMgr {
 				StatMgr.class.getName() + ".NUM_BUCKETS", 20);
 		NUM_PERCENTILES = CoreProperties.getLoader().getPropertyAsInteger(
 				StatMgr.class.getName() + ".NUM_PERCENTILES", 5);
-		PATH = CoreProperties.getLoader().getPropertyAsString(
-			StatMgr.class.getName() + ".STATPATH", "/Users/yiminglin/Documents/Codebase/datahub/filterplus/stats/");
 	}
 
 	/**
@@ -115,49 +113,6 @@ public class StatMgr {
 		return tsi;
 	}
 
-	/*
-	 * Save stats to local disk
-	 */
-	public void save(String tableName){
-		//tableStats: Map<String, TableStatInfo>
-		String path = PATH + tableName + ".txt";
-		try{
-			FileWriter out = new FileWriter(path);
-			BufferedWriter bw=new BufferedWriter(out);
-			TableStatInfo singleTableStats = tableStats.get(tableName);
-			bw.write(tableName);
-			bw.newLine();
-			bw.write(String.valueOf(singleTableStats.blocksAccessed()));
-			bw.newLine();
-			//write histogram: Map<String, Collection<Bucket>> dists
-			Map<String, Collection<Bucket>> hist = singleTableStats.histogram().getHist();
-			bw.write(String.valueOf(hist.size()));
-			bw.newLine();
-			for(Map.Entry<String,Collection<Bucket>> entry1 : hist.entrySet()){
-				bw.write(entry1.getKey());
-				bw.newLine();
-				//write Collection<Bucket>
-				bw.write(String.valueOf(entry1.getValue().size()));
-				bw.newLine();
-				for(Bucket bt : entry1.getValue()){
-					bw.write(String.valueOf(bt.valueRange()));
-					bw.newLine();
-					bw.write(String.valueOf(bt.frequency()));
-					bw.newLine();
-					bw.write(String.valueOf(bt.distinctValues()));
-					bw.newLine();
-					bw.write(String.valueOf(bt.frequency()));
-					bw.newLine();
-				}
-				
-			}
-			bw.flush();
-			bw.close();
-		}catch (IOException e) {
-		e.printStackTrace();
-		}
-	}
-
 	public synchronized void countRecordUpdates(String tblName, int count) {
 		if (!isRefreshStatOn)
 			return;
@@ -176,7 +131,6 @@ public class StatMgr {
 		updateCounts.put(tblName, 0);
 		TableInfo ti = VanillaDb.catalogMgr().getTableInfo(tblName, tx);
 		TableStatInfo si = calcTableStats(ti, tx);
-		//System.out.println("In refreshStatistics: " + tblName);
 		tableStats.put(tblName, si);
 	}
 
@@ -189,9 +143,6 @@ public class StatMgr {
 		while (tcatfile.next()) {
 			String tblName = (String) tcatfile.getVal(TCAT_TBLNAME).asJavaVal();
 			System.out.println(tblName);
-			// if(!tblName.equals("nation")){
-			// 	continue;
-			// }
 			refreshStatistics(tblName, tx);
 		}
 		tcatfile.close();
@@ -205,7 +156,7 @@ public class StatMgr {
 		numblocks = readNumOfBlocks(ti.tableName());
 		if(numblocks != -1){//the histogram exists
 			System.out.println("in sTatMgr: " + ti.tableName() + " Histogram exists! " + numblocks);
-			Histogram hist = readHistFromDisk(ti.tableName());
+			Histogram hist = readHistFromDisk(prePath + ti.tableName());
 			return new TableStatInfo(numblocks, hist);
 		}
 
@@ -226,14 +177,18 @@ public class StatMgr {
 		
 		Histogram h = hb.newMaxDiffHistogram(NUM_BUCKETS, NUM_PERCENTILES);
 		System.out.println("in StatMgr: saving histograms for " + ti.tableName());
-		h.save(ti.tableName());
+		h.save(prePath,ti.tableName());
 		String out = ti.tableName() + "|" + String.valueOf(numblocks);
-		writeFile(out, "numblocks.txt");
+		writeFile(out, prePath,"numblocks.txt");
 		return new TableStatInfo(numblocks, h);
 	}
 
-	public static void writeFile(String line, String fileName){
-        File file = new File(fileName); 
+	public void writeFile(String line, String folderName, String fileName){
+		File folder = new File(folderName);
+		if (!folder.exists()) {
+            folder.mkdir();
+        }
+        File file = new File(folder,fileName); 
         try {
             FileWriter out = new FileWriter(file, true);
             BufferedWriter bw=new BufferedWriter(out);
@@ -246,10 +201,11 @@ public class StatMgr {
             }catch (IOException e) {e.printStackTrace();}
     }
 
-	public static int readNumOfBlocks(String tblName){
+	public int readNumOfBlocks(String tblName){
+		File folder = new File(prePath);
 		int numOfBlock = -1;
 		try {
-			File myObj = new File("numblocks.txt");
+			File myObj = new File(folder,"numblocks.txt");
 			Scanner myReader = new Scanner(myObj);
 			while (myReader.hasNextLine()) {
 			  String data = myReader.nextLine();
@@ -266,10 +222,12 @@ public class StatMgr {
 	}
 
 	public Histogram readHistFromDisk(String tblName){
+		File folder = new File(prePath);
 		String saveFile = tblName + ".ser";
+		File file = new File(prePath,saveFile);
 		Map<String, Collection<Bucket>> hist = null;
 		try {
-			FileInputStream fileIn = new FileInputStream(saveFile);
+			FileInputStream fileIn = new FileInputStream(file);
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			hist = (Map<String, Collection<Bucket>>) in.readObject();
 			in.close();

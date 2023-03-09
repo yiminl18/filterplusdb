@@ -1,40 +1,26 @@
-Query Q3
-Raw query run: 
-run time: 72
-Optimized query run: 
-run time: 40
 Query Q2
 Raw query run: 
-run time: 20
+run time: 52
 Optimized query run: 
-run time: 5
+run time: 28
 Query Q3
 Raw query run: 
-run time: 55
+run time: 270
 Optimized query run: 
-run time: 43
-Query Q9
-Raw query run: 
-run time: 219
-Optimized query run: 
-run time: 67
+run time: 156
+Timeout for 10 seconds limit
+Timeout for 10 seconds limit
+Timeout for 10 seconds limit
 Query Q2-min
 Raw query run: 
-run time: 4
+run time: 21
 Optimized query run: 
-run time: 3
-Query Q9-max
-Raw query run: 
-run time: 112
-Optimized query run: 
-run time: 53
+run time: 18
+Timeout for 10 seconds limit
+Timeout for 10 seconds limit
 Query Q2-max
 Raw query run: 
-run time: 4
+run time: 16
 Optimized query run: 
-run time: 3
-Query Q9-min
-Raw query run: 
-run time: 136
-Optimized query run: 
-run time: 35
+run time: 14
+Timeout for 10 seconds limit

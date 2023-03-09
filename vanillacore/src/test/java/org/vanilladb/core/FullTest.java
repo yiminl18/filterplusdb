@@ -40,12 +40,11 @@ public class FullTest {
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
-	private static final Constant DATA_LOADED_VALUE = new IntegerConstant(1);
     private static String dataOut = "tpc_time_server.txt";
     private static String resultOut = "tpc_result_server.txt";
     private static String planOut = "tpc_plan_server.txt";
     
-    private static String queryIn = STUDENTQUERY;
+    private static String queryIn = TPCHQUERY;
     private static String dataIn = TPCHDATA;
     private static boolean writeKnob = true;
 
@@ -624,13 +623,6 @@ public class FullTest {
             }catch (IOException e) {e.printStackTrace();}
     }
 
-    public static String check(){
-        try{
-            Thread.sleep(3000);
-        }catch(InterruptedException e){};
-        return "6";
-    }
-
     public static void timeChecker(long time, String query, String queryID){
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<String> future = executor.submit(()->{
@@ -676,16 +668,23 @@ public class FullTest {
         System.out.println(val);
     }
 
+    public void checkDir(String dirName){
+        File folder = new File(dirName);
+        if (!folder.isDirectory()) {
+            folder.mkdir();
+        }
+    }
+
     @Test
     public void main() {
-        
+        // checkDir("TPCH");
+        // GlobalInfo.setHistogramPath("TPCH");
+        // writeFile("hello", GlobalInfo.histogramPath + "numblocks.txt");
         HashMap<String, String> Queries = readQueryTest();
         getAllQueriedAttrs(Queries);
-        String dbname = "TESTDB2";//TESTDB2
-        long start = System.currentTimeMillis();
+        String dbname = "TPCH";//TESTDB2
+        GlobalInfo.setHistogramPath(dbname);
         init(dbname);
-        long end = System.currentTimeMillis();
-        System.out.println(end-start);
         //parseQuery();
         //createTPCH();
         //testReadCSV();
@@ -696,9 +695,9 @@ public class FullTest {
         //     timeChecker(10,entry.getValue(), queryID);
         // }
 
-        String queryID = "Q1";
+        // String queryID = "Q23";
 
-        oneRun(Queries.get(queryID), queryID);
-        testProperty();
+        // oneRun(Queries.get(queryID), queryID);
+        // testProperty();
     }
 }

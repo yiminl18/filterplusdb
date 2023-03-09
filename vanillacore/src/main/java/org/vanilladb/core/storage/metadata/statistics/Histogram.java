@@ -53,10 +53,16 @@ public class Histogram implements Serializable{
 		return dists;
 	}
 
-	public void save(String tblName){
+	public void save(String folderName, String tblName){
+		File folder = new File(folderName);
+		if (!folder.exists()) {
+            folder.mkdir();
+        }
 		String saveFile = tblName + ".ser";
 		try {
-            FileOutputStream fileOut = new FileOutputStream(saveFile);
+			File file = new File(folder,saveFile);
+        	file.getParentFile().mkdirs();
+            FileOutputStream fileOut = new FileOutputStream(file);
             ObjectOutputStream out = new ObjectOutputStream(fileOut);
             out.writeObject(dists);
             out.close();

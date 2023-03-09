@@ -13,6 +13,11 @@ import org.vanilladb.core.sql.Type;
 public class GlobalInfo {
     public static List<String> queriedAttr; //stores projected attrs and attrs in query
     public static List<String> queriedAttrAll = new ArrayList<>();
+    public static String histogramPath;
+
+    public static void setHistogramPath(String path){
+        histogramPath = path;
+    }
 
     public List<String> getQueriedAttrAllValue(){
         return queriedAttrAll;
