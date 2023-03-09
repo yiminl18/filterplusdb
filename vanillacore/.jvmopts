@@ -1,2 +1,2 @@
--Xms512m
--Xmx2g
+-Xms5g
+-Xmx20g
