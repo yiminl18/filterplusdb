@@ -40,9 +40,9 @@ public class FullTest {
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
-    private static String dataOut = "tpc_time_server.txt";
-    private static String resultOut = "tpc_result_server.txt";
-    private static String planOut = "tpc_plan_server.txt";
+    private static String dataOut = "tpc_time";
+    private static String resultOut = "tpc_result";
+    private static String planOut = "tpc_plan";
     
     private static String queryIn = TPCHQUERY;
     private static String dataIn = TPCHDATA;
@@ -527,16 +527,6 @@ public class FullTest {
             writeFile(result, resultOut);
         }
 
-        // if(groupFilter){
-        //     filterPlan.init();
-        //     filterPlan.open();
-        //     HashTables.init();
-        //     JoinKnob.init();
-        //     JoinKnob.rawRun = true;
-        //     String p = explainQuery(query);
-        //     writeFile(p, planOut);
-        // }
-
         System.out.println(runTime);
 
         return runTime;
@@ -544,14 +534,12 @@ public class FullTest {
 
     public static String oneRun(String query, String queryID){
         System.out.println("Query " + queryID);
-        System.out.println(query);
-        writeFile("Query " + queryID, planOut);
+        writeFile("Query " + queryID, dataOut); 
+        //System.out.println(query);
 
         //Raw query run
         long rawRunTime = 0;
         rawRunTime = rawRun(query, queryID);
-
-        writeFile("Query " + queryID, dataOut); 
         String out = "Raw query run: "; 
         writeFile(out, dataOut);
         String out1 = "run time: " + String.valueOf(rawRunTime);
@@ -582,7 +570,7 @@ public class FullTest {
         out1 = "run time: " + String.valueOf(opTimeNoLearningbest);
         writeFile(out1, dataOut);
 
-        //System.out.println(out + " " + out1);
+        System.out.println(out + " " + out1);
         
         // //Optimized query run with learning
         // if(query.contains("group by")){
@@ -675,29 +663,47 @@ public class FullTest {
         }
     }
 
+    public void cleanFiles(){
+        File file = new File(dataOut);
+        if(file.exists()){
+            file.delete();
+        }
+        file = new File(resultOut);
+        if(file.exists()){
+            file.delete();
+        }
+        file = new File(planOut);
+        if(file.exists()){
+            file.delete();
+        }
+    }
+
     @Test
     public void main() {
         // checkDir("TPCH");
         // GlobalInfo.setHistogramPath("TPCH");
         // writeFile("hello", GlobalInfo.histogramPath + "numblocks.txt");
-        HashMap<String, String> Queries = readQueryTest();
-        getAllQueriedAttrs(Queries);
-        String dbname = "TPCH";//TESTDB2
-        GlobalInfo.setHistogramPath(dbname);
-        init(dbname);
-        //parseQuery();
-        //createTPCH();
-        //testReadCSV();
-        writeKnob = false;
+        // HashMap<String, String> Queries = readQueryTest();
+        // getAllQueriedAttrs(Queries);
+        // String dbname = "TPCHSF1";//TESTDB2
+        // GlobalInfo.setHistogramPath(dbname);
+        // init(dbname);
+        // dataOut = dataOut + "_" + dbname + ".txt";
+        // resultOut = resultOut + "_" + dbname + ".txt";
+        // //cleanFiles();
+        // //parseQuery();
+        // //createTPCH();
+        // //testReadCSV();
+        // writeKnob = false;
 
-        // for (Map.Entry<String, String> entry : Queries.entrySet()) {
-        //     String queryID = entry.getKey();
-        //     timeChecker(10,entry.getValue(), queryID);
-        // }
+        // // for (Map.Entry<String, String> entry : Queries.entrySet()) {
+        // //     String queryID = entry.getKey();
+        // //     timeChecker(100,entry.getValue(), queryID);
+        // // }
 
-        String queryID = "Q23";
+        // String queryID = "Q3";
 
-        oneRun(Queries.get(queryID), queryID);
+        // oneRun(Queries.get(queryID), queryID);
         testProperty();
     }
 }

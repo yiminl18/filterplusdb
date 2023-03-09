@@ -1,0 +1,13 @@
+tblcat|2
+fldcat|8
+viewcat|0
+idxcat|2
+idxkeycat|2
+nation|5
+region|2
+part|25001
+supplier|1668
+partsupp|133335
+customer|25001
+orders|214287
+lineitem|426854
