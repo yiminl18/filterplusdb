@@ -44,8 +44,8 @@ public class FullTest {
     private static String resultOut = "tpc_result";
     private static String planOut = "tpc_plan";
     
-    private static String queryIn = TPCHQUERY;
-    private static String dataIn = TPCHDATA;
+    private static String queryIn = TPCHQUERYSERVER;
+    private static String dataIn = TPCHDATASERVER;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -672,34 +672,25 @@ public class FullTest {
         if(file.exists()){
             file.delete();
         }
-        file = new File(planOut);
-        if(file.exists()){
-            file.delete();
-        }
     }
 
     @Test
     public void main() {
-        // checkDir("TPCH");
-        // GlobalInfo.setHistogramPath("TPCH");
-        // writeFile("hello", GlobalInfo.histogramPath + "numblocks.txt");
-        // HashMap<String, String> Queries = readQueryTest();
-        // getAllQueriedAttrs(Queries);
-        // String dbname = "TPCHSF1";//TESTDB2
-        // GlobalInfo.setHistogramPath(dbname);
-        // init(dbname);
-        // dataOut = dataOut + "_" + dbname + ".txt";
-        // resultOut = resultOut + "_" + dbname + ".txt";
-        // //cleanFiles();
-        // //parseQuery();
-        // //createTPCH();
-        // //testReadCSV();
-        // writeKnob = false;
+        
+        HashMap<String, String> Queries = readQueryTest();
+        getAllQueriedAttrs(Queries);
+        String dbname = "TPCHSF1";//TESTDB2
+        GlobalInfo.setHistogramPath(dbname);
+        init(dbname);
+        dataOut = dataOut + "_" + dbname + ".txt";
+        resultOut = resultOut + "_" + dbname + ".txt";
+        cleanFiles();
+        writeKnob = false;
 
-        // // for (Map.Entry<String, String> entry : Queries.entrySet()) {
-        // //     String queryID = entry.getKey();
-        // //     timeChecker(100,entry.getValue(), queryID);
-        // // }
+        for (Map.Entry<String, String> entry : Queries.entrySet()) {
+            String queryID = entry.getKey();
+            timeChecker(1000,entry.getValue(), queryID);
+        }
 
         // String queryID = "Q3";
 
