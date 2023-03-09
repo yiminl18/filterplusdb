@@ -29,7 +29,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException; 
 import java.util.concurrent.*;
-
+import org.vanilladb.core.util.CoreProperties;
 public class FullTest {
 
     // Flags
@@ -668,9 +668,17 @@ public class FullTest {
         System.out.println(words[0] + " " + words[1]);
     }
 
+    public void testProperty(){
+        String path = System.getProperty("org.vanilladb.core.config.file");
+        System.out.println("**** " + path);
+        int val = CoreProperties.getLoader().getPropertyAsInteger(
+				"org.vanilladb.core.storage.buffer.BufferMgr.BUFFER_POOL_SIZE", 20);
+        System.out.println(val);
+    }
+
     @Test
     public void main() {
-        //testSplit();
+        
         HashMap<String, String> Queries = readQueryTest();
         getAllQueriedAttrs(Queries);
         String dbname = "TESTDB2";//TESTDB2
@@ -685,11 +693,12 @@ public class FullTest {
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
-        //     timeChecker(5,entry.getValue(), queryID);
+        //     timeChecker(10,entry.getValue(), queryID);
         // }
 
-        String queryID = "Q2";
+        String queryID = "Q1";
 
         oneRun(Queries.get(queryID), queryID);
+        testProperty();
     }
 }

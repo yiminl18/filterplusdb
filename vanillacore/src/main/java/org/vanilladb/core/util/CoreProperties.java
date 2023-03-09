@@ -37,7 +37,8 @@ public class CoreProperties extends PropertiesLoader {
 			//path = "properties/org/vanilladb/core/vanilladb.properties";
 			path = "resources/org/vanilladb/core/vanilladb.properties";
 		}
-		return "/Users/yiminglin/Documents/Codebase/filter_optimization/vanillacore/src/main/resources/org/vanilladb/core/vanilladb.properties";
+		System.out.println("in CoreProperties: " + path);
+		return path;
 	}
 
 }

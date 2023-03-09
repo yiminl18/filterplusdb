@@ -158,6 +158,10 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
+					<systemPropertyVariables>
+						<org.vanilladb.core.config.file>${project.build.directory}/test-classes/org/vanilladb/core/vanilladb.properties</org.vanilladb.core.config.file>
+						<java.util.logging.config.file>${project.build.directory}/test-classes/java/util/logging/logging.properties</java.util.logging.config.file>
+					</systemPropertyVariables>
 				</configuration>
 				<version>2.22.2</version>
         	</plugin>
