@@ -156,7 +156,7 @@ public class StatMgr {
 		numblocks = readNumOfBlocks(ti.tableName());
 		if(numblocks != -1){//the histogram exists
 			System.out.println("in sTatMgr: " + ti.tableName() + " Histogram exists! " + numblocks);
-			Histogram hist = readHistFromDisk(prePath + ti.tableName());
+			Histogram hist = readHistFromDisk(ti.tableName());
 			return new TableStatInfo(numblocks, hist);
 		}
 
@@ -224,7 +224,7 @@ public class StatMgr {
 	public Histogram readHistFromDisk(String tblName){
 		File folder = new File(prePath);
 		String saveFile = tblName + ".ser";
-		File file = new File(prePath,saveFile);
+		File file = new File(folder,saveFile);
 		Map<String, Collection<Bucket>> hist = null;
 		try {
 			FileInputStream fileIn = new FileInputStream(file);

@@ -695,9 +695,9 @@ public class FullTest {
         //     timeChecker(10,entry.getValue(), queryID);
         // }
 
-        // String queryID = "Q23";
+        String queryID = "Q23";
 
-        // oneRun(Queries.get(queryID), queryID);
-        // testProperty();
+        oneRun(Queries.get(queryID), queryID);
+        testProperty();
     }
 }
