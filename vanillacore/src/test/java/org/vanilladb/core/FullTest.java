@@ -397,7 +397,7 @@ public class FullTest {
         
         for(int i=0;i<attrs.length;i++){
             if(attrs[i].contains("(")){
-                output.add(attrs[0].substring(0,attrs[i].length()-1).replace("(", "of"));
+                output.add(attrs[i].substring(0,attrs[i].length()-1).replace("(", "of"));
             }else{
                 output.add(attrs[i]);
             }
