@@ -685,7 +685,7 @@ public class FullTest {
         dataOut = dataOut + "_" + dbname + ".txt";
         resultOut = resultOut + "_" + dbname + ".txt";
         cleanFiles();
-        writeKnob = false;
+        //writeKnob = false;
 
         for (Map.Entry<String, String> entry : Queries.entrySet()) {
             String queryID = entry.getKey();
