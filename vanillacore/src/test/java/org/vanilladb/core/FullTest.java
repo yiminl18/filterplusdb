@@ -35,7 +35,7 @@ public class FullTest {
     // Flags
 	//private static final BlockId FLAG_DATA_BLOCK = new BlockId("testing_flags", 0);
 	//private static final int LOADED_FLAG_POS = 0;
-    private static final String TPCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch.txt";
+    private static final String TPCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch1.txt";
     private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch/tpch.txt";
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
@@ -44,7 +44,7 @@ public class FullTest {
     private static String resultOut = "tpc_result";
     private static String planOut = "tpc_plan";
     
-    private static String queryIn = TPCHQUERYSERVER;
+    private static String queryIn = TPCHQUERY;
     private static String dataIn = TPCHDATASERVER;
     private static boolean writeKnob = true;
 
@@ -440,10 +440,8 @@ public class FullTest {
 
     public static long rawRun(String query, String queryID){
         //raw query run
-        //System.out.println(query);
         HashTables.init();
-        filterPlan.close();
-        filterPlan.enableGroup = false;
+        filterPlan.init();
         JoinKnob.init();
         JoinKnob.enableRawRun();
         long start = System.currentTimeMillis();
@@ -454,7 +452,12 @@ public class FullTest {
         System.out.println("Raw query run: " + runTime);
         //explainQuery(query);
         writeFile("Query " + queryID, resultOut);
-        //writeFile(result, resultOut);
+        writeFile(result, resultOut);
+        String filterStats = filterPlan.filterStats();
+        filterPlan.printFilter();
+        System.out.println(filterStats);
+        writeFile("Raw query run:", planOut);
+        writeFile(filterStats, planOut);
         return runTime;
     }
 
@@ -507,6 +510,7 @@ public class FullTest {
     public static long OptimizeRunNoLearning(String query, String queryID, boolean groupFilter){
         long start, end, runTime;
         filterPlan.init();
+        
         filterPlan.open();
         HashTables.init();
         JoinKnob.init();
@@ -519,22 +523,29 @@ public class FullTest {
         end = System.currentTimeMillis();
         runTime = (end-start);
 
-        filterPlan.filterStats();
-        filterPlan.printFilter();
+        String filterStats = filterPlan.filterStats();
+        //filterPlan.printFilter();
 
         if(groupFilter){
             writeFile("Query " + queryID, resultOut);
             writeFile(result, resultOut);
         }
 
-        System.out.println(runTime);
+        System.out.println("Optimized query run time: " + runTime);
+        System.out.println("=====");
+        filterPlan.printFilter();
+
+        System.out.println(filterStats);
+        writeFile("Optimized query run:", planOut);
+        writeFile(filterStats, planOut);
 
         return runTime;
     }
 
     public static String oneRun(String query, String queryID){
         System.out.println("Query " + queryID);
-        writeFile("Query " + queryID, dataOut); 
+        System.out.println("");
+        writeFile("Query " + queryID, dataOut);
         //System.out.println(query);
 
         //Raw query run
@@ -682,19 +693,25 @@ public class FullTest {
         String dbname = "TPCHSF1";//TESTDB2
         GlobalInfo.setHistogramPath(dbname);
         init(dbname);
-        dataOut = dataOut + "_" + dbname + ".txt";
-        resultOut = resultOut + "_" + dbname + ".txt";
-        cleanFiles();
-        //writeKnob = false;
+        String version = "1";
+        dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
+        resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
+        planOut = planOut + "_" + dbname + "_" + version + ".txt";
+        //cleanFiles();
+        writeKnob = false;
 
-        for (Map.Entry<String, String> entry : Queries.entrySet()) {
-            String queryID = entry.getKey();
-            timeChecker(1000,entry.getValue(), queryID);
-        }
+        // for (Map.Entry<String, String> entry : Queries.entrySet()) {
+        //     String queryID = entry.getKey();
+        //     timeChecker(50,entry.getValue(), queryID);
+        // }
 
-        // String queryID = "Q3";
+        String queryID = "Q2";
 
-        // oneRun(Queries.get(queryID), queryID);
+        oneRun(Queries.get(queryID), queryID);
+
+        queryID = "Q2-max";
+
+        oneRun(Queries.get(queryID), queryID);
         testProperty();
     }
 }

@@ -17,6 +17,10 @@ public class filterPlan{
     public static int numberOfDroppedTuplefromGroup = 0;
 
     public static void init(){
+        numberOfDroppedTuplefromMAXMIN = 0;
+        numberOfDroppedTuplefromEqual = 0;
+        numberOfDroppedTuplefromTheta = 0;
+        numberOfDroppedTuplefromGroup = 0;
         filters = new HashMap<>();
         groupFilters = new HashMap<>();
         groupPredAttr = new ArrayList<>();
@@ -418,7 +422,7 @@ public class filterPlan{
         }
     }
 
-    public static void filterStats(){
-        System.out.println("number of saved tuples from max/min, equal, theta join, group filter: " + numberOfDroppedTuplefromMAXMIN + " " + numberOfDroppedTuplefromEqual + " " + numberOfDroppedTuplefromTheta + " " + numberOfDroppedTuplefromGroup);
+    public static String filterStats(){
+        return "number of saved tuples from max/min, equal, theta join, group filter: " + numberOfDroppedTuplefromMAXMIN + " " + numberOfDroppedTuplefromEqual + " " + numberOfDroppedTuplefromTheta + " " + numberOfDroppedTuplefromGroup;
     }
 }
