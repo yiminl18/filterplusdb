@@ -345,6 +345,7 @@ public class GroupByPlan extends ReduceRecordsPlan {
 		String[] cs = c.split("\n");
 		StringBuilder sb = new StringBuilder();
 		sb.append("->");
+		System.out.println(sb);
 		sb.append("GroupByPlan: (#blks=" + blocksAccessed() + ", #recs="
 				+ recordsOutput() + ")\n");
 		for (String child : cs)

@@ -95,7 +95,6 @@ public class HashJoinPipelineScan implements Scan {
 			Scan matched = HashTables.Probe(hashField, value);
 			if(matched == null){//there is no matched tuples for current probe record, move to next probe record 
 				current = null;
-				isProbeEmpty = !probe.next();
 				return next();
 			}else{
 				openscan(matched);

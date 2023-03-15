@@ -450,7 +450,6 @@ public class FullTest {
         long runTime = (end-start);
         
         System.out.println("Raw query run: " + runTime);
-        //explainQuery(query);
         writeFile("Query " + queryID, resultOut);
         writeFile(result, resultOut);
         String filterStats = filterPlan.filterStats();
@@ -458,6 +457,9 @@ public class FullTest {
         System.out.println(filterStats);
         writeFile("Raw query run:", planOut);
         writeFile(filterStats, planOut);
+
+        filterPlan.filterBuilding = false;
+        //explainQuery(query);
         return runTime;
     }
 
@@ -510,7 +512,6 @@ public class FullTest {
     public static long OptimizeRunNoLearning(String query, String queryID, boolean groupFilter){
         long start, end, runTime;
         filterPlan.init();
-        
         filterPlan.open();
         HashTables.init();
         JoinKnob.init();
@@ -538,6 +539,9 @@ public class FullTest {
         System.out.println(filterStats);
         writeFile("Optimized query run:", planOut);
         writeFile(filterStats, planOut);
+
+        filterPlan.filterBuilding = false;
+        //explainQuery(query);
 
         return runTime;
     }
@@ -705,13 +709,13 @@ public class FullTest {
         //     timeChecker(50,entry.getValue(), queryID);
         // }
 
-        String queryID = "Q2";
+        String queryID = "Q24";
 
         oneRun(Queries.get(queryID), queryID);
 
-        queryID = "Q2-max";
+        // queryID = "Q2-max";
 
-        oneRun(Queries.get(queryID), queryID);
-        testProperty();
+        // oneRun(Queries.get(queryID), queryID);
+        // testProperty();
     }
 }
