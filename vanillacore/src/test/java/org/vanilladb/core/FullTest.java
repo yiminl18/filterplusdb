@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException; 
 import java.util.concurrent.*;
 import org.vanilladb.core.util.CoreProperties;
+import org.vanilladb.core.util.dataProcessing;
 public class FullTest {
 
     // Flags
@@ -40,12 +41,13 @@ public class FullTest {
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
+    private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/";
     private static String dataOut = "tpc_time";
     private static String resultOut = "tpc_result";
     private static String planOut = "tpc_plan";
     
     private static String queryIn = TPCHQUERY;
-    private static String dataIn = TPCHDATASERVER;
+    private static String dataIn = SMARTBENCHDATA;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -170,6 +172,58 @@ public class FullTest {
         String query = "create table test2(a int, b int, c int)";
         planner.executeUpdate(query, tx);
         tx.commit();
+    }
+
+    public static void createSmartBench(){
+        String sqlUSER = "CREATE TABLE users (" + 
+            "users.mac		int," + 
+            "users.name		int," + 
+            "users.email	int," + 
+            "users.ugroup	int)" ;
+        String sqlWIFI = "CREATE TABLE wifi (" + 
+        "wifi.st		int," + 
+        "wifi.et		int," + 
+        "wifi.mac	int," + 
+        "wifi.lid	int," + 
+        "wifi.duration	int)" ;
+        String sqlOCCUPANCY = "CREATE TABLE occupancy (" + 
+        "occupancy.lid		int," + 
+        "occupancy.st		int," + 
+        "occupancy.et	int," + 
+        "occupancy.occupancy	int," + 
+        "occupancy.type	int)" ;
+        String sqlLOCATION = "CREATE TABLE location (" + 
+        "location.lid		int," + 
+        "location.building		int," + 
+        "location.floor	int," + 
+        "location.type	int," + 
+        "location.capacity	int)" ;
+        
+        
+        
+        
+        String csvFilePath = dataIn;
+
+        String tableName = "";
+        List<String> fldNames = new ArrayList<>();
+        String fldName = "";
+
+        //create NATION
+        System.out.println("Populating Nation...");
+        tableName = "NATION";
+        fldNames = new ArrayList<>();
+        fldName = "N_NATIONKEY";
+        fldNames.add(fldName.toLowerCase());
+        CSVReader csvReader = new CSVReader();
+        //csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create REGION
+        System.out.println("Populating REGION...");
+        tableName = "REGION";
+        fldNames = new ArrayList<>();
+        fldName = "R_REGIONKEY";
+        fldNames.add(fldName.toLowerCase());
+        csvReader = new CSVReader();
     }
 
     public static void createTPCH(){
@@ -689,29 +743,34 @@ public class FullTest {
         }
     }
 
+    
+
     @Test
     public void main() {
+
+        dataProcessing DP = new dataProcessing();
+        DP.datagen();
         
-        HashMap<String, String> Queries = readQueryTest();
-        getAllQueriedAttrs(Queries);
-        String dbname = "TPCHSF1";//TESTDB2
-        GlobalInfo.setHistogramPath(dbname);
-        init(dbname);
-        String version = "1";
-        dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
-        resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
-        planOut = planOut + "_" + dbname + "_" + version + ".txt";
-        //cleanFiles();
-        writeKnob = false;
+        // HashMap<String, String> Queries = readQueryTest();
+        // getAllQueriedAttrs(Queries);
+        // String dbname = "TPCHSF1";//TESTDB2
+        // GlobalInfo.setHistogramPath(dbname);
+        // init(dbname);
+        // String version = "1";
+        // dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
+        // resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
+        // planOut = planOut + "_" + dbname + "_" + version + ".txt";
+        // //cleanFiles();
+        // writeKnob = false;
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
         //     timeChecker(50,entry.getValue(), queryID);
         // }
 
-        String queryID = "Q24";
+        // String queryID = "Q24";
 
-        oneRun(Queries.get(queryID), queryID);
+        // oneRun(Queries.get(queryID), queryID);
 
         // queryID = "Q2-max";
 

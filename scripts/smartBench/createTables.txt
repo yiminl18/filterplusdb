@@ -1,0 +1,23 @@
+CREATE TABLE users(
+    users.mac int,
+    users.name int,
+    users.email int,
+    users.ugroup int
+)
+#
+CREATE TABLE wifi(
+    wifi.st int,
+    wifi.et int,
+    wifi.mac int,
+    wifi.lid int,
+    wifi.duration int
+)
+#
+CREATE TABLE occupancy(
+    occupancy.lid int,
+    occupancy.st int,
+    occupancy.et int,
+    occupancy.occupancy int,
+    occupancy.type int
+)
+#
