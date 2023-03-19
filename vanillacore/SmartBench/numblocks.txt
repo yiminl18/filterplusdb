@@ -1,0 +1,9 @@
+tblcat|2
+fldcat|3
+viewcat|0
+idxcat|2
+idxkeycat|2
+users|21
+wifi|1414
+occupancy|1144
+location|19

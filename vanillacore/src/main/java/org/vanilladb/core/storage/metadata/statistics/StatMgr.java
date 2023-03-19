@@ -176,7 +176,7 @@ public class StatMgr {
 		rf.close();
 		
 		Histogram h = hb.newMaxDiffHistogram(NUM_BUCKETS, NUM_PERCENTILES);
-		System.out.println("in StatMgr: saving histograms for " + ti.tableName());
+		System.out.println("in StatMgr: saving histograms for " + ti.tableName() + " number of blocks: " + numblocks);
 		h.save(prePath,ti.tableName());
 		String out = ti.tableName() + "|" + String.valueOf(numblocks);
 		writeFile(out, prePath,"numblocks.txt");

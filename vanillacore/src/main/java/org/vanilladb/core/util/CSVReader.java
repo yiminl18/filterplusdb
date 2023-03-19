@@ -111,13 +111,13 @@ public class CSVReader {
 
         //populate table 
         //read data from csv
-        String csvFile = csvFilePath + tbName.toLowerCase() + ".csv";
+        String csvFile = csvFilePath + tbName.toLowerCase() + ".txt";
         try {
             File file = new File(csvFile);
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line = "";
-            String delimiter = "\\|";
+            String delimiter = ",";
             String[] values;
             line = br.readLine();
             String[] header = line.split(delimiter);
@@ -178,11 +178,6 @@ public class CSVReader {
                     }
                     InsertData data = new InsertData(tbName, fields,vals);
                     new IndexUpdatePlanner().executeInsert(data, tx);
-                // }catch(IllegalArgumentException e){
-                //     skipline +=1;
-                //     System.out.println(skipline);
-                //     continue;
-                // }
             }
             
             br.close();

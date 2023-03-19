@@ -1,0 +1,8 @@
+Raw query run:
+number of saved tuples from max/min, equal, theta join, group filter: 0 0 0 0
+Optimized query run:
+number of saved tuples from max/min, equal, theta join, group filter: 0 233808 0 0
+Raw query run:
+number of saved tuples from max/min, equal, theta join, group filter: 0 0 0 0
+Optimized query run:
+number of saved tuples from max/min, equal, theta join, group filter: 0 233808 0 0

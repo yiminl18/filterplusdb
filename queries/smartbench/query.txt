@@ -1,0 +1,57 @@
+Q3
+select avg(wifi_duration)
+from wifi, users, location
+where wifi_mac = users_mac and wifi_lid = location_lid 
+and users_ugroup = 4 and location_capacity < 20
+#
+Q3-max
+select max(wifi_duration)
+from wifi, users, location
+where wifi_mac = users_mac and wifi_lid = location_lid 
+and users_ugroup = 4 and location_capacity < 20
+#
+Q3-min
+select min(wifi_duration)
+from wifi, users, location
+where wifi_mac = users_mac and wifi_lid = location_lid 
+and users_ugroup = 4 and location_capacity < 20
+#
+Q5
+select avg(wifi_duration)
+from occupancy, location, wifi, users
+where occupancy_lid = location_lid and wifi_lid = location_lid 
+and wifi_mac = users_mac and users_ugroup = 4 and occupancy_occupancy <10 and 
+location_capacity > 25 
+#
+Q5-max
+select max(wifi_duration)
+from occupancy, location, wifi, users
+where occupancy_lid = location_lid and wifi_lid = location_lid 
+and wifi_mac = users_mac and users_ugroup = 4 and occupancy_occupancy <10 and 
+location_capacity > 25 
+#
+Q5-min
+select min(wifi_duration)
+from occupancy, location, wifi, users
+where occupancy_lid = location_lid and wifi_lid = location_lid 
+and wifi_mac = users_mac and users_ugroup = 4 and occupancy_occupancy <10 and 
+location_capacity > 25 
+#
+Q10
+select avg(occupancy_occupancy)
+from occupancy, location
+where occupancy_lid = location_lid and location_capacity < 15 and occupancy_occupancy > 15 
+group by location_type
+#
+Q10-max
+select max(occupancy_occupancy)
+from occupancy, location
+where occupancy_lid = location_lid and location_capacity < 15 and occupancy_occupancy > 15 
+group by location_type
+#
+Q10-min
+select min(occupancy_occupancy)
+from occupancy, location
+where occupancy_lid = location_lid and location_capacity < 15 and occupancy_occupancy > 15 
+group by location_type
+#

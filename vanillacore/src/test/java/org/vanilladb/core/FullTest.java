@@ -41,12 +41,13 @@ public class FullTest {
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
-    private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/";
-    private static String dataOut = "tpc_time";
-    private static String resultOut = "tpc_result";
-    private static String planOut = "tpc_plan";
+    private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/smartbench/";
+    private static final String SMARTBENCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/smartbench/query1.txt";
+    private static String dataOut = "smartbench_time";
+    private static String resultOut = "smartbench_result";
+    private static String planOut = "smartbench_plan";
     
-    private static String queryIn = TPCHQUERY;
+    private static String queryIn = SMARTBENCHQUERY;
     private static String dataIn = SMARTBENCHDATA;
     private static boolean writeKnob = true;
 
@@ -176,31 +177,28 @@ public class FullTest {
 
     public static void createSmartBench(){
         String sqlUSER = "CREATE TABLE users (" + 
-            "users.mac		int," + 
-            "users.name		int," + 
-            "users.email	int," + 
-            "users.ugroup	int)" ;
+            "users_mac		int," + 
+            "users_name		int," + 
+            "users_email	int," + 
+            "users_ugroup	int)" ;
         String sqlWIFI = "CREATE TABLE wifi (" + 
-        "wifi.st		int," + 
-        "wifi.et		int," + 
-        "wifi.mac	int," + 
-        "wifi.lid	int," + 
-        "wifi.duration	int)" ;
+        "wifi_st		int," + 
+        "wifi_et		int," + 
+        "wifi_mac	int," + 
+        "wifi_lid	int," + 
+        "wifi_duration	int)" ;
         String sqlOCCUPANCY = "CREATE TABLE occupancy (" + 
-        "occupancy.lid		int," + 
-        "occupancy.st		int," + 
-        "occupancy.et	int," + 
-        "occupancy.occupancy	int," + 
-        "occupancy.type	int)" ;
+        "occupancy_lid		int," + 
+        "occupancy_st		int," + 
+        "occupancy_et	int," + 
+        "occupancy_occupancy	int," + 
+        "occupancy_type	int)" ;
         String sqlLOCATION = "CREATE TABLE location (" + 
-        "location.lid		int," + 
-        "location.building		int," + 
-        "location.floor	int," + 
-        "location.type	int," + 
-        "location.capacity	int)" ;
-        
-        
-        
+        "location_lid		int," + 
+        "location_building		int," + 
+        "location_floor	int," + 
+        "location_type	int," + 
+        "location_capacity	int)" ;
         
         String csvFilePath = dataIn;
 
@@ -208,22 +206,37 @@ public class FullTest {
         List<String> fldNames = new ArrayList<>();
         String fldName = "";
 
-        //create NATION
-        System.out.println("Populating Nation...");
-        tableName = "NATION";
+        //create USERs
+        System.out.println("Populating USERs...");
+        tableName = "users";
         fldNames = new ArrayList<>();
-        fldName = "N_NATIONKEY";
+        fldName = "users_mac";
         fldNames.add(fldName.toLowerCase());
         CSVReader csvReader = new CSVReader();
-        //csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlUSER,tableName.toLowerCase(),csvFilePath,fldNames);
 
-        //create REGION
-        System.out.println("Populating REGION...");
-        tableName = "REGION";
+        //create WIFI
+        System.out.println("Populating WIFI...");
+        tableName = "wifi";
         fldNames = new ArrayList<>();
-        fldName = "R_REGIONKEY";
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlWIFI,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create OCCUPANCY
+        System.out.println("Populating OCCUPANCY...");
+        tableName = "occupancy";
+        fldNames = new ArrayList<>();
+        csvReader = new CSVReader();
+        csvReader.loadTable(sqlOCCUPANCY,tableName.toLowerCase(),csvFilePath,fldNames);
+
+        //create LOCATION
+        System.out.println("Populating LOCATION...");
+        tableName = "location";
+        fldNames = new ArrayList<>();
+        fldName = "location_lid";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
+        csvReader.loadTable(sqlLOCATION,tableName.toLowerCase(),csvFilePath,fldNames);
     }
 
     public static void createTPCH(){
@@ -382,6 +395,52 @@ public class FullTest {
         
     }
 
+    public class Table{
+        String tbl;
+        String idx;
+        String sql;
+        //add g
+        public String getTbl() {
+            return tbl;
+        }
+        public void setTbl(String tbl) {
+            this.tbl = tbl;
+        }
+        public String getIdx() {
+            return idx;
+        }
+        public void setIdx(String idx) {
+            this.idx = idx;
+        }
+        public String getSql() {
+            return sql;
+        }
+        public void setSql(String sql) {
+            this.sql = sql;
+        }
+    }
+
+    public static List<Table> readCreateTableSQL(){
+        String csvFile = queryIn;
+        List<Table> tables = new ArrayList<>();
+        try{
+            File file = new File(csvFile);
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String line = "";
+            while((line = br.readLine()) != null) {
+                //read table name
+
+                if(line.charAt(0) == '#'){
+                    continue;
+                }
+            }
+            br.close();
+        }catch(IOException ioe) {
+               ioe.printStackTrace();
+        }
+        return tables;
+    }
 
     public static HashMap<String, String> readQueryTest(){
         String csvFile = queryIn;
@@ -513,7 +572,7 @@ public class FullTest {
         writeFile(filterStats, planOut);
 
         filterPlan.filterBuilding = false;
-        //explainQuery(query);
+        explainQuery(query);
         return runTime;
     }
 
@@ -567,6 +626,7 @@ public class FullTest {
         long start, end, runTime;
         filterPlan.init();
         filterPlan.open();
+        filterPlan.filterStats();
         HashTables.init();
         JoinKnob.init();
         JoinKnob.rawRun = true;
@@ -587,8 +647,8 @@ public class FullTest {
         }
 
         System.out.println("Optimized query run time: " + runTime);
-        System.out.println("=====");
         filterPlan.printFilter();
+        
 
         System.out.println(filterStats);
         writeFile("Optimized query run:", planOut);
@@ -747,34 +807,31 @@ public class FullTest {
 
     @Test
     public void main() {
-
-        dataProcessing DP = new dataProcessing();
-        DP.datagen();
-        
-        // HashMap<String, String> Queries = readQueryTest();
-        // getAllQueriedAttrs(Queries);
-        // String dbname = "TPCHSF1";//TESTDB2
-        // GlobalInfo.setHistogramPath(dbname);
-        // init(dbname);
+        //first create dataset, and then delete hist folder, then run init again 
+        //testProperty();
+        HashMap<String, String> Queries = readQueryTest();
+        getAllQueriedAttrs(Queries);
+        String dbname = "SmartBench";//TESTDB2
+        GlobalInfo.setHistogramPath(dbname);
+        init(dbname);
+        //createSmartBench();
         // String version = "1";
         // dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
         // resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
         // planOut = planOut + "_" + dbname + "_" + version + ".txt";
-        // //cleanFiles();
-        // writeKnob = false;
+        // // //cleanFiles();
+        writeKnob = false;
+
+        
+
+
+        String queryID = "Q3";
+
+        oneRun(Queries.get(queryID), queryID);
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
         //     timeChecker(50,entry.getValue(), queryID);
         // }
-
-        // String queryID = "Q24";
-
-        // oneRun(Queries.get(queryID), queryID);
-
-        // queryID = "Q2-max";
-
-        // oneRun(Queries.get(queryID), queryID);
-        // testProperty();
     }
 }

@@ -29,6 +29,7 @@ public class HashJoinPipelineScan implements Scan {
 	private Scan current = null;
 	private Schema probSch; //the schema in probe side table 
 	private boolean isProbeEmpty; //true is empty
+	//private int count = 0;
 
 	public HashJoinPipelineScan(boolean build, Scan probe, String fldname1, String fldname2, Schema sch) {
 		this.probe = probe;
@@ -49,6 +50,7 @@ public class HashJoinPipelineScan implements Scan {
 	public void beforeFirst() {
 		probe.beforeFirst();
 		isProbeEmpty = !probe.next();
+		//count = 0;
 	}
 
 	// @Override
@@ -84,9 +86,11 @@ public class HashJoinPipelineScan implements Scan {
 		}
 		else if(!(isProbeEmpty = !probe.next())){//matched tuple has already been returned, but probe side is not empty
 			//move to next valid probe
+			//count += 1;
 			while(!filterPlan.checkFilter(probe)){
 				//System.out.println("in hashscan: probe failed filter check!");
 				if(!probe.next()){
+					//count += 1;
 					isProbeEmpty = false;
 					return false;
 				}				
@@ -137,6 +141,7 @@ public class HashJoinPipelineScan implements Scan {
 
 	@Override
 	public void close() {
+		//System.out.println("in hashjoin: " + count);
 		if(current!=null){
 			current.close();
 		}
