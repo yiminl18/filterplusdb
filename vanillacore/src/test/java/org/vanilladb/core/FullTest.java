@@ -43,11 +43,12 @@ public class FullTest {
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
     private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/smartbench/";
     private static final String SMARTBENCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/smartbench/query1.txt";
+    private static final String TABLE = "/Users/yiminglin/Documents/Codebase/filter_optimization/scripts/IMDB/createtables.txt";
     private static String dataOut = "smartbench_time";
     private static String resultOut = "smartbench_result";
     private static String planOut = "smartbench_plan";
     
-    private static String queryIn = SMARTBENCHQUERY;
+    private static String queryIn = TABLE;
     private static String dataIn = SMARTBENCHDATA;
     private static boolean writeKnob = true;
 
@@ -395,28 +396,40 @@ public class FullTest {
         
     }
 
-    public class Table{
-        String tbl;
-        String idx;
-        String sql;
-        //add g
+    public static class Table{
+        public String tbl;
+        public List<String> idx;
+        public String sql;
+        public Table(String tbl, List<String> idx, String sql) {
+            this.tbl = tbl;
+            this.idx = idx;
+            this.sql = sql;
+        }
+        public void setIdx(List<String> idx) {
+            this.idx = idx;
+        }
+        
+        public List<String> getIdx(){
+            return idx;
+        }
+
         public String getTbl() {
             return tbl;
         }
         public void setTbl(String tbl) {
             this.tbl = tbl;
         }
-        public String getIdx() {
-            return idx;
-        }
-        public void setIdx(String idx) {
-            this.idx = idx;
-        }
         public String getSql() {
             return sql;
         }
         public void setSql(String sql) {
             this.sql = sql;
+        }
+        public void printIdx(){
+            for (String id : idx){
+                System.out.print(id + " ");
+            }
+            System.out.println("");
         }
     }
 
@@ -428,16 +441,48 @@ public class FullTest {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line = "";
+            String sql = "";
+            List<String> idx = new ArrayList<>();
             while((line = br.readLine()) != null) {
-                //read table name
-
-                if(line.charAt(0) == '#'){
-                    continue;
+                //read tablename
+                String tbl = line.trim();
+                line = br.readLine();
+                //read index
+                int indexNum = Integer.valueOf(line);
+                if(indexNum > 0){
+                    int c = 0;
+                    while(c<indexNum){
+                        c += 1;
+                        line = br.readLine();
+                        idx.add(line.trim());
+                    }
+                }
+                line = br.readLine();
+                String keyword = line.substring(0, 6);
+                if(keyword.equals("create")){
+                    sql += line;
+                    while((line = br.readLine()) != null) {
+                        if(line.charAt(0) == '#'){
+                            tables.add(new Table(tbl, idx, sql));
+                            idx = new ArrayList<>();
+                            sql = "";
+                            tbl = "";
+                            break;
+                        }
+                        sql += line;
+                    }
                 }
             }
             br.close();
         }catch(IOException ioe) {
                ioe.printStackTrace();
+        }
+        //printing
+        for(int i=0;i<tables.size();i++){
+            Table table = tables.get(i);
+            System.out.println(table.getTbl());
+            table.printIdx();
+            System.out.println(table.getSql());
         }
         return tables;
     }
@@ -807,27 +852,28 @@ public class FullTest {
 
     @Test
     public void main() {
+        readCreateTableSQL();
         //first create dataset, and then delete hist folder, then run init again 
         //testProperty();
-        HashMap<String, String> Queries = readQueryTest();
-        getAllQueriedAttrs(Queries);
-        String dbname = "SmartBench";//TESTDB2
-        GlobalInfo.setHistogramPath(dbname);
-        init(dbname);
-        //createSmartBench();
-        // String version = "1";
-        // dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
-        // resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
-        // planOut = planOut + "_" + dbname + "_" + version + ".txt";
-        // // //cleanFiles();
-        writeKnob = false;
+        // HashMap<String, String> Queries = readQueryTest();
+        // getAllQueriedAttrs(Queries);
+        // String dbname = "SmartBench";//TESTDB2
+        // GlobalInfo.setHistogramPath(dbname);
+        // init(dbname);
+        // //createSmartBench();
+        // // String version = "1";
+        // // dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
+        // // resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
+        // // planOut = planOut + "_" + dbname + "_" + version + ".txt";
+        // // // //cleanFiles();
+        // writeKnob = false;
 
         
 
 
-        String queryID = "Q3";
+        // String queryID = "Q3";
 
-        oneRun(Queries.get(queryID), queryID);
+        // oneRun(Queries.get(queryID), queryID);
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
