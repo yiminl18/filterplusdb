@@ -37,7 +37,7 @@ title
 1
 title_title_id
 create table title (
-  title_title_id varchar(20),
+  title_title_id int,
   title_content_type_id int,
   title_primary_title varchar(100),
   title_original_title varchar(100),
@@ -50,7 +50,7 @@ talent
 1
 talent_talent_id
 create table talent (
-  talent_talent_id varchar(20),
+  talent_talent_id int,
   talent_talent_name varchar(100),
   talent_birth_year int,
   talent_death_year int) 
@@ -58,20 +58,20 @@ create table talent (
 talent_role
 0
 create table talent_role (
-  talent_role_talent_id varchar(20),
+  talent_role_talent_id int,
   talent_role_role_id int,
   talent_role_ord int) 
 #
 talent_title
 0
 create table talent_title (
-  talent_title_talent_id varchar(20),
-  talent_title_title_id varchar(20))
+  talent_title_talent_id int,
+  talent_title_title_id int)
 #
 title_genre
 0
 create table title_genre (
-  title_genre_title_id varchar(20),
+  title_genre_title_id int,
   title_genre_genre_id int,
   title_genre_ord int)
 #
@@ -80,8 +80,8 @@ title_principal
 title_principal_title_id
 title_principal_talent_id
 create table title_principal (
-  title_principal_title_id varchar(20),
-  title_principal_talent_id varchar(20),
+  title_principal_title_id int,
+  title_principal_talent_id int,
   title_principal_ord int,
   title_principal_category_id int,
   title_principal_job varchar(100),
@@ -91,7 +91,7 @@ title_aka_title_type
 1
 title_aka_title_type_title_id
 create table title_aka_title_type (
-  title_aka_title_type_title_id varchar(20),
+  title_aka_title_type_title_id int,
   title_aka_title_type_title_type_id int,
   title_aka_title_type_ord int)
 #
@@ -99,8 +99,8 @@ title_episode
 1
 title_episode_title_id
 create table title_episode (
-  title_episode_title_id varchar(20),
-  title_episode_parent_title_id varchar(20),
+  title_episode_title_id int,
+  title_episode_parent_title_id int,
   title_episode_season_number int,
   title_episode_episode_number int)
 #

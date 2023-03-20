@@ -45,6 +45,7 @@ public class FullTest {
     private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/smartbench/";
     private static final String IMDBDATA = "/Users/yiminglin/Documents/research/Data/IMDB/sampled/";
     private static final String SMARTBENCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/smartbench/query1.txt";
+    private static final String IMDBQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/imdb/query1.txt";
     private static final String TABLE = "/Users/yiminglin/Documents/Codebase/filter_optimization/scripts/IMDB/createtables.txt";
     private static String dataOut = "IMDB_time";
     private static String resultOut = "IMDB_result";
@@ -662,7 +663,7 @@ public class FullTest {
         writeFile(filterStats, planOut);
 
         filterPlan.filterBuilding = false;
-        explainQuery(query);
+        //explainQuery(query);
         return runTime;
     }
 
@@ -685,7 +686,7 @@ public class FullTest {
         filterPlan.printFilter();
         String newQ = filterPlan.mergePredicate(query);
         System.out.println(newQ);
-        explainQuery(query);
+        //explainQuery(query);
 
         //query run phase
         // filterPlan.open();
@@ -754,7 +755,7 @@ public class FullTest {
         System.out.println("Query " + queryID);
         System.out.println("");
         writeFile("Query " + queryID, dataOut);
-        //System.out.println(query);
+        System.out.println(query);
 
         //Raw query run
         long rawRunTime = 0;
@@ -897,11 +898,10 @@ public class FullTest {
 
     @Test
     public void main() {
-        
         //first create dataset, and then delete histogram folder, then run init again 
         //testProperty();
-        // HashMap<String, String> Queries = readQueryTest();
-        // getAllQueriedAttrs(Queries);
+        HashMap<String, String> Queries = readQueryTest();
+        getAllQueriedAttrs(Queries);
         String dbname = "IMDB";//TESTDB2
         GlobalInfo.setHistogramPath(dbname);
         init(dbname);
@@ -917,9 +917,9 @@ public class FullTest {
         
 
 
-        // String queryID = "Q3";
+        String queryID = "Q3";
 
-        // oneRun(Queries.get(queryID), queryID);
+        oneRun(Queries.get(queryID), queryID);
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();

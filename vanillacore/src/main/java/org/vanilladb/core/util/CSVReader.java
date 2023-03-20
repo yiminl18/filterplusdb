@@ -75,6 +75,7 @@ public class CSVReader {
 
     public void loadTable(String createTableSQL, String tbName, String csvFilePath, List<String> fieldNames){
         System.out.println("Populating " + tbName + "...");
+        Random rand = new Random();
         int limit = 1000000000;
         Map<String, Type> schema = parseTable(createTableSQL);
 
@@ -143,12 +144,15 @@ public class CSVReader {
                     
                     Type type = schema.get(field);
                     String rawValue = clean(values[i]);
+                    if(field.contains("title_id") || field.contains("talent_id")){
+                        rawValue = String.valueOf(rawValue.hashCode());
+                    }
                     fields.add(field);
                     Constant val= null;
                     if(type == INTEGER){
                         if(rawValue == ""){//missing value 
                             //rf.setVal(field, new IntegerConstant(0));
-                            val = new IntegerConstant(0);
+                            val = new IntegerConstant(rand.nextInt(1000000000));
                         }else{
                             int value = Integer.valueOf(rawValue);
                             val = new IntegerConstant(value);

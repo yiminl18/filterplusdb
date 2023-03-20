@@ -1,0 +1,23 @@
+Q1
+select avg(title_runtime_minutes)
+from title, content_type, title_aka_title_type, title_type
+where title_content_type_id = content_type_content_type_id 
+    and title_title_id = title_aka_title_type_title_id
+    and title_aka_title_type_title_type_id = title_type_title_type_id
+    and title_type_title_type_name = 'video'
+    and content_type_content_type_name = 'video'
+#
+Q2
+select avg(title_runtime_minutes)
+from title, content_type, title_genre, genre
+where title_content_type_id = content_type_content_type_id 
+    and content_type_content_type_name = 'video'
+    and title_title_id = title_genre_title_id
+    and title_genre_genre_id = genre_genre_id
+    and genre_genre_name = 'comedy'
+#
+Q3
+select avg(title_runtime_minutes)
+from title_principal, title
+where title_title_id = title_principal_title_id and title_principal_category_id = 1
+#
