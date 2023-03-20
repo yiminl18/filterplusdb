@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.concurrent.*;
 import org.vanilladb.core.util.CoreProperties;
 import org.vanilladb.core.util.dataProcessing;
+import org.w3c.dom.css.CSSStyleDeclaration;
 public class FullTest {
 
     // Flags
@@ -42,14 +43,15 @@ public class FullTest {
     private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
     private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/smartbench/";
+    private static final String IMDBDATA = "/Users/yiminglin/Documents/research/Data/IMDB/sampled/";
     private static final String SMARTBENCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/smartbench/query1.txt";
     private static final String TABLE = "/Users/yiminglin/Documents/Codebase/filter_optimization/scripts/IMDB/createtables.txt";
-    private static String dataOut = "smartbench_time";
-    private static String resultOut = "smartbench_result";
-    private static String planOut = "smartbench_plan";
+    private static String dataOut = "IMDB_time";
+    private static String resultOut = "IMDB_result";
+    private static String planOut = "IMDB_plan";
     
     private static String queryIn = TABLE;
-    private static String dataIn = SMARTBENCHDATA;
+    private static String dataIn = IMDBDATA;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -238,6 +240,49 @@ public class FullTest {
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
         csvReader.loadTable(sqlLOCATION,tableName.toLowerCase(),csvFilePath,fldNames);
+    }
+
+    public static void createTables(List<Table> tables){
+        for(Table table: tables){
+            CSVReader csvReader = new CSVReader();
+            csvReader.loadTable(table.getSql(),table.getTbl(),dataIn,table.getIdx());
+        }
+    }
+
+    public void readFile(){
+        String csvFile = dataIn + "title.csv";
+        try {
+            File file = new File(csvFile);
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String line = "";
+            String delimiter = ",";
+            String[] values;
+            line = br.readLine();
+            String[] header = line.split(delimiter);
+            int idx = 0;
+            while((line = br.readLine()) != null) {
+                idx += 1;
+                if(idx > 10){
+                    break;
+                }
+                values = line.split(delimiter);//values are a set of value in one tuple
+                
+                for(int i=0;i<values.length;i++){
+                    if(values[i].equals("\\N")){
+                        System.out.print("missing ");
+                    }else{
+                        System.out.print(values[i]+ " ");
+                    }
+                    
+                }
+                System.out.println("");
+            }
+            
+            br.close();
+            } catch(IOException ioe) {
+               ioe.printStackTrace();
+            }
     }
 
     public static void createTPCH(){
@@ -478,12 +523,12 @@ public class FullTest {
                ioe.printStackTrace();
         }
         //printing
-        for(int i=0;i<tables.size();i++){
-            Table table = tables.get(i);
-            System.out.println(table.getTbl());
-            table.printIdx();
-            System.out.println(table.getSql());
-        }
+        // for(int i=0;i<tables.size();i++){
+        //     Table table = tables.get(i);
+        //     System.out.println(table.getTbl());
+        //     table.printIdx();
+        //     System.out.println(table.getSql());
+        // }
         return tables;
     }
 
@@ -852,14 +897,15 @@ public class FullTest {
 
     @Test
     public void main() {
-        readCreateTableSQL();
-        //first create dataset, and then delete hist folder, then run init again 
+        
+        //first create dataset, and then delete histogram folder, then run init again 
         //testProperty();
         // HashMap<String, String> Queries = readQueryTest();
         // getAllQueriedAttrs(Queries);
-        // String dbname = "SmartBench";//TESTDB2
-        // GlobalInfo.setHistogramPath(dbname);
-        // init(dbname);
+        String dbname = "IMDB";//TESTDB2
+        GlobalInfo.setHistogramPath(dbname);
+        init(dbname);
+        //createTables(readCreateTableSQL());
         // //createSmartBench();
         // // String version = "1";
         // // dataOut = dataOut + "_" + dbname + "_" + version + ".txt";

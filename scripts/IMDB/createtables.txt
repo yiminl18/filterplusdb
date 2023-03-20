@@ -1,71 +1,82 @@
 category
+1
 category_category_id
 create table category (
   category_category_id int,
   category_category_name varchar(100)) 
 #
 content_type
+1
 content_type_content_type_id
 create table content_type (
   content_type_content_type_id int,
   content_type_content_type_name varchar(100)) 
 #
 genre
+1
 genre_genre_id
 create table genre (
   genre_genre_id int,
   genre_genre_name varchar(100)) 
 #
 role
+1
 role_role_id
 create table role (
   role_role_id int,
   role_role_name varchar(100)) 
 #
 title_type
+1
 title_type_title_type_id
 create table title_type (
   title_type_title_type_id int,
   title_type_title_type_name varchar(100)) 
 #
 title
+1
 title_title_id
 create table title (
   title_title_id varchar(20),
   title_content_type_id int,
-  title_primary_title varchar(500),
-  title_original_title varchar(500),
+  title_primary_title varchar(100),
+  title_original_title varchar(100),
   title_is_adult int,
   title_start_year int,
   title_end_year int,
   title_runtime_minutes int) 
 #
 talent
+1
 talent_talent_id
 create table talent (
   talent_talent_id varchar(20),
-  talent_talent_name varchar(500),
+  talent_talent_name varchar(100),
   talent_birth_year int,
   talent_death_year int) 
 #
 talent_role
+0
 create table talent_role (
   talent_role_talent_id varchar(20),
   talent_role_role_id int,
   talent_role_ord int) 
 #
 talent_title
+0
 create table talent_title (
   talent_title_talent_id varchar(20),
   talent_title_title_id varchar(20))
 #
 title_genre
+0
 create table title_genre (
   title_genre_title_id varchar(20),
   title_genre_genre_id int,
   title_genre_ord int)
 #
 title_principal
+2
 title_principal_title_id
 title_principal_talent_id
 create table title_principal (
@@ -73,10 +84,11 @@ create table title_principal (
   title_principal_talent_id varchar(20),
   title_principal_ord int,
   title_principal_category_id int,
-  title_principal_job varchar(1000),
-  title_principal_role_names varchar(1000))
+  title_principal_job varchar(100),
+  title_principal_role_names varchar(100))
 #
 title_aka_title_type
+1
 title_aka_title_type_title_id
 create table title_aka_title_type (
   title_aka_title_type_title_id varchar(20),
@@ -84,6 +96,7 @@ create table title_aka_title_type (
   title_aka_title_type_ord int)
 #
 title_episode
+1
 title_episode_title_id
 create table title_episode (
   title_episode_title_id varchar(20),

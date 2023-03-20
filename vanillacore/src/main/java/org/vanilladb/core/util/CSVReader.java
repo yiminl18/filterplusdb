@@ -12,8 +12,6 @@ import org.vanilladb.core.query.planner.index.*;
 import java.io.File;
 import org.vanilladb.core.storage.index.IndexType;
 import org.vanilladb.core.storage.metadata.CatalogMgr;
-import org.vanilladb.core.storage.metadata.TableInfo;
-import org.vanilladb.core.storage.metadata.statistics.StatMgr;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 import org.vanilladb.core.query.parse.*;
 import org.vanilladb.core.sql.*;
@@ -66,6 +64,9 @@ public class CSVReader {
     }
 
     public String clean(String str){
+        if(str.equals("\\N")){
+            return "";//missing value 
+        }
         if(!str.equals("")){
             return str.strip().toLowerCase();
         }
@@ -73,11 +74,11 @@ public class CSVReader {
     }
 
     public void loadTable(String createTableSQL, String tbName, String csvFilePath, List<String> fieldNames){
+        System.out.println("Populating " + tbName + "...");
         int limit = 1000000000;
         Map<String, Type> schema = parseTable(createTableSQL);
 
         CatalogMgr md = VanillaDb.catalogMgr();
-        StatMgr stat = VanillaDb.statMgr();
         Transaction tx = VanillaDb.txMgr().newTransaction(
                 Connection.TRANSACTION_SERIALIZABLE, false);
 
@@ -103,15 +104,10 @@ public class CSVReader {
             idxName = "idx_" + fieldName;
             md.createIndex(idxName, tbName, indexedFlds, IndexType.BTREE, tx);
         }
-        
-            
-        int skipline = 0;
-
-        TableInfo ti = md.getTableInfo(tbName, tx);
 
         //populate table 
         //read data from csv
-        String csvFile = csvFilePath + tbName.toLowerCase() + ".txt";
+        String csvFile = csvFilePath + tbName.toLowerCase() + ".csv";
         try {
             File file = new File(csvFile);
             FileReader fr = new FileReader(file);
@@ -132,59 +128,62 @@ public class CSVReader {
                     System.out.println(idx);
                 }
                 
-                    values = line.split(delimiter);//values are a set of value in one tuple
-                    //scan each value in a tuple
-                    fields = new ArrayList<>();
-                    vals = new ArrayList<>();
-                    for(int i=0;i<values.length;i++){
-
-                        
-                        String field = header[i];
-                        if(!schema.containsKey(field)){
-                            System.out.println("SCHEMA NOT MATCHED!");
-                        }
-                        
-                        Type type = schema.get(field);
-                        String rawValue = clean(values[i]);
-                        fields.add(field);
-                        Constant val= null;
-                        if(type == INTEGER){
-                            if(rawValue == ""){//missing value 
-                                //rf.setVal(field, new IntegerConstant(0));
-                                val = new IntegerConstant(0);
-                            }else{
-                                int value = Integer.valueOf(rawValue);
-                                val = new IntegerConstant(value);
-                            }
-                        }else if(type == DOUBLE){
-                            if(rawValue == ""){
-                                val =  new DoubleConstant(0);
-                            }else{
-                                double value = Double.valueOf(rawValue);
-                                val = new DoubleConstant(value);
-                            }
-                        }else if(type == BIGINT){
-                            if(rawValue == ""){
-                                val =  new BigIntConstant(Long.valueOf(0));
-                            }else{
-                                val = new BigIntConstant(Long.valueOf(rawValue));
-                            }
-                        }else{
-                            //varchar 
-                            val = new VarcharConstant(rawValue);
-                        }
-                        vals.add(val);
-                        
+                values = line.split(delimiter);//values are a set of value in one tuple
+                //scan each value in a tuple
+                fields = new ArrayList<>();
+                vals = new ArrayList<>();
+                if(values.length != header.length){
+                    continue;
+                }
+                for(int i=0;i<values.length;i++){
+                    String field = header[i];
+                    if(!schema.containsKey(field)){
+                        System.out.println("SCHEMA NOT MATCHED!");
                     }
-                    InsertData data = new InsertData(tbName, fields,vals);
-                    new IndexUpdatePlanner().executeInsert(data, tx);
+                    
+                    Type type = schema.get(field);
+                    String rawValue = clean(values[i]);
+                    fields.add(field);
+                    Constant val= null;
+                    if(type == INTEGER){
+                        if(rawValue == ""){//missing value 
+                            //rf.setVal(field, new IntegerConstant(0));
+                            val = new IntegerConstant(0);
+                        }else{
+                            int value = Integer.valueOf(rawValue);
+                            val = new IntegerConstant(value);
+                        }
+                    }else if(type == DOUBLE){
+                        if(rawValue == ""){
+                            val =  new DoubleConstant(0);
+                        }else{
+                            double value = Double.valueOf(rawValue);
+                            val = new DoubleConstant(value);
+                        }
+                    }else if(type == BIGINT){
+                        if(rawValue == ""){
+                            val =  new BigIntConstant(Long.valueOf(0));
+                        }else{
+                            val = new BigIntConstant(Long.valueOf(rawValue));
+                        }
+                    }else{
+                        //varchar 
+                        if(rawValue.length()>100){
+                            rawValue = rawValue.substring(0, 99);
+                        }
+                        val = new VarcharConstant(rawValue);
+                    }
+                    vals.add(val);
+                    
+                }
+                InsertData data = new InsertData(tbName, fields,vals);
+                new IndexUpdatePlanner().executeInsert(data, tx);
             }
             
             br.close();
             } catch(IOException ioe) {
                ioe.printStackTrace();
             }
-        //stat.getTableStatInfo(ti, tx);
         tx.commit();
         //add a checkpoint record to limit rollback
         tx = VanillaDb.txMgr().newTransaction(
