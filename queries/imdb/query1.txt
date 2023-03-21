@@ -1,5 +1,5 @@
 Q1
-select avg(title_runtime_minutes)
+select min(title_runtime_minutes)
 from title, content_type, title_aka_title_type, title_type
 where title_content_type_id = content_type_content_type_id 
     and title_title_id = title_aka_title_type_title_id
@@ -17,7 +17,25 @@ where title_content_type_id = content_type_content_type_id
     and genre_genre_name = 'comedy'
 #
 Q3
-select avg(title_runtime_minutes)
-from title_principal, title
-where title_title_id = title_principal_title_id and title_principal_category_id = 1
+select max(title_runtime_minutes)
+from title_principal, title, category
+where title_title_id = title_principal_title_id and 
+title_principal_category_id = category_category_id and category_category_name = 'director'
+#
+Q4
+select min(talent_birth_year)
+from talent, talent_role, role, talent_title
+where talent_talent_id = talent_title_talent_id 
+    and talent_talent_id = talent_role_talent_id 
+    and talent_role_role_id = role_role_id
+    and role_role_name = 'actor'
+#
+Q5
+select min(talent_birth_year)
+from talent, title_principal, category, title
+where title_title_id = title_principal_title_id 
+    and title_principal_category_id = category_category_id
+    and talent_talent_id = title_principal_talent_id 
+    and title_runtime_minutes < 10
+    and category_category_name = 'director'
 #

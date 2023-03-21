@@ -51,7 +51,7 @@ public class FullTest {
     private static String resultOut = "IMDB_result";
     private static String planOut = "IMDB_plan";
     
-    private static String queryIn = TABLE;
+    private static String queryIn = IMDBQUERY;
     private static String dataIn = IMDBDATA;
     private static boolean writeKnob = true;
 
@@ -755,19 +755,22 @@ public class FullTest {
         System.out.println("Query " + queryID);
         System.out.println("");
         writeFile("Query " + queryID, dataOut);
-        System.out.println(query);
+        //System.out.println(query);
+        String out = "", out1 = "";
+
+        
+
 
         //Raw query run
         long rawRunTime = 0;
         rawRunTime = rawRun(query, queryID);
-        String out = "Raw query run: "; 
+        out = "Raw query run: "; 
         writeFile(out, dataOut);
-        String out1 = "run time: " + String.valueOf(rawRunTime);
+        out1 = "run time: " + String.valueOf(rawRunTime);
         writeFile(out1, dataOut);
 
         //Optimized query run without learning
 
-        //System.out.println(out + " " + out1); 
         long opTimeNoLearningbest = 0;
         long opTimeNoLearning = 0;
         long opTimeNoLearningNoGroup = 0;
@@ -791,26 +794,6 @@ public class FullTest {
         writeFile(out1, dataOut);
 
         System.out.println(out + " " + out1);
-        
-        // //Optimized query run with learning
-        // if(query.contains("group by")){
-        //     if(opTimeNoLearning < opTimeNoLearningNoGroup){//with group filter is better
-        //         opTime = optimizedRun(query, queryID, true);
-        //     }else{//without group filter is better 
-        //         opTime = optimizedRun(query, queryID, false);
-        //     }
-        // }else{
-        //     opTime = optimizedRun(query, queryID, true);
-        // }
-        
-        // out = "Optimized query run: ";
-        // writeFile(out, dataOut);
-        // out1 = "learn time: " + String.valueOf(learnTime);
-        // writeFile(out1, dataOut);
-        // String out2 = "run time: " + String.valueOf(opTime);
-        // writeFile(out2, dataOut);
-
-        //System.out.println(out + " " + out1 + " " + out2);
         return "";
     }
 
@@ -917,7 +900,7 @@ public class FullTest {
         
 
 
-        String queryID = "Q3";
+        String queryID = "Q5";
 
         oneRun(Queries.get(queryID), queryID);
 
