@@ -89,6 +89,7 @@ public class CSVReader {
             String field = entry.getKey();
             Type value = entry.getValue();
             sch.addField(field, value);
+            //System.out.println(field + " " + value);
         }
         md.createTable(tbName, sch, tx);
         
@@ -114,10 +115,14 @@ public class CSVReader {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String line = "";
-            String delimiter = ",";
+            String delimiter = "\\|";//if dataset is tpch, then '\\|', otherwise, ','
             String[] values;
             line = br.readLine();
+            
             String[] header = line.split(delimiter);
+            // for(int j = 0;j<header.length;j++){
+            //     System.out.println(header[j]);
+            // }
             int idx = 0;
             while((line = br.readLine()) != null) {
                 idx += 1;
@@ -133,11 +138,13 @@ public class CSVReader {
                 //scan each value in a tuple
                 fields = new ArrayList<>();
                 vals = new ArrayList<>();
+                //System.out.println(values.length + " " + header.length);
                 if(values.length != header.length){
                     continue;
                 }
                 for(int i=0;i<values.length;i++){
                     String field = header[i];
+                    //System.out.println(field);
                     if(!schema.containsKey(field)){
                         System.out.println("SCHEMA NOT MATCHED!");
                     }
@@ -147,6 +154,7 @@ public class CSVReader {
                     if(field.contains("title_id") || field.contains("talent_id")){
                         rawValue = String.valueOf(rawValue.hashCode());
                     }
+                    //System.out.print(rawValue);
                     fields.add(field);
                     Constant val= null;
                     if(type == INTEGER){

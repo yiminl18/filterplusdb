@@ -94,3 +94,87 @@ run time: 5107
 Query Q5
 Raw query run: 
 run time: 15379
+Query Q2-0.8
+Query Q2-0.6
+Query Q2-max-0.2
+Query Q2-0.4
+Query Q2-min-0.8
+Query Q2-0.2
+Query Q2-min-0.6
+Query Q2-max-0.8
+Query Q2-min-0.4
+Query Q2-min-0.2
+Query Q2-max-0.4
+Query Q2-max-0.6
+Query Q2-0.8
+Query Q2-0.6
+Query Q2-max-0.2
+Query Q2-0.4
+Query Q2-min-0.8
+Query Q2-0.2
+Query Q2-min-0.6
+Query Q2-max-0.8
+Query Q2-min-0.4
+Query Q2-min-0.2
+Query Q2-max-0.4
+Query Q2-max-0.6
+Query Q2-0.8
+Timeout for 50 seconds limit
+Query Q2-0.6
+Timeout for 50 seconds limit
+Query Q2-max-0.2
+Query Q2-0.2
+Query Q2-0.2
+Query Q2-0.2
+Query Q2-0.2
+Query Q1
+Raw query run: 
+run time: 63
+Optimized query run: 
+run time: 35
+Query Q1
+Query Q1
+Raw query run: 
+run time: 17
+Optimized query run: 
+run time: 5
+Query Q1
+Raw query run: 
+run time: 18
+Optimized query run: 
+run time: 5
+Query Q1
+Raw query run: 
+run time: 19
+Optimized query run: 
+run time: 5
+Query Q1
+Raw query run: 
+run time: 18
+Optimized query run: 
+run time: 5
+Query Q1
+Raw query run: 
+run time: 15
+Optimized query run: 
+run time: 4
+Query Q1
+Raw query run: 
+run time: 257
+Optimized query run: 
+run time: 135
+Query Q1
+Raw query run: 
+run time: 190
+Optimized query run: 
+run time: 100
+Query Q1
+Raw query run: 
+run time: 225
+Optimized query run: 
+run time: 141
+Query Q1
+Raw query run: 
+run time: 210
+Optimized query run: 
+run time: 134

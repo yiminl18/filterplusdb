@@ -110,3 +110,4 @@ Each record.next() call recordfile.next(), and their connection is getVal()
 
 -- How to do Join in the code?
 getVal is the key to connect all data flow. Implementing join is actually implementing getVal for each scan
+

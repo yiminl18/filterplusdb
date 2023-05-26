@@ -40,7 +40,7 @@ public class FullTest {
     private static final String TPCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/tpch/tpch1.txt";
     private static final String TPCHQUERYSERVER = "/home/yiminl18/filterOP/queries/tpch/tpch.txt";
     private static final String TPCHDATASERVER = "/home/yiminl18/filterOP/data/tpch/";
-    private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/2/";
+    private static final String TPCHDATA = "/Users/yiminglin/Documents/research/TPC/TPCH/zipf2/";
     private static final String STUDENTQUERY = "/Users/yiminglin/Documents/Codebase/datahub/filterplus/queries/query_student.txt";
     private static final String SMARTBENCHDATA = "/Users/yiminglin/Documents/Codebase/filter_optimization/data/smartbench/";
     private static final String IMDBDATA = "/Users/yiminglin/Documents/research/Data/IMDB/sampled/";
@@ -51,8 +51,8 @@ public class FullTest {
     private static String resultOut = "IMDB_result";
     private static String planOut = "IMDB_plan";
     
-    private static String queryIn = IMDBQUERY;
-    private static String dataIn = IMDBDATA;
+    private static String queryIn = SMARTBENCHQUERY;
+    private static String dataIn = TPCHDATA;
     private static boolean writeKnob = true;
 
     public static void init(String dbname){
@@ -153,11 +153,20 @@ public class FullTest {
     }
 
     public static void test(){
-        HashMap<Constant, Boolean> m = new HashMap<>();
-        m.put(new IntegerConstant(1),true);
-        m.put(new IntegerConstant(2), false);
-        if(m.containsKey(new IntegerConstant(1))){
-            System.out.print("yes");
+        String line = "n_nationkey|n_name|n_regionkey|n_comment";
+        String delimiter = "|";
+        String[] header = line.split("\\|");
+        for(int j = 0;j<header.length;j++){
+            System.out.println(header[j]);
+        }
+
+        String str = "Hello,World,Java";
+        String[] parts = str.split(",");
+
+        System.out.println(parts.length);
+
+        for (String part : parts) {
+            System.out.println(part);
         }
     }
 
@@ -373,7 +382,7 @@ public class FullTest {
         fldName = "N_NATIONKEY";
         fldNames.add(fldName.toLowerCase());
         CSVReader csvReader = new CSVReader();
-        //csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlNATION,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create REGION
         System.out.println("Populating REGION...");
@@ -382,7 +391,7 @@ public class FullTest {
         fldName = "R_REGIONKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlREGION,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create PART
         System.out.println("Populating PART...");
@@ -391,7 +400,7 @@ public class FullTest {
         fldName = "P_PARTKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlPART,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create SUPPLIER
         System.out.println("Populating SUPPLIER...");
@@ -400,7 +409,7 @@ public class FullTest {
         fldName = "S_SUPPKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlSUPPLIER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create PARTSUPP
         System.out.println("Populating PARTSUPP...");
@@ -411,7 +420,7 @@ public class FullTest {
         fldName = "PS_SUPPKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlPARTSUPP,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create CUSTOMER
         System.out.println("Populating CUSTOMER...");
@@ -420,7 +429,7 @@ public class FullTest {
         fldName = "C_CUSTKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlCUSTOMER,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create ORDERS
         System.out.println("Populating ORDERS...");
@@ -429,7 +438,7 @@ public class FullTest {
         fldName = "O_ORDERKEY";
         fldNames.add(fldName.toLowerCase());
         csvReader = new CSVReader();
-        //csvReader.loadTable(sqlORDERS,tableName.toLowerCase(),csvFilePath,fldNames);
+        csvReader.loadTable(sqlORDERS,tableName.toLowerCase(),csvFilePath,fldNames);
 
         //create LINEITEM
         System.out.println("Populating LINEITEM...");
@@ -737,7 +746,7 @@ public class FullTest {
             writeFile(result, resultOut);
         }
 
-        System.out.println("Optimized query run time: " + runTime);
+        //System.out.println("Optimized query run time: " + runTime);
         filterPlan.printFilter();
         
 
@@ -881,13 +890,15 @@ public class FullTest {
 
     @Test
     public void main() {
+        //test();
         //first create dataset, and then delete histogram folder, then run init again 
-        //testProperty();
+        testProperty();
         HashMap<String, String> Queries = readQueryTest();
         getAllQueriedAttrs(Queries);
-        String dbname = "IMDB";//TESTDB2
+        String dbname = "TPCHZIPF1";//TPCHSF1|IMDB|SmartBench 
         GlobalInfo.setHistogramPath(dbname);
         init(dbname);
+        //createTPCH();
         //createTables(readCreateTableSQL());
         // //createSmartBench();
         // // String version = "1";
@@ -895,14 +906,14 @@ public class FullTest {
         // // resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
         // // planOut = planOut + "_" + dbname + "_" + version + ".txt";
         // // // //cleanFiles();
-        // writeKnob = false;
+        //writeKnob = false;
 
         
 
 
-        String queryID = "Q5";
+        // String queryID = "Q1";
 
-        oneRun(Queries.get(queryID), queryID);
+        // oneRun(Queries.get(queryID), queryID);
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
