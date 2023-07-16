@@ -47,11 +47,11 @@ public class FullTest {
     private static final String SMARTBENCHQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/smartbench/query1.txt";
     private static final String IMDBQUERY = "/Users/yiminglin/Documents/Codebase/filter_optimization/queries/imdb/query1.txt";
     private static final String TABLE = "/Users/yiminglin/Documents/Codebase/filter_optimization/scripts/IMDB/createtables.txt";
-    private static String dataOut = "IMDB_time";
-    private static String resultOut = "IMDB_result";
-    private static String planOut = "IMDB_plan";
+    private static String dataOut = "TPCH_time";
+    private static String resultOut = "TPCH_result";
+    private static String planOut = "TPCH_plan";
     
-    private static String queryIn = SMARTBENCHQUERY;
+    private static String queryIn = TPCHQUERY;
     private static String dataIn = TPCHDATA;
     private static boolean writeKnob = true;
 
@@ -895,7 +895,7 @@ public class FullTest {
         testProperty();
         HashMap<String, String> Queries = readQueryTest();
         getAllQueriedAttrs(Queries);
-        String dbname = "TPCHZIPF1";//TPCHSF1|IMDB|SmartBench 
+        String dbname = "TPCHSF1";//TPCHSF1|IMDB|SmartBench|TPCHZIPF1|TPCHZIPF2
         GlobalInfo.setHistogramPath(dbname);
         init(dbname);
         //createTPCH();
@@ -911,9 +911,9 @@ public class FullTest {
         
 
 
-        // String queryID = "Q1";
+        String queryID = "Q23";
 
-        // oneRun(Queries.get(queryID), queryID);
+        oneRun(Queries.get(queryID), queryID);
 
         // for (Map.Entry<String, String> entry : Queries.entrySet()) {
         //     String queryID = entry.getKey();
