@@ -898,26 +898,9 @@ public class FullTest {
         String dbname = "TPCHSF1";//TPCHSF1|IMDB|SmartBench|TPCHZIPF1|TPCHZIPF2
         GlobalInfo.setHistogramPath(dbname);
         init(dbname);
-        //createTPCH();
-        //createTables(readCreateTableSQL());
-        // //createSmartBench();
-        // // String version = "1";
-        // // dataOut = dataOut + "_" + dbname + "_" + version + ".txt";
-        // // resultOut = resultOut + "_" + dbname + "_" + version + ".txt";
-        // // planOut = planOut + "_" + dbname + "_" + version + ".txt";
-        // // // //cleanFiles();
-        //writeKnob = false;
 
-        
-
-
-        String queryID = "Q23";
+        String queryID = "Q2";
 
         oneRun(Queries.get(queryID), queryID);
-
-        // for (Map.Entry<String, String> entry : Queries.entrySet()) {
-        //     String queryID = entry.getKey();
-        //     timeChecker(50,entry.getValue(), queryID);
-        // }
     }
 }
