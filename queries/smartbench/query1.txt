@@ -1,21 +1,5 @@
-Q2
-select avg(occupancy_occupancy)
-from occupancy, location, wifi, users
-where occupancy_lid > wifi_lid and wifi_mac = users_mac  
-and occupancy_lid = location_lid 
-and location_capacity > 30
-and users_ugroup = 4
-#
 Q1
-select avg(wifi_duration)
-from occupancy, location, wifi, users
-where occupancy_lid = location_lid and wifi_lid = location_lid 
-and wifi_mac = users_mac and users_ugroup = 4 and occupancy_occupancy <10 and 
-location_capacity > 25 
-#
-Q3
-select avg(occupancy_occupancy)
-from occupancy, location
-where occupancy_lid = location_lid and location_capacity < 15 and occupancy_occupancy > 15 
-group by location_type
+select count(occupancy_occupancy)
+from occupancy
+where occupancy_occupancy >15
 #

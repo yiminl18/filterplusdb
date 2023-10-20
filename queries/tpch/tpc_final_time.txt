@@ -1,0 +1,132 @@
+Q2
+Raw query run: 
+814
+Optimized query run: 
+366
+Optimized query run with fast learning:
+247
+Q2-max
+Raw query run: 
+803
+Optimized query run: 
+24
+Optimized query run with fast learning:
+77
+Q2-min
+Raw query run: 
+798
+Optimized query run: 
+26
+Optimized query run with fast learning:
+79
+
+Q3
+Raw query run: 
+15374
+Optimized query run: 
+6485
+Optimized query run with fast learning:
+4289
+Q3-max
+Raw query run: 
+14977
+Optimized query run: 
+2568
+Optimized query run with fast learning:
+1947
+Q3-min
+Raw query run: 
+15032
+Optimized query run: 
+3042
+Optimized query run with fast learning:
+1992
+
+Q4
+Raw query run: 
+20760
+Optimized query run: 
+9400
+Optimized query run with fast learning:
+6631
+Q4-max
+Raw query run: 
+21405
+Optimized query run: 
+4089
+Optimized query run with fast learning:
+3519
+Q4-min
+Raw query run: 
+19937
+Optimized query run: 
+4012
+Optimized query run with fast learning:
+3728
+
+Q5
+Raw query run: 
+20358
+Optimized query run: 
+8715
+Optimized query run with fast learning:
+6853
+Q5-max
+Raw query run: 
+20913
+Optimized query run: 
+3679
+Optimized query run with fast learning:
+3319
+Q5-min
+Raw query run: 
+20643
+Optimized query run: 
+3346
+Optimized query run with fast learning:
+2947
+
+Q23
+Raw query run: 
+1699
+Optimized query run: 
+654
+Optimized query run with fast learning:
+548
+Q23-max
+Raw query run: 
+1880
+Optimized query run: 
+17
+Optimized query run with fast learning:
+62
+Q23-min
+Raw query run: 
+1834
+Optimized query run: 
+16
+Optimized query run with fast learning:
+56
+
+Q24
+Raw query run: 
+15381
+Optimized query run: 
+4417
+Optimized query run with fast learning:
+3172
+Q24-max
+Raw query run: 
+15118
+Optimized query run: 
+1937
+Optimized query run with fast learning:
+1265
+Q24-min
+Raw query run: 
+20643
+Optimized query run: 
+2471
+Optimized query run with fast learning:
+1328
+

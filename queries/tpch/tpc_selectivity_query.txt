@@ -1,0 +1,348 @@
+Q2-0.2
+select avg(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 10
+    and ps_supplycost < 200
+    and n_name = 'india'
+#
+Q2-0.4
+select avg(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 20
+    and ps_supplycost < 400
+    and n_name = 'india'
+#
+Q2-0.6
+select avg(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 30
+    and ps_supplycost < 600
+    and n_name = 'india'
+#
+Q2-0.8
+select avg(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 40
+    and ps_supplycost < 800
+    and n_name = 'india'
+#
+Q2-max-0.2
+select max(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 10
+    and ps_supplycost < 200
+    and n_name = 'india'
+#
+Q2-max-0.4
+select max(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 20
+    and ps_supplycost < 400
+    and n_name = 'india'
+#
+Q2-max-0.6
+select max(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 30
+    and ps_supplycost < 600
+    and n_name = 'india'
+#
+Q2-max-0.8
+select max(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 40
+    and ps_supplycost < 800
+    and n_name = 'india'
+#
+Q2-min-0.2
+select min(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 10
+    and ps_supplycost < 200
+    and n_name = 'india'
+#
+Q2-min-0.4
+select min(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 20
+    and ps_supplycost < 400
+    and n_name = 'india'
+#
+Q2-min-0.6
+select min(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 30
+    and ps_supplycost < 600
+    and n_name = 'india'
+#
+Q2-min-0.8
+select min(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 40
+    and ps_supplycost < 800
+    and n_name = 'india'
+#
+Q4-0.2
+select o_orderpriority,avg(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1993-04-01'
+    and l_shipdate < '1993-05-01' 
+group by o_orderpriority
+#
+Q4-0.4
+select o_orderpriority,avg(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1994-08-01'
+    and l_shipdate < '1994-09-01' 
+group by o_orderpriority
+#
+Q4-0.6
+select o_orderpriority,avg(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1995-12-01'
+    and l_shipdate < '1996-01-01' 
+group by o_orderpriority
+#
+Q4-0.8
+select o_orderpriority,avg(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1997-03-01'
+    and l_shipdate < '1997-04-01' 
+group by o_orderpriority
+#
+Q4-max-0.2
+select o_orderpriority,max(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1993-04-01'
+    and l_shipdate < '1993-05-01' 
+group by o_orderpriority
+#
+Q4-max-0.4
+select o_orderpriority,max(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1994-08-01'
+    and l_shipdate < '1994-09-01' 
+group by o_orderpriority
+#
+Q4-max-0.6
+select o_orderpriority,max(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1995-12-01'
+    and l_shipdate < '1996-01-01' 
+group by o_orderpriority
+#
+Q4-max-0.8
+select o_orderpriority,max(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1997-03-01'
+    and l_shipdate < '1997-04-01' 
+group by o_orderpriority
+#
+Q4-min-0.2
+select o_orderpriority,min(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1993-04-01'
+    and l_shipdate < '1993-05-01' 
+group by o_orderpriority
+#
+Q4-min-0.4
+select o_orderpriority,min(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1994-08-01'
+    and l_shipdate < '1994-09-01' 
+group by o_orderpriority
+#
+Q4-min-0.6
+select o_orderpriority,min(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1995-12-01'
+    and l_shipdate < '1996-01-01' 
+group by o_orderpriority
+#
+Q4-min-0.8
+select o_orderpriority,min(l_extendedprice)
+from
+	orders, lineitem 
+where
+	o_orderdate >= '1992-01-01'
+    and l_orderkey = o_orderkey
+    and l_commitdate < l_receiptdate
+	and o_orderdate < '1997-03-01'
+    and l_shipdate < '1997-04-01' 
+group by o_orderpriority
+#

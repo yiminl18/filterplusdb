@@ -1,0 +1,34 @@
+Q2-0.2
+select avg(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 10
+    and ps_supplycost < 200
+    and n_name = 'india'
+#
+Q2-0.4
+select avg(s_acctbal)
+from
+	part,
+	supplier,
+	partsupp,
+	nation,
+	region
+where
+	p_partkey = ps_partkey
+	and s_suppkey = ps_suppkey
+	and s_nationkey = n_nationkey
+	and n_regionkey = r_regionkey
+    and p_size < 10
+    and ps_supplycost < 200
+    and n_name = 'india'
+#

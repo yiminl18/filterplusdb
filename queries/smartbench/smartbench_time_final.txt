@@ -1,0 +1,71 @@
+Q3
+Raw query run:
+132611
+Optimized query run:
+21765
+Optimized query run with learned filter:
+21433
+
+Q3-max
+Raw query run:
+131966
+Optimized query run:
+4219
+Optimized query run with learned filter:
+4188
+
+Q3-min
+Raw query run:
+129873
+Optimized query run:
+4705
+Optimized query run with learned filter:
+4639
+
+Q5
+Raw query run:
+144039
+Optimized query run:
+43167
+Optimized query run with learned filter:
+43011
+
+Q5-max
+Raw query run:
+143972
+Optimized query run:
+5938
+Optimized query run with learned filter:
+5910
+
+Q5-min
+Raw query run:
+144392
+Optimized query run:
+5642
+Optimized query run with learned filter:
+5631
+
+Q10
+Raw query run:
+19353
+Optimized query run:
+5202
+Optimized query run with learned filter:
+5190
+
+Q10-max
+Raw query run:
+20078
+Optimized query run:
+373
+Optimized query run with learned filter:
+371
+
+Q10-min
+Raw query run:
+19844
+Optimized query run:
+349
+Optimized query run with learned filter:
+337
